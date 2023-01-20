@@ -27,17 +27,20 @@ class Window:
 
         self.loader = IncrementalThreadedResourceLoader()
         self.uiManager = UIManager(self.dim, '', resource_loader=self.loader)
-
         self.backgroundSurface = pygame.Surface(self.dim)
         self.backgroundSurface.fill(pygame.Color("#000000"))
 
     def createUi(self):
+
+        self.tabContainer = pygame_gui.core.UIContainer(pygame.Rect(0, 0, *self.dim),manager=self.uiManager)
+
         self.tabButtons = []
         numBtn = len(self.scenes)
         for i in range(numBtn):
-            btn = UIButton(pygame.Rect((int(self.dim[0] / numBtn * i), 0),(int(self.dim[0] / numBtn), int(self.dim[1] * 0.05))),
-                           self.scenes[i].name if self.scenes[i] else 'None',
-                           self.uiManager)
+            btn = UIButton(pygame.Rect((int(self.dim[0] / numBtn * i), 0),(int(self.dim[0] / numBtn), 30)),
+                           text=self.scenes[i].name if self.scenes[i] else 'None',
+                           manager=self.uiManager,
+                           container=self.tabContainer)
             self.sceneMap[btn] = self.scenes[i]
             self.tabButtons.append(btn)
 
@@ -47,7 +50,9 @@ class Window:
                 self.running = False
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element in self.sceneMap:
+                    if(self.currentScene): self.currentScene.sceneContainer.hide()
                     self.currentScene = self.sceneMap[event.ui_element]
+                    if(self.currentScene): self.currentScene.sceneContainer.show()
             if(self.currentScene): self.currentScene.eventHandler(event)
             self.uiManager.process_events(event)
 
@@ -69,5 +74,3 @@ class Window:
     
     def setBGColor(self, hex):
         self.backgroundSurface.fill(pygame.Color(hex))
-
-print('imported window')
