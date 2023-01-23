@@ -42,7 +42,7 @@ class AirPScene(scene.Scene):
             'fltrstat2': 10,
             'pm25': 6,
         }
-        btnPadding = 1
+        btnPadding = 5
         btnCount = 11
         for i in range(btnCount):
             constraints = [
@@ -52,21 +52,11 @@ class AirPScene(scene.Scene):
                 RELATIVE(T_Y, 1/btnCount*i, P_H)
             ]
             self.btns.append(UiButton(self.window, constraints))
-
-        constraints = [
-            RELATIVE(T_X, 0.5, P_W),
-            ABSOLUTE(T_Y, 1),
-            ABSOLUTE(T_W, 640),
-            ABSOLUTE(T_H, 480)
-        ]
-        self.stream = UiStream(self.window, constraints, 'http://172.31.1.225:8080/?action=streams')
-        self.sceneWrapper.addChild(self.stream)
         
         self.sceneWrapper.addChildren(*self.btns)
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':
-            print(event)
             if event['obj'] == self.btns[self.btnMap['btnlight']]:
                 self.localState['btnlight'] = not self.localState['btnlight']
             if event['obj'] == self.btns[self.btnMap['cl']]:
@@ -115,3 +105,42 @@ class AirPScene(scene.Scene):
         self.localState['name']     =   await self.opcua.getValue(f'ns={self.objId};s=AP{self.id}c_Name')
         self.localState['pwr']      =   await self.opcua.getValue(f'ns={self.objId};s=AP{self.id}c_PWR')
 
+class CamScene(scene.Scene):
+    
+    def __init__(self, window, name):
+        super().__init__(window, name)
+        self.isDisplayed = False
+
+    def createUi(self):
+        btnPadding = 5
+        constraints = [
+            COMPOUND(RELATIVE(T_X, 0, P_W), ABSOLUTE(T_X, btnPadding)),
+            ABSOLUTE(T_Y, btnPadding),
+            COMPOUND(RELATIVE(T_W, 0.25, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
+            ABSOLUTE(T_H, 30)
+        ]
+        self.toggle = UiButton(self.window, constraints)
+        self.toggle.setText('display')
+
+        constraints = [
+            COMPOUND(RELATIVE(T_X, 0.5, P_W), ABSOLUTE(T_X, btnPadding)),
+            ABSOLUTE(T_Y, btnPadding),
+            COMPOUND(RELATIVE(T_W, 0.5, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
+            RELATIVE(T_H, 3/4, T_W)
+        ]
+        self.stream = UiStream(self.window, constraints, 'http://172.31.1.225:8080/?action=streams')
+        self.sceneWrapper.addChild(self.toggle)
+
+    def handleUiEvents(self, event):
+        if event['action'] == 'release':
+            if event['obj'] == self.toggle:
+                if self.isDisplayed:
+                    self.sceneWrapper.removeChild(self.stream)
+                    self.isDisplayed = False
+                else:
+                    self.sceneWrapper.addChild(self.stream)
+                    self.isDisplayed = True
+        return
+    
+    def updateVariables(self, delta):
+        return

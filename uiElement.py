@@ -92,7 +92,7 @@ class UiElement:
         if not child in self.children: return
         child.setDirty()
         self.children.remove(child)
-        child.parent = null
+        child.parent = None
     
     def setDirty(self):
         self.isDirty = True
@@ -161,6 +161,7 @@ class UiStream(UiElement):
         self.client.enqueue_buffer(buf)
         image = Image.open(stream).convert("RGB")
         stream.close()
+        image = image.resize((int(self.dim[2]), int(self.dim[3])))
         self.image = self.pilConv(image)
         return
 

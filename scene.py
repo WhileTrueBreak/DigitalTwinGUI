@@ -16,7 +16,6 @@ class Scene:
         self.window = window
         self.dim = self.window.dim
         dim = (0, self.window.tabHeight, self.window.dim[0], self.window.dim[1] - self.window.tabHeight)
-        print(dim)
         self.sceneWrapper = UiWrapper(self.window, [], dim)
 
     @abstractmethod

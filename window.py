@@ -59,8 +59,6 @@ class Window:
                 self.keyState[event.unicode] = False
         for event in self.uiEvents:
             if event['action'] == 'release' and event['obj'] in self.tabButtons:
-                print(self.tabButtons)
-                print(event['obj'] in self.tabButtons)
                 self.currentScene = self.sceneMap[event['obj']]
             if self.currentScene: self.currentScene.eventHandler(event)
         self.uiEvents = []
