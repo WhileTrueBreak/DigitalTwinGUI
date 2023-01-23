@@ -1,13 +1,8 @@
 from constraintManager import *
+from uiElement import *
 from opcua import Opcua
 
 import pygame
-import pygame_gui
-
-from pygame_gui.ui_manager import UIManager
-from pygame_gui.core import IncrementalThreadedResourceLoader, ObjectID
-
-from pygame_gui.elements import *
 
 from abc import ABC, abstractmethod
 
@@ -20,19 +15,10 @@ class Scene:
 
         self.window = window
         self.dim = self.window.dim
-        self.uiManager = self.window.uiManager
-        self.cManager = ConstraintManager((0, 0), self.dim)
+        dim = (0, self.window.tabHeight, self.window.dim[0], self.window.dim[1] - self.window.tabHeight)
+        print(dim)
+        self.sceneWrapper = UiWrapper(self.window, [], dim)
 
-        dim = self.cManager.calcConstraints(
-            RELATIVE(T_W, 1, P_W),
-            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -30)),
-            ABSOLUTE(T_X, 0),
-            ABSOLUTE(T_Y, 30)
-        )
-
-        self.cManager.parentPos = (dim[0], dim[1])
-        self.cManager.parentDim = (dim[2], dim[3])
-        self.sceneContainer = pygame_gui.core.UIContainer(pygame.Rect(*dim),manager=self.uiManager)
     @abstractmethod
     def createUi(self):
         ...
@@ -48,10 +34,10 @@ class Scene:
         return
     
     def update(self, delta):
-        self.uiManager.update(delta)
+        self.sceneWrapper.update()
         self.updateVariables(delta)
         return
     
     def render(self):
-        self.uiManager.draw_ui(self.window.screen)
+        self.sceneWrapper.render()
         return

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 from opcua import Opcua
 
-from pygame_gui.elements.ui_text_box import UITextBox
-
 import window
 import scenes
 import nest_asyncio
@@ -10,7 +8,6 @@ import nest_asyncio
 nest_asyncio.apply()
 
 window = window.Window((1600, 1000), 'hello world')
-window.setBGColor('#FF9999')
 
 opcua = Opcua()
 
