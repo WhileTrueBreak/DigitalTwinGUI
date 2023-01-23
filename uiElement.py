@@ -5,6 +5,11 @@ import time
 
 import pygame
 
+from mjpeg.client import MJPEGClient
+
+from PIL import Image
+from io import BytesIO
+
 class UiElement:
     def __init__(self, window, constraints, dim=(0,0,0,0)):
         self.window = window
@@ -97,6 +102,7 @@ class UiElement:
 class UiButton(UiElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):
         super().__init__(window, constraints, dim)
+        self.type = 'button'
         self.font = pygame.font.SysFont("monospace", 18)
         self.setText('hello world')
 
@@ -128,3 +134,47 @@ class UiWrapper(UiElement):
     
     def onRelease(self, callback=None):
         return
+
+class UiStream(UiElement):
+    def __init__(self, window, constraints, url, dim=(0,0,0,0)):
+        super().__init__(window, constraints, dim)
+        self.type = 'stream'
+
+        self.url = url
+        try:
+            self.client = MJPEGClient(self.url)
+            bufs = self.client.request_buffers(65536, 50)
+            for b in bufs:
+                self.client.enqueue_buffer(b)
+            self.client.start()
+        except:
+            pass
+        self.image = None
+
+    def pilConv(self, pilImage):
+        return pygame.image.fromstring(
+            pilImage.tobytes(), pilImage.size, pilImage.mode).convert()
+
+    def absUpdate(self):
+        buf = self.client.dequeue_buffer()
+        stream = BytesIO(buf.data)
+        self.client.enqueue_buffer(buf)
+        image = Image.open(stream).convert("RGB")
+        stream.close()
+        self.image = self.pilConv(image)
+        return
+
+    def absRender(self):
+        if self.image != None:
+            self.window.screen.blit(self.image, (self.dim[0], self.dim[1]))
+    
+    def onPress(self, callback=None):
+        return
+    
+    def onRelease(self, callback=None):
+        return
+
+
+
+
+

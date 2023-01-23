@@ -9,9 +9,6 @@ import random
 from asyncua import Client, ua
 import asyncio
 
-from urllib.request import urlopen
-
-
 class AirPScene(scene.Scene):
     
     def __init__(self, window, name, objId, id, opcua=None):
@@ -55,6 +52,16 @@ class AirPScene(scene.Scene):
                 RELATIVE(T_Y, 1/btnCount*i, P_H)
             ]
             self.btns.append(UiButton(self.window, constraints))
+
+        constraints = [
+            RELATIVE(T_X, 0.5, P_W),
+            ABSOLUTE(T_Y, 1),
+            ABSOLUTE(T_W, 640),
+            ABSOLUTE(T_H, 480)
+        ]
+        self.stream = UiStream(self.window, constraints, 'http://172.31.1.225:8080/?action=streams')
+        self.sceneWrapper.addChild(self.stream)
+        
         self.sceneWrapper.addChildren(*self.btns)
 
     def handleUiEvents(self, event):
