@@ -206,11 +206,11 @@ class GlElement:
         self.shader = shader
         self.dim = dim
 
-        self.children = []
-        self.parent = None
-        self.isDirty = True
+        # self.children = []
+        # self.parent = None
+        # self.isDirty = True
         self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
-        self.lastMouseState = self.window.mouseButtons
+        # self.lastMouseState = self.window.mouseButtons
 
         self.vao = GL.glGenVertexArrays(1)
         self.vbo = GL.glGenBuffers(1)
@@ -220,7 +220,7 @@ class GlElement:
                                   [-0.5,  0.5, 0.0],
                                   [ 0.5,  0.5, 0.0],
                                   [ 0.5, -0.5, 0.0]], dtype = 'float32')
-        self.indices = np.array([1,0,2,2,3,0], dtype='int32')
+        self.indices = np.array([1,2,0,2,3,0], dtype='int32')
         self.vertexCount = len(self.vertices)
         self.verticesAttrib = Attribute('vec3', self.vertices)
         self.verticesAttrib.associate_variable(self.shader, 'position')
@@ -229,19 +229,17 @@ class GlElement:
         self.baseColor = Uniform('vec3', [1.0, 0.0, 0.0])
         self.baseColor.locate_variable(self.shader, 'baseColor')
 
-        self.type = 'nothing'
+        # self.type = 'nothing'
 
-        self.defaultCall = None
-        self.pressCall = None
-        self.releaseCall = None
-        self.hoverCall = None
+        # self.defaultCall = None
+        # self.pressCall = None
+        # self.releaseCall = None
+        # self.hoverCall = None
 
     def update(self):
         return
     
     def render(self):
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-
         GL.glUseProgram(self.shader)
 
         self.translation.upload_data()

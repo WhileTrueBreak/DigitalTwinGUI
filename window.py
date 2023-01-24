@@ -59,6 +59,9 @@ class Window(Base):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         
         self.ui.render()
+
+
+        
         # self.translation.data[0] += 0.01
 
         # GL.glClear(GL.GL_COLOR_BUFFER_BIT)
