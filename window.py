@@ -19,6 +19,7 @@ from asset import *
 
 class Window(Base):
     def initialize(self):
+        Assets.init()
         self.sceneMap = {}
 
         self.scenes = [None]

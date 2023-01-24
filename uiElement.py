@@ -3,6 +3,9 @@ from asset import *
 
 from abc import ABC, abstractmethod
 import time
+import OpenGL.GL as GL
+
+from py3d.core.attribute import Attribute
 
 import pygame
 
@@ -117,15 +120,15 @@ class UiButton(UiElement):
         vao_ref = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao_ref)
         
-        self.vertex_count = len(position_data)
-        position_attribute = Attribute('vec3', position_data)
-        position_attribute.associate_variable(TEST_SHADER, 'position')
+        self.vertex_count = len(self.vertices)
+        position_attribute = Attribute('vec3', self.vertices)
+        position_attribute.associate_variable(Assets.TEST_SHADER, 'position')
 
     def absUpdate(self):
         self.textRect.center = (self.dim[0] + self.dim[2] // 2, self.dim[1] + self.dim[3] // 2)
 
     def absRender(self):
-        GL.glUseProgram(TEST_SHADER)
+        GL.glUseProgram(Assets.TEST_SHADER)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, self.vertex_count)
         # self.window.screen.blit(self.text, self.textRect)
 
