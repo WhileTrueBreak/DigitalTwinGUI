@@ -110,6 +110,8 @@ class CamScene(scene.Scene):
     def __init__(self, window, name):
         super().__init__(window, name)
         self.isDisplayed = False
+        self.camBtns = []
+        self.streams = []
 
     def createUi(self):
         btnPadding = 5
@@ -119,8 +121,17 @@ class CamScene(scene.Scene):
             COMPOUND(RELATIVE(T_W, 0.25, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
             ABSOLUTE(T_H, 30)
         ]
-        self.toggle = UiButton(self.window, constraints)
-        self.toggle.setText('display')
+        self.camBtns.append(UiButton(self.window, constraints))
+        self.camBtns[-1].setText('web1')
+
+        constraints = [
+            COMPOUND(RELATIVE(T_X, 0, P_W), ABSOLUTE(T_X, btnPadding)),
+            COMPOUND(ABSOLUTE(T_Y, 30 + 2 * btnPadding), ABSOLUTE(T_Y, btnPadding)),
+            COMPOUND(RELATIVE(T_W, 0.25, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
+            ABSOLUTE(T_H, 30)
+        ]
+        self.camBtns.append(UiButton(self.window, constraints))
+        self.camBtns[-1].setText('web2')
 
         constraints = [
             COMPOUND(RELATIVE(T_X, 0.5, P_W), ABSOLUTE(T_X, btnPadding)),
@@ -128,18 +139,16 @@ class CamScene(scene.Scene):
             COMPOUND(RELATIVE(T_W, 0.5, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
             RELATIVE(T_H, 3/4, T_W)
         ]
-        self.stream = UiStream(self.window, constraints, 'http://172.31.1.225:8080/?action=streams')
-        self.sceneWrapper.addChild(self.toggle)
+        self.streams.append(UiStream(self.window, constraints, 'http://172.31.1.225:8080/?action=streams'))
+        self.streams.append(UiStream(self.window, constraints, 'http://172.31.1.226:8080/?action=streams'))
+        self.sceneWrapper.addChildren(*self.camBtns)
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':
-            if event['obj'] == self.toggle:
-                if self.isDisplayed:
-                    self.sceneWrapper.removeChild(self.stream)
-                    self.isDisplayed = False
-                else:
-                    self.sceneWrapper.addChild(self.stream)
-                    self.isDisplayed = True
+            for i in range(len(self.streams)):
+                if event['obj'] != self.camBtns[i]: continue
+                self.sceneWrapper.removeChildren(*self.streams)
+                self.sceneWrapper.addChild(self.streams[i])
         return
     
     def updateVariables(self, delta):

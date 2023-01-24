@@ -1,4 +1,5 @@
 from constraintManager import *
+from asset import *
 
 from abc import ABC, abstractmethod
 import time
@@ -21,6 +22,8 @@ class UiElement:
         self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
         self.lastMouseState = self.window.mouseButtons
 
+        self.vertices = [[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
+
         self.type = 'nothing'
 
         self.defaultCall = None
@@ -32,6 +35,7 @@ class UiElement:
         if self.isDirty and self.parent != None:
             relDim = self.parent.constraintManager.calcConstraints(*self.constraints)
             self.dim = (relDim[0] + self.parent.dim[0], relDim[1] + self.parent.dim[1], relDim[2], relDim[3])
+            self.vertices = [[0,0,0],[1,0,0],[1,1,0],[0,1,0]]
             self.constraintManager.parentPos = (self.dim[0], self.dim[1])
             self.constraintManager.parentDim = (self.dim[2], self.dim[3])
             self.isDirty = False
@@ -94,6 +98,10 @@ class UiElement:
         self.children.remove(child)
         child.parent = None
     
+    def removeChildren(self, *children):
+        for child in children:
+            self.removeChild(child)
+    
     def setDirty(self):
         self.isDirty = True
         for child in self.children:
@@ -106,12 +114,20 @@ class UiButton(UiElement):
         self.font = pygame.font.SysFont("monospace", 18)
         self.setText('hello world')
 
+        vao_ref = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(vao_ref)
+        
+        self.vertex_count = len(position_data)
+        position_attribute = Attribute('vec3', position_data)
+        position_attribute.associate_variable(TEST_SHADER, 'position')
+
     def absUpdate(self):
         self.textRect.center = (self.dim[0] + self.dim[2] // 2, self.dim[1] + self.dim[3] // 2)
 
     def absRender(self):
-        pygame.draw.rect(self.window.screen, (0,0,0), self.dim)
-        self.window.screen.blit(self.text, self.textRect)
+        GL.glUseProgram(TEST_SHADER)
+        GL.glDrawArrays(GL.GL_TRIANGLES, 0, self.vertex_count)
+        # self.window.screen.blit(self.text, self.textRect)
 
     def setText(self, text):
         self.text = self.font.render(text, 1, (255,255,255))
