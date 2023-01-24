@@ -1,11 +1,16 @@
 from constraintManager import *
 from asset import *
 
+import numpy as np
+
 from abc import ABC, abstractmethod
 import time
 import OpenGL.GL as GL
 
+from py3d.core.base import Base
+from py3d.core.utils import Utils
 from py3d.core.attribute import Attribute
+from py3d.core.uniform import Uniform
 
 import pygame
 
@@ -194,7 +199,63 @@ class UiStream(UiElement):
     def onRelease(self, callback=None):
         return
 
+class GlElement:
+    def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
+        self.window = window
+        self.constraints = constraints
+        self.shader = shader
+        self.dim = dim
 
+        self.children = []
+        self.parent = None
+        self.isDirty = True
+        self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
+        self.lastMouseState = self.window.mouseButtons
 
+        self.vao = GL.glGenVertexArrays(1)
+        self.vbo = GL.glGenBuffers(1)
+        self.ebo = GL.glGenBuffers(1)
+
+        self.vertices = np.array([[-0.5, -0.5, 0.0],
+                                  [-0.5,  0.5, 0.0],
+                                  [ 0.5,  0.5, 0.0],
+                                  [ 0.5, -0.5, 0.0]], dtype = 'float32')
+        self.indices = np.array([1,0,2,2,3,0], dtype='int32')
+        self.vertexCount = len(self.vertices)
+        self.verticesAttrib = Attribute('vec3', self.vertices)
+        self.verticesAttrib.associate_variable(self.shader, 'position')
+        self.translation = Uniform('vec3', [0.0, 0.0, 0.0])
+        self.translation.locate_variable(self.shader, 'translation')
+        self.baseColor = Uniform('vec3', [1.0, 0.0, 0.0])
+        self.baseColor.locate_variable(self.shader, 'baseColor')
+
+        self.type = 'nothing'
+
+        self.defaultCall = None
+        self.pressCall = None
+        self.releaseCall = None
+        self.hoverCall = None
+
+    def update(self):
+        return
+    
+    def render(self):
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+        GL.glUseProgram(self.shader)
+
+        self.translation.upload_data()
+        self.baseColor.upload_data()
+
+        GL.glBindVertexArray(self.vao)
+
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_DYNAMIC_DRAW)
+
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
+        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
+
+        GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
+        return
 
 
