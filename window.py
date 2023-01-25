@@ -34,7 +34,9 @@ class Window(Base):
             ABSOLUTE(T_W, 100),
             ABSOLUTE(T_H, 100)
         ]
+        self.windowWrapper = GlElement(self, constraints, Assets.TEST_SHADER, (0,0,self.dim[0], self.dim[1]))
         self.ui = GlElement(self, constraints, Assets.TEST_SHADER, (0,0,self.dim[0], self.dim[1]))
+        self.windowWrapper.addChild(self.ui)
         return
 
     def eventHandler(self):
@@ -54,28 +56,10 @@ class Window(Base):
         self.uiEvents = []
 
     def update(self):
+        self.ui.setColor((0,0,1))
         self.ui.update()
-
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        
         self.ui.render()
-
-
-        
-        # self.translation.data[0] += 0.01
-
-        # GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        # GL.glUseProgram(Assets.TEST_SHADER)
-        # self.translation.upload_data()
-        # self.baseColor.upload_data()
-        # GL.glBindVertexArray(self.vao)
-        # GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
-        # GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_DYNAMIC_DRAW)
-
-        # GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
-        # GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
-
-        # GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
         return
 
 

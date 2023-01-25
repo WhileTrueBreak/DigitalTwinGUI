@@ -32,15 +32,15 @@ def COMPOUND(first, second):
     return COMPOUND_MAP[key]
 
 class ConstraintManager:
-    def __init__(self, parentPos, parentDim):
-        self.parentPos = parentPos
-        self.parentDim = parentDim
+    def __init__(self, pos, dim):
+        self.pos = pos
+        self.dim = dim
 
     def calcConstraints(self, *constraints):
         constraints = [*constraints]
         if len(set(c.toChange for c in constraints)) != 4:
             raise Exception('Incorrect number of constraints') 
-        transform = [*self.parentPos, *self.parentDim, *([0]*4)]
+        transform = [*self.pos, *self.dim, *([0]*4)]
         isSet = [*([True]*4), *([False]*4)]
         while len(constraints) > 0:
             current = None

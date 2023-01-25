@@ -115,7 +115,153 @@ class UiElement:
         for child in self.children:
             child.setDirty()
 
-class UiButton(UiElement):
+class GlElement:
+    def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
+        self.window = window
+        self.constraints = constraints
+        self.shader = shader
+        self.dim = dim
+
+        self.children = []
+        self.parent = None
+        self.isDirty = True
+        self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
+        self.lastMouseState = self.window.mouseButtons
+
+        self.vao = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(self.vao)
+        self.vbo = GL.glGenBuffers(1)
+        self.ebo = GL.glGenBuffers(1)
+
+        self.vertices = np.array([[-0.5, -0.5, 0.0],
+                                  [-0.5,  0.5, 0.0],
+                                  [ 0.5,  0.5, 0.0],
+                                  [ 0.5, -0.5, 0.0]], dtype = 'float32')
+        self.indices = np.array([1,2,0,2,3,0], dtype='int32')
+        self.vertexCount = len(self.vertices)
+        self.verticesAttrib = Attribute('vec3', self.vertices)
+        self.verticesAttrib.associate_variable(self.shader, 'position')
+        self.translation = Uniform('vec3', [0.0, 0.0, 0.0])
+        self.translation.locate_variable(self.shader, 'translation')
+        self.baseColor = Uniform('vec3', [1.0, 0.0, 0.0])
+        self.baseColor.locate_variable(self.shader, 'baseColor')
+
+        self.type = 'nothing'
+
+        self.defaultCall = None
+        self.pressCall = None
+        self.releaseCall = None
+        self.hoverCall = None
+
+    def update(self):
+        if self.isDirty and self.parent != None:
+            relDim = self.parent.constraintManager.calcConstraints(*self.constraints)
+            self.dim = (relDim[0] + self.parent.dim[0], relDim[1] + self.parent.dim[1], relDim[2], relDim[3])
+            print(self.window.dim)
+            print(self.dim)
+            self.openglDim = (
+                (2*self.dim[0])/self.window.dim[0] - 1,
+                (2*(self.window.dim[1]-self.dim[1]))/self.window.dim[1] - 1,
+                (2*self.dim[2])/self.window.dim[0],
+                (2*self.dim[3])/self.window.dim[1],
+            )
+            self.vertices = np.array([[self.openglDim[0],self.openglDim[1],0.0],
+                                      [self.openglDim[0],self.openglDim[1]+self.openglDim[3],0.0],
+                                      [self.openglDim[0]+self.openglDim[2],self.openglDim[1]+self.openglDim[3], 0.0],
+                                      [self.openglDim[0]+self.openglDim[2],self.openglDim[1],0.0]], dtype = 'float32')
+            
+            self.constraintManager.parentPos = (self.dim[0], self.dim[1])
+            self.constraintManager.parentDim = (self.dim[2], self.dim[3])
+
+            GL.glBindVertexArray(self.vao)
+
+            GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+            GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_DYNAMIC_DRAW)
+
+            GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
+            GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
+
+            self.isDirty = False
+        for child in self.children:
+            child.update()
+        self.actions()
+        self.absUpdate()
+        return
+    @abstractmethod
+    def absUpdate(self):
+        ...
+    
+    def render(self):
+        GL.glUseProgram(self.shader)
+
+        self.translation.upload_data()
+        self.baseColor.upload_data()
+
+        GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
+        return
+    @abstractmethod
+    def absRender(self):
+        ...
+    
+    def actions(self):
+        mousePos = self.window.mousePos
+        if mousePos[0] > self.dim[0] and mousePos[0] < self.dim[0] + self.dim[2] and mousePos[1] > self.dim[1] and mousePos[1] < self.dim[1] + self.dim[3]:
+            if self.window.mouseButtons[0] and not self.lastMouseState[0]:
+                self.onPress(self.pressCall)
+            if not self.window.mouseButtons[0] and self.lastMouseState[0]:
+                self.onRelease(self.releaseCall)
+            if not self.window.mouseButtons[0] and not self.lastMouseState[0]:
+                self.onHover(self.hoverCall)
+        else:
+            self.onDefault(self.defaultCall)
+        self.lastMouseState = self.window.mouseButtons
+
+    def onDefault(self, callback=None):
+        return
+    
+    def onHover(self, callback=None):
+        return
+    
+    def onPress(self, callback=None):
+        self.window.uiEvents.append({'obj':self, 'action':'press', 'type':self.type, 'time':time.time_ns()})
+    
+    def onRelease(self, callback=None):
+        self.window.uiEvents.append({'obj':self, 'action':'release', 'type':self.type, 'time':time.time_ns()})
+
+    def addChild(self, child):
+        if child.parent != None: return
+        if child in self.children: return
+        self.setDirty()
+        self.children.append(child)
+        child.parent = self
+    
+    def addChildren(self, *children):
+        for child in children:
+            self.addChild(child)
+    
+    def removeChild(self, child):
+        if child.parent != self: return
+        if not child in self.children: return
+        child.setDirty()
+        self.children.remove(child)
+        child.parent = None
+    
+    def removeChildren(self, *children):
+        for child in children:
+            self.removeChild(child)
+    
+    def setDirty(self):
+        self.isDirty = True
+        for child in self.children:
+            child.setDirty()
+
+    def setColor(self, color):
+        self.baseColor.data = [*color]
+
+    def setTranslate(self, translate=(0,0,0)):
+        self.translate.data = [*translate]
+
+class UiButton(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):
         super().__init__(window, constraints, dim)
         self.type = 'button'
@@ -142,7 +288,7 @@ class UiButton(UiElement):
         self.textRect = self.text.get_rect()
         self.textRect.center = (self.dim[0] + self.dim[2] // 2, self.dim[1] + self.dim[3] // 2)
 
-class UiWrapper(UiElement):
+class UiWrapper(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):
         super().__init__(window, constraints, dim)
         self.type = 'wrapper'
@@ -159,7 +305,7 @@ class UiWrapper(UiElement):
     def onRelease(self, callback=None):
         return
 
-class UiStream(UiElement):
+class UiStream(GlElement):
     def __init__(self, window, constraints, url, dim=(0,0,0,0)):
         super().__init__(window, constraints, dim)
         self.type = 'stream'
@@ -199,61 +345,7 @@ class UiStream(UiElement):
     def onRelease(self, callback=None):
         return
 
-class GlElement:
-    def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
-        self.window = window
-        self.constraints = constraints
-        self.shader = shader
-        self.dim = dim
 
-        # self.children = []
-        # self.parent = None
-        # self.isDirty = True
-        self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
-        # self.lastMouseState = self.window.mouseButtons
 
-        self.vao = GL.glGenVertexArrays(1)
-        self.vbo = GL.glGenBuffers(1)
-        self.ebo = GL.glGenBuffers(1)
-
-        self.vertices = np.array([[-0.5, -0.5, 0.0],
-                                  [-0.5,  0.5, 0.0],
-                                  [ 0.5,  0.5, 0.0],
-                                  [ 0.5, -0.5, 0.0]], dtype = 'float32')
-        self.indices = np.array([1,2,0,2,3,0], dtype='int32')
-        self.vertexCount = len(self.vertices)
-        self.verticesAttrib = Attribute('vec3', self.vertices)
-        self.verticesAttrib.associate_variable(self.shader, 'position')
-        self.translation = Uniform('vec3', [0.0, 0.0, 0.0])
-        self.translation.locate_variable(self.shader, 'translation')
-        self.baseColor = Uniform('vec3', [1.0, 0.0, 0.0])
-        self.baseColor.locate_variable(self.shader, 'baseColor')
-
-        # self.type = 'nothing'
-
-        # self.defaultCall = None
-        # self.pressCall = None
-        # self.releaseCall = None
-        # self.hoverCall = None
-
-    def update(self):
-        return
-    
-    def render(self):
-        GL.glUseProgram(self.shader)
-
-        self.translation.upload_data()
-        self.baseColor.upload_data()
-
-        GL.glBindVertexArray(self.vao)
-
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
-        GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_DYNAMIC_DRAW)
-
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
-        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
-
-        GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
-        return
 
 
