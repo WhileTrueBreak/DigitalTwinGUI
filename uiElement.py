@@ -138,13 +138,18 @@ class GlElement:
                                   [ 0.5,  0.5, 0.0],
                                   [ 0.5, -0.5, 0.0]], dtype = 'float32')
         self.indices = np.array([1,2,0,2,3,0], dtype='int32')
-        self.vertexCount = len(self.vertices)
+        # self.vertexCount = len(self.vertices)
         self.verticesAttrib = Attribute('vec3', self.vertices)
         self.verticesAttrib.associate_variable(self.shader, 'position')
         self.translation = Uniform('vec3', [0.0, 0.0, 0.0])
         self.translation.locate_variable(self.shader, 'translation')
         self.baseColor = Uniform('vec3', [1.0, 0.0, 0.0])
         self.baseColor.locate_variable(self.shader, 'baseColor')
+
+        GL.glBindVertexArray(self.vao)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
+        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
 
         self.type = 'nothing'
 
@@ -157,11 +162,9 @@ class GlElement:
         if self.isDirty and self.parent != None:
             relDim = self.parent.constraintManager.calcConstraints(*self.constraints)
             self.dim = (relDim[0] + self.parent.dim[0], relDim[1] + self.parent.dim[1], relDim[2], relDim[3])
-            print(self.window.dim)
-            print(self.dim)
             self.openglDim = (
                 (2*self.dim[0])/self.window.dim[0] - 1,
-                (2*(self.window.dim[1]-self.dim[1]))/self.window.dim[1] - 1,
+                (2*(self.window.dim[1]-self.dim[1]-self.dim[3]))/self.window.dim[1] - 1,
                 (2*self.dim[2])/self.window.dim[0],
                 (2*self.dim[3])/self.window.dim[1],
             )
@@ -173,13 +176,8 @@ class GlElement:
             self.constraintManager.parentPos = (self.dim[0], self.dim[1])
             self.constraintManager.parentDim = (self.dim[2], self.dim[3])
 
-            GL.glBindVertexArray(self.vao)
-
-            GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
-            GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_DYNAMIC_DRAW)
-
-            GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
-            GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
+            self.verticesAttrib = Attribute('vec3', self.vertices)
+            self.verticesAttrib.associate_variable(self.shader, 'position')
 
             self.isDirty = False
         for child in self.children:
@@ -192,13 +190,9 @@ class GlElement:
         ...
     
     def render(self):
-        GL.glUseProgram(self.shader)
-
-        self.translation.upload_data()
-        self.baseColor.upload_data()
-
-        GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
-        return
+        self.absRender()
+        for child in self.children:
+            child.render()
     @abstractmethod
     def absRender(self):
         ...
@@ -262,35 +256,31 @@ class GlElement:
         self.translate.data = [*translate]
 
 class UiButton(GlElement):
-    def __init__(self, window, constraints, dim=(0,0,0,0)):
-        super().__init__(window, constraints, dim)
+    def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
+        super().__init__(window, constraints, shader, dim)
         self.type = 'button'
-        self.font = pygame.font.SysFont("monospace", 18)
-        self.setText('hello world')
-
-        vao_ref = GL.glGenVertexArrays(1)
-        GL.glBindVertexArray(vao_ref)
-        
-        self.vertex_count = len(self.vertices)
-        position_attribute = Attribute('vec3', self.vertices)
-        position_attribute.associate_variable(Assets.TEST_SHADER, 'position')
+        # self.font = pygame.font.SysFont("monospace", 18)
+        # self.setText('hello world')
 
     def absUpdate(self):
-        self.textRect.center = (self.dim[0] + self.dim[2] // 2, self.dim[1] + self.dim[3] // 2)
+        return
+        # self.textRect.center = (self.dim[0] + self.dim[2] // 2, self.dim[1] + self.dim[3] // 2)
 
     def absRender(self):
-        GL.glUseProgram(Assets.TEST_SHADER)
-        GL.glDrawArrays(GL.GL_TRIANGLES, 0, self.vertex_count)
-        # self.window.screen.blit(self.text, self.textRect)
+        GL.glUseProgram(self.shader)
+        self.translation.upload_data()
+        self.baseColor.upload_data()
+        GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
+        return
 
-    def setText(self, text):
-        self.text = self.font.render(text, 1, (255,255,255))
-        self.textRect = self.text.get_rect()
-        self.textRect.center = (self.dim[0] + self.dim[2] // 2, self.dim[1] + self.dim[3] // 2)
+    # def setText(self, text):
+    #     self.text = self.font.render(text, 1, (255,255,255))
+    #     self.textRect = self.text.get_rect()
+    #     self.textRect.center = (self.dim[0] + self.dim[2] // 2, self.dim[1] + self.dim[3] // 2)
 
 class UiWrapper(GlElement):
-    def __init__(self, window, constraints, dim=(0,0,0,0)):
-        super().__init__(window, constraints, dim)
+    def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
+        super().__init__(window, constraints, shader, dim)
         self.type = 'wrapper'
 
     def absUpdate(self):
@@ -306,8 +296,8 @@ class UiWrapper(GlElement):
         return
 
 class UiStream(GlElement):
-    def __init__(self, window, constraints, url, dim=(0,0,0,0)):
-        super().__init__(window, constraints, dim)
+    def __init__(self, window, constraints, shader, url, dim=(0,0,0,0)):
+        super().__init__(window, constraints, shader, dim)
         self.type = 'stream'
 
         self.url = url

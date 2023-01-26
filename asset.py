@@ -2,8 +2,12 @@ from pathlib import Path
 from py3d.core.base import Base
 from py3d.core.utils import Utils
 from py3d.core.attribute import Attribute
+import OpenGL.GL as GL
+import freetype
 
 class Assets:
+    INIT = False
+
     GUI_FRAG = Path('./res/shader/guiFragment.glsl').read_text()
     GUI_VERT = Path('./res/shader/guiVertex.glsl').read_text()
     DEFAULT_FRAG = Path('./res/shader/defaultFragment.glsl').read_text()
@@ -16,6 +20,48 @@ class Assets:
     TEST_SHADER = ''
     @staticmethod
     def init():
+        if Assets.INIT: return
         # Assets.GUI_SHADER = Utils.initialize_program(Assets.GUI_VERT, Assets.GUI_FRAG)
         # Assets.DEFAULT_SHADER = Utils.initialize_program(Assets.DEFAULT_VERT, Assets.DEFAULT_FRAG)
         Assets.TEST_SHADER = Utils.initialize_program(Assets.TEST_VERT, Assets.TEST_FRAG)
+        Assets.VERA_FONT = Assets.loadFont('fonts/Vera.ttf')
+        Assets.INIT = True
+    
+    @staticmethod
+    def loadFont(fontFile, size=48*64):
+        characters = {}
+        face = freetype.Face(fontFile)
+        face.set_char_size(size)
+        for i in range(0,128):
+            face.load_char(chr(i))
+            glyph = face.glyph
+
+            #generate texture
+            texture = GL.glGenTextures(1)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, texture)
+            GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RED, glyph.bitmap.width, glyph.bitmap.rows, 0,
+                        GL.GL_RED, GL.GL_UNSIGNED_BYTE, glyph.bitmap.buffer)
+
+            #texture options
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+
+            #now store character for later use
+            characters[chr(i)] = CharacterSlot(texture,glyph)
+        return characters
+
+class CharacterSlot:
+    def __init__(self, texture, glyph):
+        self.texture = texture
+        self.textureSize = (glyph.bitmap.width, glyph.bitmap.rows)
+
+        if isinstance(glyph, freetype.GlyphSlot):
+            self.bearing = (glyph.bitmap_left, glyph.bitmap_top)
+            self.advance = glyph.advance.x
+        elif isinstance(glyph, freetype.BitmapGlyph):
+            self.bearing = (glyph.left, glyph.top)
+            self.advance = None
+        else:
+            raise RuntimeError('unknown glyph type')

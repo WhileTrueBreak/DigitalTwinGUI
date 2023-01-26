@@ -34,8 +34,9 @@ class Window(Base):
             ABSOLUTE(T_W, 100),
             ABSOLUTE(T_H, 100)
         ]
-        self.windowWrapper = GlElement(self, constraints, Assets.TEST_SHADER, (0,0,self.dim[0], self.dim[1]))
-        self.ui = GlElement(self, constraints, Assets.TEST_SHADER, (0,0,self.dim[0], self.dim[1]))
+        self.windowWrapper = UiWrapper(self, constraints, Assets.TEST_SHADER, (0,0,self.dim[0], self.dim[1]))
+        self.ui = UiButton(self, constraints, Assets.TEST_SHADER)
+        self.ui.setColor((0,0,1))
         self.windowWrapper.addChild(self.ui)
         return
 
@@ -56,10 +57,9 @@ class Window(Base):
         self.uiEvents = []
 
     def update(self):
-        self.ui.setColor((0,0,1))
-        self.ui.update()
+        self.windowWrapper.update()
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        self.ui.render()
+        self.windowWrapper.render()
         return
 
 
