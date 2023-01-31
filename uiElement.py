@@ -160,6 +160,10 @@ class GlElement:
 
     def update(self):
         if self.isDirty and self.parent != None:
+            
+            print(self.constraintManager.pos)
+            print(self.constraintManager.dim)
+
             relDim = self.parent.constraintManager.calcConstraints(*self.constraints)
             self.dim = (relDim[0] + self.parent.dim[0], relDim[1] + self.parent.dim[1], relDim[2], relDim[3])
             openglDim = (
@@ -173,8 +177,8 @@ class GlElement:
                                       [openglDim[0]+openglDim[2],openglDim[1]+openglDim[3], 0.0],
                                       [openglDim[0]+openglDim[2],openglDim[1],0.0]], dtype = 'float32')
             
-            self.constraintManager.parentPos = (self.dim[0], self.dim[1])
-            self.constraintManager.parentDim = (self.dim[2], self.dim[3])
+            self.constraintManager.pos = (self.dim[0], self.dim[1])
+            self.constraintManager.dim = (self.dim[2], self.dim[3])
 
             self.verticesAttrib.data = self.vertices
             self.verticesAttrib.upload_data()
@@ -278,8 +282,10 @@ class UiButton(GlElement):
 
 class UiText(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):
+        constraints.append(ABSOLUTE(T_W, 0))
+        constraints.append(ABSOLUTE(T_H, 0))
         super().__init__(window, constraints, Assets.TEST_SHADER, dim)
-        self.type = 'button'
+        self.type = 'text'
         
         self.dirtyText = True
         self.font = Assets.FIRACODE_FONT
@@ -334,6 +340,7 @@ class UiText(GlElement):
             maxasc = max(maxasc, ch.ascender)
 
             x += w + self.textSpacing
+        x -= self.textSpacing
         widthAspect = (x-xStart)/(maxasc+maxdes)
         
         self.maxAscender = maxasc
@@ -351,24 +358,24 @@ class UiText(GlElement):
         self.constraints.remove(widthConstraint)
         self.constraints.remove(heightConstraint)
         self.constraints.append(RELATIVE(T_W, widthAspect, T_H))
-        self.constraints.append(ABSOLUTE(T_H, self.fontSize))
+        self.constraints.append(ABSOLUTE(T_H, self.maxDescender + self.maxAscender))
         self.setDirty()
         self.dirtyText = False
 
     def absRender(self):
-        GL.glUseProgram(self.shader)
+        # GL.glUseProgram(self.shader)
 
-        GL.glBindVertexArray(self.vao)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
+        # GL.glBindVertexArray(self.vao)
+        # GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        # GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
 
-        self.translation.upload_data()
-        self.baseColor.upload_data()
+        # self.translation.upload_data()
+        # self.baseColor.upload_data()
 
-        GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        GL.glBindVertexArray(0)
+        # GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
+        # GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
+        # GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+        # GL.glBindVertexArray(0)
 
         self.renderText(self.text, Assets.FIRACODE_FONT, self.fontSize/48)
         return
@@ -427,6 +434,22 @@ class UiText(GlElement):
             xpos + w,   ypos,     1, 1,
             xpos + w,   ypos + h, 1, 0
         ], np.float32)
+    
+    def setText(self, text):
+        self.text = text
+        self.dirtyText = True
+    
+    def setFont(self, font):
+        self.font = font
+        self.dirtyText = True
+    
+    def setFontSize(self, size):
+        self.fontSize = size
+        self.dirtyText = True
+    
+    def setTextSpacing(self, spacing):
+        self.textSpacing = spacing
+        self.dirtyText = True
 
 class UiWrapper(GlElement):
     def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
