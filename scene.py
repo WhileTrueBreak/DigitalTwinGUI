@@ -2,6 +2,8 @@ from constraintManager import *
 from uiElement import *
 from opcua import Opcua
 
+from window import *
+
 import pygame
 
 from abc import ABC, abstractmethod
@@ -13,12 +15,12 @@ class Scene:
         self.opcua = opcua
 
         self.window = window
-        self.dim = self.window.dim
+        self.dim = self.window._screen.get_size()
         constraints = [
             ABSOLUTE(T_X, 0),
-            ABSOLUTE(T_Y, self.window.tabHeight),
+            ABSOLUTE(T_Y, Window.TAB_HEIGHT),
             RELATIVE(T_W, 1, P_W),
-            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -self.window.tabHeight))
+            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -Window.TAB_HEIGHT))
         ]
         self.sceneWrapper = UiWrapper(self.window, constraints)
 
@@ -36,11 +38,7 @@ class Scene:
         self.handleUiEvents(event)
         return
     
-    def update(self, delta):
+    def update(self):
         self.sceneWrapper.update()
-        self.updateVariables(delta)
-        return
-    
-    def render(self):
-        self.sceneWrapper.render()
+        self.updateVariables()
         return

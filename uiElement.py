@@ -19,6 +19,7 @@ from mjpeg.client import MJPEGClient
 import glm
 
 from PIL import Image
+from PIL.Image import Transpose
 from io import BytesIO
 
 class UiElement:
@@ -160,10 +161,6 @@ class GlElement:
 
     def update(self):
         if self.isDirty and self.parent != None:
-            
-            print(self.constraintManager.pos)
-            print(self.constraintManager.dim)
-
             relDim = self.parent.constraintManager.calcConstraints(*self.constraints)
             self.dim = (relDim[0] + self.parent.dim[0], relDim[1] + self.parent.dim[1], relDim[2], relDim[3])
             openglDim = (
@@ -295,8 +292,6 @@ class UiText(GlElement):
 
         self.maxDescender = 0
         self.maxAscender = 0
-
-        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
 
         self.textIndices = np.array([1,0,3,3,1,2], dtype='int32')
         
@@ -484,23 +479,93 @@ class UiStream(GlElement):
             pass
         self.image = None
 
-    def pilConv(self, pilImage):
-        return pygame.image.fromstring(
-            pilImage.tobytes(), pilImage.size, pilImage.mode).convert()
+        self.streamIndices = np.array([1,2,0,2,3,0], dtype='int32')
+        
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+        
+        self.streamVao = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(self.streamVao)
+
+        self.streamVbo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.streamVbo)
+        GL.glBufferData(GL.GL_ARRAY_BUFFER, 4 * 4 * 4, None, GL.GL_DYNAMIC_DRAW)
+
+        GL.glVertexAttribPointer(0, 4, GL.GL_FLOAT, GL.GL_FALSE, 0, None)
+        GL.glEnableVertexAttribArray(0)
+        
+        self.streamEbo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.streamEbo)
+        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.streamIndices, GL.GL_DYNAMIC_DRAW)
+
+        # unbind vao vbo ebo
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+        GL.glBindVertexArray(0)
 
     def absUpdate(self):
         buf = self.client.dequeue_buffer()
         stream = BytesIO(buf.data)
         self.client.enqueue_buffer(buf)
-        image = Image.open(stream).convert("RGB")
+        image = Image.open(stream).convert("RGBA")
         stream.close()
-        image = image.resize((int(self.dim[2]), int(self.dim[3])))
-        self.image = self.pilConv(image)
+        self.image = image.transpose(Transpose.FLIP_TOP_BOTTOM).tobytes()
+
+        self.texture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
+
+        #texture options
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+
+        GL.glTexImage2D(
+                GL.GL_TEXTURE_2D,    # where to load texture data
+                0,                # mipmap level
+                GL.GL_RGBA8,         # format to store data in
+                image.width,                # image dimensions
+                image.height,                #
+                0,                # border thickness
+                GL.GL_RGBA,          # format data is provided in
+                GL.GL_UNSIGNED_BYTE, # type to read data as
+                self.image)       # data to load as texture
+        GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        self.streamVertices = np.array([[self.vertices[0][0], self.vertices[0][1], 0.0, 0.0],
+                                        [self.vertices[1][0], self.vertices[1][1], 0.0, 1.0],
+                                        [self.vertices[2][0], self.vertices[2][1], 1.0, 1.0],
+                                        [self.vertices[3][0], self.vertices[3][1], 1.0, 0.0]], dtype = 'float32')
         return
 
     def absRender(self):
-        if self.image != None:
-            self.window.screen.blit(self.image, (self.dim[0], self.dim[1]))
+        GL.glUseProgram(Assets.STREAM_SHADER)
+        GL.glBindVertexArray(self.streamVao)
+
+        GL.glActiveTexture(GL.GL_TEXTURE0)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        
+        GL.glActiveTexture(GL.GL_TEXTURE0)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
+
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.streamVbo)
+
+        GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.streamVertices.nbytes, self.streamVertices)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+
+        #render quad
+        GL.glBindVertexArray(self.streamVao)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.streamVbo)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.streamEbo)
+        GL.glEnableVertexAttribArray(0)
+        GL.glDrawElements(GL.GL_TRIANGLES, len(self.streamIndices), GL.GL_UNSIGNED_INT, None)
+        GL.glDisableVertexAttribArray(0)
+        
+        return
     
     def onPress(self, callback=None):
         return

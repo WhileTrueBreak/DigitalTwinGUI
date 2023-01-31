@@ -69,7 +69,7 @@ class AirPScene(scene.Scene):
                 self.localState['mode'] = (self.localState['mode']+1)%4
         return
     
-    def updateVariables(self, delta):
+    def updateVariables(self):
         asyncio.run(self.updateOpcua())
     
     async def updateOpcua(self):
@@ -149,5 +149,5 @@ class CamScene(scene.Scene):
                 self.sceneWrapper.addChild(self.streams[i])
         return
     
-    def updateVariables(self, delta):
+    def updateVariables(self):
         return

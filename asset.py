@@ -20,9 +20,12 @@ class Assets:
         Assets.TEXT_VERT = Path('./res/shader/textVertex.glsl').read_text()
         Assets.TEST_FRAG = Path('./res/shader/testFragment.glsl').read_text()
         Assets.TEST_VERT = Path('./res/shader/testVertex.glsl').read_text()
+        Assets.STREAM_FRAG = Path('./res/shader/streamFragment.glsl').read_text()
+        Assets.STREAM_VERT = Path('./res/shader/streamVertex.glsl').read_text()
 
         Assets.TEXT_SHADER = Utils.initialize_program(Assets.TEXT_VERT, Assets.TEXT_FRAG)
         Assets.TEST_SHADER = Utils.initialize_program(Assets.TEST_VERT, Assets.TEST_FRAG)
+        Assets.STREAM_SHADER = Utils.initialize_program(Assets.STREAM_VERT, Assets.STREAM_FRAG)
 
         Assets.VERA_FONT = Assets.loadFont('fonts/Vera.ttf', 48*64)
         Assets.MONACO_FONT = Assets.loadFont('fonts/MONACO.TTF', 48*64)

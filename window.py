@@ -19,16 +19,21 @@ from py3d.core.uniform import Uniform
 from asset import *
 
 class Window(Base):
+    
+    TAB_HEIGHT = 40
+    
     def initialize(self):
         self.dim = self._screen.get_size()
+
+        self.uiEvents = []
         self.mousePos = (0,0)
         self.mouseButtons = [False]*5
 
-        self.scenes = []
-        self.tabHeight = 40
+        self.scenes = [None]
+        self.sceneMap = {}
+        self.currentScene = None
 
         Assets.init()
-        self.createUi()
     
     def createUi(self):
         self.windowWrapper = UiWrapper(self, [], (0,0,self.dim[0], self.dim[1]))
@@ -40,6 +45,21 @@ class Window(Base):
             ABSOLUTE(T_H, 40),
         ]
         self.tabWrapper = UiWrapper(self, constraints)
+        self.windowWrapper.addChild(self.tabWrapper)
+
+        self.tabBtns = []
+        numBtns = len(self.scenes)
+        for i in range(numBtns):
+            constraints = [
+                COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H)),
+                COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5/numBtns + 1/numBtns * i, P_W)),
+                RELATIVE(T_H, 0.9, P_H),
+                COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
+            ]
+            self.tabBtns.append(UiButton(self, constraints, Assets.TEST_SHADER))
+            self.tabBtns[-1].setColor([1.0,0.8,0.8])
+            self.sceneMap[self.tabBtns[-1]] = self.scenes[i]
+        self.tabWrapper.addChildren(*self.tabBtns)
 
     def eventHandler(self):
         self.mousePos = pygame.mouse.get_pos()
@@ -52,12 +72,19 @@ class Window(Base):
             if event.type == pygame.KEYUP:
                 self.keyState[event.unicode] = False
         for event in self.uiEvents:
-            if event['action'] == 'release' and event['obj'] in self.tabButtons:
+            if event['action'] == 'release' and event['obj'] in self.tabBtns:
+                if self.currentScene != None:
+                    self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
                 self.currentScene = self.sceneMap[event['obj']]
+                if self.currentScene != None:
+                    self.windowWrapper.addChild(self.currentScene.sceneWrapper)
             if self.currentScene: self.currentScene.eventHandler(event)
         self.uiEvents = []
 
     def update(self):
+        self.eventHandler()
+        if self.currentScene != None:
+            self.currentScene.update()
         self.windowWrapper.update()
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.windowWrapper.render()
