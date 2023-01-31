@@ -11,12 +11,16 @@ class Scene:
         self.name = name
 
         self.opcua = opcua
-        if opcua == None: self.opcua = Opcua()
 
         self.window = window
         self.dim = self.window.dim
-        dim = (0, self.window.tabHeight, self.window.dim[0], self.window.dim[1] - self.window.tabHeight)
-        self.sceneWrapper = UiWrapper(self.window, [], dim)
+        constraints = [
+            ABSOLUTE(T_X, 0),
+            ABSOLUTE(T_Y, self.window.tabHeight),
+            RELATIVE(T_W, 1, P_W),
+            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -self.window.tabHeight))
+        ]
+        self.sceneWrapper = UiWrapper(self.window, constraints)
 
     @abstractmethod
     def createUi(self):

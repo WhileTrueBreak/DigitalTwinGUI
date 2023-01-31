@@ -30,6 +30,7 @@ class Base:
         self._time = 0
         # Print the system information
         Utils.print_system_info()
+        self.initialize()
 
     @property
     def delta_time(self):
@@ -57,7 +58,6 @@ class Base:
 
     def run(self):
         # Startup #
-        self.initialize()
         # main loop #
         while self._running:
             # process input #

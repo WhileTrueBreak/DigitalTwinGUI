@@ -24,30 +24,22 @@ class Window(Base):
         self.mousePos = (0,0)
         self.mouseButtons = [False]*5
 
+        self.scenes = []
+        self.tabHeight = 40
+
         Assets.init()
         self.createUi()
     
     def createUi(self):
-        constraints = [
-            ABSOLUTE(T_X, 10),
-            ABSOLUTE(T_Y, 100),
-            ABSOLUTE(T_W, 400),
-            ABSOLUTE(T_H, 100)
-        ]
-        self.windowWrapper = UiWrapper(self, constraints, Assets.TEST_SHADER, (0,0,self.dim[0], self.dim[1]))
+        self.windowWrapper = UiWrapper(self, [], (0,0,self.dim[0], self.dim[1]))
         
-        self.button = UiButton(self, constraints, Assets.TEST_SHADER)
-        self.button.setColor((0,0,1))
-        self.windowWrapper.addChild(self.button)
-
         constraints = [
-            COMPOUND(RELATIVE(T_X, 0.5, P_W), RELATIVE(T_X, -0.5, T_W)),
-            COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H))
+            ABSOLUTE(T_X, 0),
+            ABSOLUTE(T_Y, 0),
+            RELATIVE(T_W, 1, P_W),
+            ABSOLUTE(T_H, 40),
         ]
-        self.buttonText = UiText(self, constraints)
-        self.buttonText.setText('Hello World!')
-        self.button.addChild(self.buttonText)
-        return
+        self.tabWrapper = UiWrapper(self, constraints)
 
     def eventHandler(self):
         self.mousePos = pygame.mouse.get_pos()

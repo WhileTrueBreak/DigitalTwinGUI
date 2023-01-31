@@ -452,8 +452,8 @@ class UiText(GlElement):
         self.dirtyText = True
 
 class UiWrapper(GlElement):
-    def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
-        super().__init__(window, constraints, shader, dim)
+    def __init__(self, window, constraints, dim=(0,0,0,0)):
+        super().__init__(window, constraints, Assets.TEST_SHADER, dim)
         self.type = 'wrapper'
 
     def absUpdate(self):
@@ -469,8 +469,8 @@ class UiWrapper(GlElement):
         return
 
 class UiStream(GlElement):
-    def __init__(self, window, constraints, shader, url, dim=(0,0,0,0)):
-        super().__init__(window, constraints, shader, dim)
+    def __init__(self, window, constraints, url, dim=(0,0,0,0)):
+        super().__init__(window, constraints, Assets.TEST_SHADER, dim)
         self.type = 'stream'
 
         self.url = url

@@ -121,8 +121,7 @@ class CamScene(scene.Scene):
             COMPOUND(RELATIVE(T_W, 0.25, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
             ABSOLUTE(T_H, 30)
         ]
-        self.camBtns.append(UiButton(self.window, constraints))
-        self.camBtns[-1].setText('web1')
+        self.camBtns.append(UiButton(self.window, constraints, Assets.TEST_SHADER))
 
         constraints = [
             COMPOUND(RELATIVE(T_X, 0, P_W), ABSOLUTE(T_X, btnPadding)),
@@ -130,8 +129,7 @@ class CamScene(scene.Scene):
             COMPOUND(RELATIVE(T_W, 0.25, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
             ABSOLUTE(T_H, 30)
         ]
-        self.camBtns.append(UiButton(self.window, constraints))
-        self.camBtns[-1].setText('web2')
+        self.camBtns.append(UiButton(self.window, constraints, Assets.TEST_SHADER))
 
         constraints = [
             COMPOUND(RELATIVE(T_X, 0.5, P_W), ABSOLUTE(T_X, btnPadding)),
