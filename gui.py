@@ -5,11 +5,7 @@ from window import *
 import nest_asyncio
 from asset import *
 
-Assets.init()
 nest_asyncio.apply()
-
-print(Assets.VERA_FONT)
-# Assets.init()
 
 window = Window((1600, 1000), 'hello world')
 

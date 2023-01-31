@@ -8,12 +8,7 @@ import freetype
 class Assets:
     INIT = False
 
-    GUI_FRAG = Path('./res/shader/guiFragment.glsl').read_text()
-    GUI_VERT = Path('./res/shader/guiVertex.glsl').read_text()
-    DEFAULT_FRAG = Path('./res/shader/defaultFragment.glsl').read_text()
-    DEFAULT_VERT = Path('./res/shader/defaultVertex.glsl').read_text()
-    TEST_FRAG = Path('./res/shader/testFragment.glsl').read_text()
-    TEST_VERT = Path('./res/shader/testVertex.glsl').read_text()
+    
 
     GUI_SHADER = None
     DEFAULT_SHADER = None
@@ -21,14 +16,23 @@ class Assets:
     @staticmethod
     def init():
         if Assets.INIT: return
-        # Assets.GUI_SHADER = Utils.initialize_program(Assets.GUI_VERT, Assets.GUI_FRAG)
-        # Assets.DEFAULT_SHADER = Utils.initialize_program(Assets.DEFAULT_VERT, Assets.DEFAULT_FRAG)
+        Assets.TEXT_FRAG = Path('./res/shader/textFragment.glsl').read_text()
+        Assets.TEXT_VERT = Path('./res/shader/textVertex.glsl').read_text()
+        Assets.TEST_FRAG = Path('./res/shader/testFragment.glsl').read_text()
+        Assets.TEST_VERT = Path('./res/shader/testVertex.glsl').read_text()
+
+        Assets.TEXT_SHADER = Utils.initialize_program(Assets.TEXT_VERT, Assets.TEXT_FRAG)
         Assets.TEST_SHADER = Utils.initialize_program(Assets.TEST_VERT, Assets.TEST_FRAG)
-        Assets.VERA_FONT = Assets.loadFont('fonts/Vera.ttf')
+
+        Assets.VERA_FONT = Assets.loadFont('fonts/Vera.ttf', 48*64)
+        Assets.MONACO_FONT = Assets.loadFont('fonts/MONACO.TTF', 48*64)
+        Assets.FIRACODE_FONT = Assets.loadFont('fonts/FiraCode-Retina.ttf', 48*64)
         Assets.INIT = True
     
     @staticmethod
     def loadFont(fontFile, size=48*64):
+        print(f'Loading font: {fontFile}')
+        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
         characters = {}
         face = freetype.Face(fontFile)
         face.set_char_size(size)
@@ -50,12 +54,15 @@ class Assets:
 
             #now store character for later use
             characters[chr(i)] = CharacterSlot(texture,glyph)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         return characters
 
 class CharacterSlot:
     def __init__(self, texture, glyph):
         self.texture = texture
-        self.textureSize = (glyph.bitmap.width, glyph.bitmap.rows)
+        self.ascender  = max(0, glyph.bitmap_top)
+        self.descender = max(0, glyph.bitmap.rows-glyph.bitmap_top)
+        self.textureSize = (max(0, glyph.bitmap.width), self.ascender + self.descender)
 
         if isinstance(glyph, freetype.GlyphSlot):
             self.bearing = (glyph.bitmap_left, glyph.bitmap_top)
