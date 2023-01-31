@@ -1,4 +1,5 @@
 from uiElement import *
+from uiHelper import *
 from constraintManager import *
 import scene
 
@@ -121,7 +122,12 @@ class CamScene(scene.Scene):
             COMPOUND(RELATIVE(T_W, 0.25, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
             ABSOLUTE(T_H, 30)
         ]
-        self.camBtns.append(UiButton(self.window, constraints, Assets.TEST_SHADER))
+        btn, text = centeredTextButton(self.window, constraints, Assets.TEST_SHADER)
+        text.setText('stream 1')
+        text.setFontSize(24)
+        text.setTextSpacing(15)
+        text.setTextColor((0,0,0))
+        self.camBtns.append(btn)
 
         constraints = [
             COMPOUND(RELATIVE(T_X, 0, P_W), ABSOLUTE(T_X, btnPadding)),
@@ -129,7 +135,12 @@ class CamScene(scene.Scene):
             COMPOUND(RELATIVE(T_W, 0.25, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
             ABSOLUTE(T_H, 30)
         ]
-        self.camBtns.append(UiButton(self.window, constraints, Assets.TEST_SHADER))
+        btn, text = centeredTextButton(self.window, constraints, Assets.TEST_SHADER)
+        text.setText('stream 2')
+        text.setFontSize(24)
+        text.setTextSpacing(15)
+        text.setTextColor((0,0,0))
+        self.camBtns.append(btn)
 
         constraints = [
             COMPOUND(RELATIVE(T_X, 0.5, P_W), ABSOLUTE(T_X, btnPadding)),

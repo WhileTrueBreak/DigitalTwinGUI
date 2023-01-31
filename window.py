@@ -1,4 +1,5 @@
 from uiElement import *
+from uiHelper import *
 from constraintManager import *
 
 import pygame
@@ -56,7 +57,12 @@ class Window(Base):
                 RELATIVE(T_H, 0.9, P_H),
                 COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
             ]
-            self.tabBtns.append(UiButton(self, constraints, Assets.TEST_SHADER))
+            btn, text = centeredTextButton(self, constraints, Assets.TEST_SHADER)
+            text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
+            text.setFontSize(24)
+            text.setTextSpacing(15)
+            text.setTextColor((0,0,0))
+            self.tabBtns.append(btn)
             self.tabBtns[-1].setColor([1.0,0.8,0.8])
             self.sceneMap[self.tabBtns[-1]] = self.scenes[i]
         self.tabWrapper.addChildren(*self.tabBtns)

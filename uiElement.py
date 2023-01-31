@@ -289,6 +289,7 @@ class UiText(GlElement):
         self.text = 'abcdefghijklmnopqrstuvwxyz'
         self.fontSize = 48
         self.textSpacing = 5
+        self.textColor = (1,1,1)
 
         self.maxDescender = 0
         self.maxAscender = 0
@@ -323,6 +324,8 @@ class UiText(GlElement):
     def updateTextBound(self):
         if not self.dirtyText:
             return
+        scale = self.fontSize/48
+        
         maxdes = 0
         maxasc = 0
         x = self.dim[0]
@@ -331,11 +334,11 @@ class UiText(GlElement):
         for c in self.text:
             ch = self.font[c]
             w, h = ch.textureSize
-            maxdes = max(maxdes, ch.descender)
-            maxasc = max(maxasc, ch.ascender)
+            maxdes = max(maxdes, ch.descender*scale)
+            maxasc = max(maxasc, ch.ascender*scale)
 
-            x += w + self.textSpacing
-        x -= self.textSpacing
+            x += w*scale + self.textSpacing*scale
+        x -= self.textSpacing*scale
         widthAspect = (x-xStart)/(maxasc+maxdes)
         
         self.maxAscender = maxasc
@@ -358,20 +361,6 @@ class UiText(GlElement):
         self.dirtyText = False
 
     def absRender(self):
-        # GL.glUseProgram(self.shader)
-
-        # GL.glBindVertexArray(self.vao)
-        # GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
-        # GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
-
-        # self.translation.upload_data()
-        # self.baseColor.upload_data()
-
-        # GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
-        # GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
-        # GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        # GL.glBindVertexArray(0)
-
         self.renderText(self.text, Assets.FIRACODE_FONT, self.fontSize/48)
         return
     
@@ -380,7 +369,7 @@ class UiText(GlElement):
 
         GL.glBindVertexArray(self.textVao)
 
-        GL.glUniform3f(GL.glGetUniformLocation(Assets.TEXT_SHADER, "textColor"), 1, 1, 1)
+        GL.glUniform3f(GL.glGetUniformLocation(Assets.TEXT_SHADER, "textColor"), *self.textColor)
 
         GL.glActiveTexture(GL.GL_TEXTURE0)
         GL.glEnable(GL.GL_BLEND)
@@ -445,6 +434,9 @@ class UiText(GlElement):
     def setTextSpacing(self, spacing):
         self.textSpacing = spacing
         self.dirtyText = True
+
+    def setTextColor(self, color):
+        self.textColor = color
 
 class UiWrapper(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):
