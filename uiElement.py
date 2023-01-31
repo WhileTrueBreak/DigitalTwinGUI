@@ -259,48 +259,9 @@ class UiButton(GlElement):
     def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
         super().__init__(window, constraints, shader, dim)
         self.type = 'button'
-        self.font = Assets.VERA_FONT
-        
-
-        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
-
-        self.textIndices = np.array([1,0,3,3,1,2], dtype='int32')
-        
-        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-        
-        self.textVao = GL.glGenVertexArrays(1)
-        GL.glBindVertexArray(self.textVao)
-
-        self.textVbo = GL.glGenBuffers(1)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.textVbo)
-        GL.glBufferData(GL.GL_ARRAY_BUFFER, 4 * 4 * 4, None, GL.GL_DYNAMIC_DRAW)
-
-        GL.glVertexAttribPointer(0, 4, GL.GL_FLOAT, GL.GL_FALSE, 0, None)
-        GL.glEnableVertexAttribArray(0)
-        
-        self.textEbo = GL.glGenBuffers(1)
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.textEbo)
-        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.textIndices, GL.GL_DYNAMIC_DRAW)
-
-        # unbind vao vbo ebo
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        GL.glBindVertexArray(0)
-
-        # GL.glUseProgram(Assets.TEXT_SHADER)
-        # shader_projection = GL.glGetUniformLocation(Assets.TEXT_SHADER, "projection")
-        # projection = glm.ortho(0, 1600, 1000, 0)
-        # GL.glUniformMatrix4fv(shader_projection, 1, GL.GL_FALSE, glm.value_ptr(projection))
-
-        # GL.glEnableVertexAttribArray(0)
-        # GL.glVertexAttribPointer(0, 4, GL.GL_FLOAT, GL.GL_FALSE, 0, None)
-
-        # GL.glBindVertexArray(self.textVao)
-        # GL.glBindVertexArray(0)
 
     def absUpdate(self):
         return
-        # self.textRect.center = (self.dim[0] + self.dim[2] // 2, self.dim[1] + self.dim[3] // 2)
 
     def absRender(self):
         GL.glUseProgram(self.shader)
@@ -313,69 +274,7 @@ class UiButton(GlElement):
         self.baseColor.upload_data()
 
         GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
-
-        self.renderText('abcdefghijklmnopqrstuvwxyz', Assets.FIRACODE_FONT, 2)
         return
-    
-    def renderText(self, text, font, scale):
-        GL.glUseProgram(Assets.TEXT_SHADER)
-
-        GL.glBindVertexArray(self.textVao)
-
-        GL.glUniform3f(GL.glGetUniformLocation(Assets.TEXT_SHADER, "textColor"), 1, 1, 1)
-
-        GL.glActiveTexture(GL.GL_TEXTURE0)
-        GL.glEnable(GL.GL_BLEND)
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-
-        x = self.dim[0]
-        y = self.dim[1]
-        for c in text:
-            ch = font[c]
-            w, h = ch.textureSize
-            yoff = 0
-
-            # print(f'{c}: {h} | {ch.descender} | {ch.ascender}')
-
-            vertices = self.getVertexData(x,y - ch.descender*scale,w*scale,(ch.ascender + ch.descender)*scale)
-
-            #render glyph texture over quad
-            GL.glBindTexture(GL.GL_TEXTURE_2D, ch.texture)
-            #update content of VBO memory
-            
-            GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.textVbo)
-            GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, vertices.nbytes, vertices)
-            GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-
-            #render quad
-            GL.glBindVertexArray(self.textVao)
-            GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.textVbo)
-            GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.textEbo)
-            GL.glEnableVertexAttribArray(0)
-            GL.glDrawElements(GL.GL_TRIANGLES, len(self.textIndices), GL.GL_UNSIGNED_INT, None)
-            GL.glDisableVertexAttribArray(0)
-            #now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-            x += w*scale + 5*scale
-
-        GL.glBindVertexArray(0)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-
-    # def setText(self, text):
-    #     self.text = self.font.render(text, 1, (255,255,255))
-    #     self.textRect = self.text.get_rect()
-    #     self.textRect.center = (self.dim[0] + self.dim[2] // 2, self.dim[1] + self.dim[3] // 2)
-
-    def getVertexData(self, xpos, ypos, w, h):
-        xpos = (2*xpos)/self.window.dim[0] - 1
-        ypos = (2*ypos)/self.window.dim[1] - 1
-        w = (2*w)/self.window.dim[0]
-        h = (2*h)/self.window.dim[1]
-        return np.array([
-            xpos,       ypos + h, 0, 0,
-            xpos,       ypos,     0, 1,
-            xpos + w,   ypos,     1, 1,
-            xpos + w,   ypos + h, 1, 0
-        ], np.float32)
 
 class UiText(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):

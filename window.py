@@ -35,7 +35,7 @@ class Window(Base):
             ABSOLUTE(T_H, 100)
         ]
         self.windowWrapper = UiWrapper(self, constraints, Assets.TEST_SHADER, (0,0,self.dim[0], self.dim[1]))
-        self.ui = UiText(self, constraints)
+        self.ui = UiButton(self, constraints, Assets.TEST_SHADER)
         self.ui.setColor((0,0,1))
         self.windowWrapper.addChild(self.ui)
         return
