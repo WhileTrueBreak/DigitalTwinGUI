@@ -16,7 +16,7 @@ class Opcua:
             print(f'added {node} to dict')
             return await self.nodeDict[node].set_value(value, type)
         except Exception:
-            print(f'Error setting value:\n{traceback.print_exc()}')
+            raise Exception(f'Error setting value')
 
     async def getValue(self, node):
         try:
@@ -26,4 +26,4 @@ class Opcua:
             print(f'added {node} to dict')
             return await self.nodeDict[node].get_value()
         except Exception:
-            print(f'Error getting value:\n{traceback.print_exc()}')
+            raise Exception(f'Error getting value')

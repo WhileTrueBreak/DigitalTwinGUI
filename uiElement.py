@@ -550,7 +550,6 @@ class UiStream(GlElement):
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
 
         #render quad
-        GL.glBindVertexArray(self.streamVao)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.streamVbo)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.streamEbo)
         GL.glEnableVertexAttribArray(0)
