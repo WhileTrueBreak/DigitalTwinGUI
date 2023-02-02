@@ -1,6 +1,8 @@
 from asyncua import Client, ua
 import asyncio
 
+from threading import Thread
+
 class Opcua:
     def __init__(self):
         self.OpcUaHost = 'oct.tpc://172.31.1.236:4840/server/'
@@ -27,3 +29,20 @@ class Opcua:
             return await self.nodeDict[node].get_value()
         except Exception:
             raise Exception(f'Error getting value')
+    @staticmethod
+    def createOpcuaThread(q, data):
+        t = Thread(target = Opcua.opcuaConnection, args =(q, data))
+        t.start()
+        return t
+    @staticmethod
+    def opcuaConnection(q, data):
+        print('')
+        client = Opcua()
+        while True:
+            asyncio.run(Opcua.OpcuaGetData(q, data, client))
+    @staticmethod
+    async def OpcuaGetData(q, data, client):
+        ddict = {}
+        for d in data:
+            ddict[d] = await client.getValue(d)
+        q.put(ddict)

@@ -14,6 +14,9 @@ from asset import *
 import functools
 import time
 
+from threading import Thread
+from queue import Queue
+
 import asyncio
 from opcua import Opcua
 
@@ -59,15 +62,6 @@ def T_KUKAiiwa14(q):
     Robot1_T_0_ , Robot1_T_i_ = DH(DH_Robot1)
     return Robot1_T_0_ , Robot1_T_i_
 
-async def updateJoints(client):
-    JOINTS[0] = await client.getValue('ns=24;s=R4c_Joi1;')
-    JOINTS[1] = await client.getValue('ns=24;s=R4c_Joi2;')
-    JOINTS[2] = await client.getValue('ns=24;s=R4c_Joi3;')
-    JOINTS[3] = await client.getValue('ns=24;s=R4c_Joi4;')
-    JOINTS[4] = await client.getValue('ns=24;s=R4c_Joi5;')
-    JOINTS[5] = await client.getValue('ns=24;s=R4c_Joi6;')
-    JOINTS[6] = await client.getValue('ns=24;s=R4c_Joi7;')
-    
 pygame.init()
 display = (1600,1000)
 window = pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
@@ -95,8 +89,6 @@ Assets.KUKA_MODEL[7].setColor([0.8, 0.8, 0.8])
 for obj in Assets.KUKA_MODEL:
     obj.setProjectionMatrix(createProjectionMatrix(*window.get_size(), FOV, NEAR_PLANE, FAR_PLANE))
 
-opcua = Opcua()
-
 rot = 0
 
 secTimer = 0
@@ -105,23 +97,45 @@ start = time.time_ns()
 end = start
 deltaT = 0
 
+dataQueue = Queue()
+t = Opcua.createOpcuaThread(dataQueue, ['ns=24;s=R4d_Joi1', 
+                                        'ns=24;s=R4d_Joi2', 
+                                        'ns=24;s=R4d_Joi3', 
+                                        'ns=24;s=R4d_Joi4', 
+                                        'ns=24;s=R4d_Joi5', 
+                                        'ns=24;s=R4d_Joi6', 
+                                        'ns=24;s=R4d_Joi7'])
+
+running = True
+
+jointsRad = np.array([0]*7)
+
 while True:
     end = start
     start = time.time_ns()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            quit()
+            running = False
+    if not running:
+        break
 
     if deltaT != 0:
         rot += 19*deltaT
 
     GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
     #############################Start Update#############################
-    asyncio.run(updateJoints(opcua))
-    jointsRad = [radians(a) for a in JOINTS]
-    q = np.array(jointsRad)
-    Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(q)
+    if not dataQueue.empty():
+        data = dataQueue.get()
+        while not dataQueue.empty():
+            data = dataQueue.get()
+        jointsRad[0] = radians(data['ns=24;s=R4d_Joi1'])
+        jointsRad[1] = radians(data['ns=24;s=R4d_Joi2'])
+        jointsRad[2] = radians(data['ns=24;s=R4d_Joi3'])
+        jointsRad[3] = radians(data['ns=24;s=R4d_Joi4'])
+        jointsRad[4] = radians(data['ns=24;s=R4d_Joi5'])
+        jointsRad[5] = radians(data['ns=24;s=R4d_Joi6'])
+        jointsRad[6] = radians(data['ns=24;s=R4d_Joi7'])
+    Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(jointsRad)
 
     #############################Start Render#############################
     for i in range(len(Assets.KUKA_MODEL)):
@@ -139,6 +153,11 @@ while True:
         print(f'fps: {frames}')
         secTimer -= 1
         frames = 0
+
+# thread.join()
+pygame.quit()
+quit()
+
 
 
 
