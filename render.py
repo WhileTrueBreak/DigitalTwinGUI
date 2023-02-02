@@ -98,15 +98,14 @@ end = start
 deltaT = 0
 
 dataQueue = Queue()
+threadStopFlag = False
 dataThread = Opcua.createOpcuaThread(dataQueue, ['ns=24;s=R4d_Joi1', 
                                         'ns=24;s=R4d_Joi2', 
                                         'ns=24;s=R4d_Joi3', 
                                         'ns=24;s=R4d_Joi4', 
                                         'ns=24;s=R4d_Joi5', 
                                         'ns=24;s=R4d_Joi6', 
-                                        'ns=24;s=R4d_Joi7'])
-
-running = True
+                                        'ns=24;s=R4d_Joi7'], lambda:threadStopFlag)
 
 jointsRad = np.array([0]*7)
 
@@ -115,9 +114,10 @@ while True:
     start = time.time_ns()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
-    if not running:
-        break
+            pygame.quit()
+            threadStopFlag = True
+            dataThread.join()
+            quit()
 
     if deltaT != 0:
         rot += 19*deltaT
@@ -154,13 +154,3 @@ while True:
         print(f'fps: {frames}')
         secTimer -= 1
         frames = 0
-
-dataThread.join()
-pygame.quit()
-quit()
-
-
-
-
-
-

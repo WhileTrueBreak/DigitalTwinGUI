@@ -30,15 +30,15 @@ class Opcua:
         except Exception:
             raise Exception(f'Error getting value')
     @staticmethod
-    def createOpcuaThread(q, data):
-        t = Thread(target = Opcua.opcuaConnection, args =(q, data))
+    def createOpcuaThread(q, data, stop):
+        t = Thread(target = Opcua.opcuaConnection, args =(q, data, stop))
         t.start()
         return t
     @staticmethod
-    def opcuaConnection(q, data):
+    def opcuaConnection(q, data, stop):
         print('')
         client = Opcua()
-        while True:
+        while not stop():
             asyncio.run(Opcua.OpcuaGetData(q, data, client))
     @staticmethod
     async def OpcuaGetData(q, data, client):
@@ -46,3 +46,10 @@ class Opcua:
         for d in data:
             ddict[d] = await client.getValue(d)
         q.put(ddict)
+    
+
+
+
+
+
+
