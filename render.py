@@ -98,7 +98,7 @@ end = start
 deltaT = 0
 
 dataQueue = Queue()
-t = Opcua.createOpcuaThread(dataQueue, ['ns=24;s=R4d_Joi1', 
+dataThread = Opcua.createOpcuaThread(dataQueue, ['ns=24;s=R4d_Joi1', 
                                         'ns=24;s=R4d_Joi2', 
                                         'ns=24;s=R4d_Joi3', 
                                         'ns=24;s=R4d_Joi4', 
@@ -135,6 +135,7 @@ while True:
         jointsRad[4] = radians(data['ns=24;s=R4d_Joi5'])
         jointsRad[5] = radians(data['ns=24;s=R4d_Joi6'])
         jointsRad[6] = radians(data['ns=24;s=R4d_Joi7'])
+    
     Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(jointsRad)
 
     #############################Start Render#############################
@@ -154,7 +155,7 @@ while True:
         secTimer -= 1
         frames = 0
 
-# thread.join()
+dataThread.join()
 pygame.quit()
 quit()
 
