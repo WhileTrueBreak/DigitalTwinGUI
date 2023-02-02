@@ -9,6 +9,7 @@ import random
 
 from asyncua import Client, ua
 import asyncio
+import asyncio
 
 class AirPScene(scene.Scene):
     

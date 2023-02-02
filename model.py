@@ -34,9 +34,10 @@ class Model:
             v1 = np.subtract(face[1], face[0])
             v2 = np.subtract(face[2], face[0])
             normal = self.normalize(np.cross(v1, v2))
+            tnormal = transformationMatrix.dot([*normal, 0])
             for i in range(3):
                 tface = transformationMatrix.dot([*face[i], 1])
-                vertices.append([*tface[:-1], *normal, *self.color])
+                vertices.append([*tface[:-1], *tnormal[:-1], *self.color])
                 indices.append(counter)
                 counter += 1
         vertices = np.array(vertices, dtype='float32')

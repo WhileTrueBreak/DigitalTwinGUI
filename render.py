@@ -1,3 +1,6 @@
+import nest_asyncio
+nest_asyncio.apply()
+
 import pygame
 from pygame.locals import *
 from OpenGL import GL
@@ -11,12 +14,18 @@ from asset import *
 import functools
 import time
 
+import asyncio
+from opcua import Opcua
+
 from mathHelper import *
 from model import *
+
 
 FOV = 60
 NEAR_PLANE = 0.1;
 FAR_PLANE = 1000;
+
+JOINTS = [0]*7
 
 def DH(DH_table):
     T_0_ = np.ndarray(shape=(len(DH_table)+1,4,4))
@@ -50,11 +59,22 @@ def T_KUKAiiwa14(q):
     Robot1_T_0_ , Robot1_T_i_ = DH(DH_Robot1)
     return Robot1_T_0_ , Robot1_T_i_
 
+async def updateJoints(client):
+    JOINTS[0] = await client.getValue('ns=24;s=R4c_Joi1;')
+    JOINTS[1] = await client.getValue('ns=24;s=R4c_Joi2;')
+    JOINTS[2] = await client.getValue('ns=24;s=R4c_Joi3;')
+    JOINTS[3] = await client.getValue('ns=24;s=R4c_Joi4;')
+    JOINTS[4] = await client.getValue('ns=24;s=R4c_Joi5;')
+    JOINTS[5] = await client.getValue('ns=24;s=R4c_Joi6;')
+    JOINTS[6] = await client.getValue('ns=24;s=R4c_Joi7;')
+    
 pygame.init()
-display = (800,800)
+display = (1600,1000)
 window = pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
 
 Assets.init()
+
+print('\n'*10)
 
 GL.glEnable(GL.GL_CULL_FACE)
 GL.glEnable(GL.GL_DEPTH_TEST)
@@ -63,21 +83,21 @@ GL.glCullFace(GL.GL_BACK)
 clock = pygame.time.Clock()
 
 Assets.KUKA_MODEL
-Assets.KUKA_MODEL[0].setColor([1.0, 0.0, 0.0])
-Assets.KUKA_MODEL[1].setColor([1.0, 0.0, 0.0])
-Assets.KUKA_MODEL[2].setColor([1.0, 1.0, 0.0])
-Assets.KUKA_MODEL[3].setColor([0.0, 0.0, 1.0])
-Assets.KUKA_MODEL[4].setColor([1.0, 0.0, 1.0])
-Assets.KUKA_MODEL[5].setColor([0.0, 1.0, 1.0])
-Assets.KUKA_MODEL[6].setColor([1.0, 1.0, 1.0])
-Assets.KUKA_MODEL[7].setColor([0.5, 0.5, 0.5])
+Assets.KUKA_MODEL[0].setColor([0.5, 0.5, 0.5])
+Assets.KUKA_MODEL[1].setColor([0.5, 0.5, 0.5])
+Assets.KUKA_MODEL[2].setColor([0.9, 0.4, 0.0])
+Assets.KUKA_MODEL[3].setColor([0.5, 0.5, 0.5])
+Assets.KUKA_MODEL[4].setColor([0.5, 0.5, 0.5])
+Assets.KUKA_MODEL[5].setColor([0.9, 0.4, 0.0])
+Assets.KUKA_MODEL[6].setColor([0.5, 0.5, 0.5])
+Assets.KUKA_MODEL[7].setColor([0.8, 0.8, 0.8])
 
 for obj in Assets.KUKA_MODEL:
-    obj.setProjectionMatrix(createProjectionMatrix(800, 800, FOV, NEAR_PLANE, FAR_PLANE))
+    obj.setProjectionMatrix(createProjectionMatrix(*window.get_size(), FOV, NEAR_PLANE, FAR_PLANE))
 
-rx = 0
-ry = 0
-rz = 0
+opcua = Opcua()
+
+rot = 0
 
 secTimer = 0
 frames = 0
@@ -94,18 +114,19 @@ while True:
             quit()
 
     if deltaT != 0:
-        rx += 13*deltaT
-        ry += 17*deltaT
-        rz += 19*deltaT
+        rot += 19*deltaT
 
     GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
-    #############################Start Render#############################
-
-    q = np.array([0,0,0,pi/2,0,0,0])
+    #############################Start Update#############################
+    asyncio.run(updateJoints(opcua))
+    jointsRad = [radians(a) for a in JOINTS]
+    q = np.array(jointsRad)
     Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(q)
+
+    #############################Start Render#############################
     for i in range(len(Assets.KUKA_MODEL)):
         Assets.KUKA_MODEL[i].setTransformMatrix(Robot1_T_0_[i])
-        Assets.KUKA_MODEL[i].setViewMatrix(createViewMatrix(0, 0.5, 2, -45, 0, rz))
+        Assets.KUKA_MODEL[i].setViewMatrix(createViewMatrix(0, 0.5, 2, -50, 0, rot))
         Assets.KUKA_MODEL[i].render()
 
     ############################# End Render #############################
