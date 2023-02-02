@@ -1,20 +1,19 @@
 from OpenGL import GL
 from stl import mesh
-from asset import *
 import numpy as np
 import ctypes
+import time
 
 
 class Model:
-    def __init__(self, file):
+    def __init__(self, file, shader, transform=np.identity(4)):
         print(f'Loading Model: {file}')
-
         self.color = [1,1,1]
-
-        faces = self.loadSTL(file)
-        self.vertices, self.indices = self.createVertices(faces)
+        
+        self.mesh = self.loadSTL(file)
+        self.vertices, self.indices = self.createVertices(transform)
         self.initVertices(self.vertices, self.indices)
-        self.shader = Assets.OBJECT_SHADER
+        self.shader = shader
         self.initUniforms(self.shader)
         self.setTransformMatrix(np.identity(4))
         self.setProjectionMatrix(np.identity(4))
@@ -22,24 +21,26 @@ class Model:
 
     def loadSTL(self, file):
         try:
-            self.mesh = mesh.Mesh.from_file(file)
-            faces = np.array(self.mesh.vectors).reshape(len(self.mesh.vectors)*3, 3)
-            return faces
+            return mesh.Mesh.from_file(file)
         except Exception:
             raise Exception(f'Error loading stl: {file}')
     
-    def createVertices(self, faces):
-        normals = []
+    def createVertices(self, transformationMatrix):
+        vertices = []
+        indices = []
+        counter = 0
+
         for face in self.mesh.vectors:
             v1 = np.subtract(face[1], face[0])
             v2 = np.subtract(face[2], face[0])
             normal = self.normalize(np.cross(v1, v2))
-            normals.append(normal)
-        vertices = []
-        for i in range(len(faces)):
-            vertices.append([*faces[i], *normals[int(i/3)], *self.color])
+            for i in range(3):
+                tface = transformationMatrix.dot([*face[i], 1])
+                vertices.append([*tface[:-1], *normal, *self.color])
+                indices.append(counter)
+                counter += 1
         vertices = np.array(vertices, dtype='float32')
-        indices = np.array([i for i in range(len(faces))], dtype='int32')
+        indices = np.array(indices, dtype='int32')
         return (vertices, indices)
 
     def initVertices(self, vertices, indices):

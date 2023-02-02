@@ -1,3 +1,6 @@
+from model import *
+from mathHelper import *
+
 from pathlib import Path
 from py3d.core.base import Base
 from py3d.core.utils import Utils
@@ -7,9 +10,6 @@ import freetype
 
 class Assets:
     INIT = False
-
-    
-
     GUI_SHADER = None
     DEFAULT_SHADER = None
     TEST_SHADER = ''
@@ -33,6 +33,17 @@ class Assets:
         Assets.VERA_FONT = Assets.loadFont('fonts/Vera.ttf', 48*64)
         Assets.MONACO_FONT = Assets.loadFont('fonts/MONACO.TTF', 48*64)
         Assets.FIRACODE_FONT = Assets.loadFont('fonts/FiraCode-Retina.ttf', 48*64)
+        
+        Assets.KUKA_MODEL = []
+        Assets.KUKA_MODEL.append(Model('res/models/link_0.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+        Assets.KUKA_MODEL.append(Model('res/models/link_1.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0)))
+        Assets.KUKA_MODEL.append(Model('res/models/link_2.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
+        Assets.KUKA_MODEL.append(Model('res/models/link_3.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0)))
+        Assets.KUKA_MODEL.append(Model('res/models/link_4.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+        Assets.KUKA_MODEL.append(Model('res/models/link_5.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180)))
+        Assets.KUKA_MODEL.append(Model('res/models/link_6.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
+        Assets.KUKA_MODEL.append(Model('res/models/link_7.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+
         Assets.INIT = True
     
     @staticmethod

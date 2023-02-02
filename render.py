@@ -11,66 +11,12 @@ from asset import *
 import functools
 import time
 
+from mathHelper import *
 from model import *
 
 FOV = 60
 NEAR_PLANE = 0.1;
 FAR_PLANE = 1000;
-
-def normalize(v):
-    norm = np.linalg.norm(v)
-    if norm == 0: 
-       return v
-    return v / norm
-
-def createProjectionMatrix():
-    width = 800
-    height = 800
-    aspectRatio = width/height
-    yScale = (float) ((1/tan(radians(FOV/2)))*aspectRatio)
-    xScale = yScale/aspectRatio
-    frustumLength = FAR_PLANE-NEAR_PLANE
-    
-    projectionMatrix = np.zeros((4,4))
-    projectionMatrix[0][0] = xScale
-    projectionMatrix[1][1] = yScale
-    projectionMatrix[2][2] = -((FAR_PLANE+NEAR_PLANE)/frustumLength)
-    projectionMatrix[2][3] = -1
-    projectionMatrix[3][2] = -((2*FAR_PLANE*NEAR_PLANE)/frustumLength)
-    projectionMatrix[3][3] = 0
-    return projectionMatrix
-
-def createTranslationMatrix(x, y, z, rotx, roty, rotz):
-    rotx = radians(rotx)
-    roty = radians(roty)
-    rotz = radians(rotz)
-    rotmx = np.identity(3)
-    rotmx[1][1] = cos(rotx)
-    rotmx[1][2] = -sin(rotx)
-    rotmx[2][1] = sin(rotx)
-    rotmx[2][2] = cos(rotx)
-    rotmy = np.identity(3)
-    rotmy[0][0] = cos(roty)
-    rotmy[0][2] = sin(roty)
-    rotmy[2][0] = -sin(roty)
-    rotmy[2][2] = cos(roty)
-    rotmz = np.identity(3)
-    rotmz[1][1] = cos(rotz)
-    rotmz[1][0] = sin(rotz)
-    rotmz[0][1] = -sin(rotz)
-    rotmz[0][0] = cos(rotz)
-    rotm = functools.reduce(np.dot, [rotmx,rotmy,rotmz])
-
-    tmat = np.pad(rotm, [(0, 1), (0, 1)], mode='constant', constant_values=0)
-
-    tmat[0][3] = x
-    tmat[1][3] = y
-    tmat[2][3] = z
-    tmat[3][3] = 1
-    return tmat
-
-def createViewMatrix(x, y, z, rotx, roty, rotz):
-    return createTranslationMatrix(-x, -y, -z, rotx, roty, rotz)
 
 def DH(DH_table):
     T_0_ = np.ndarray(shape=(len(DH_table)+1,4,4))
@@ -116,29 +62,18 @@ GL.glCullFace(GL.GL_BACK)
 
 clock = pygame.time.Clock()
 
-objs = []
-objs.append(Model('res/models/link_0.stl'))
-objs[-1].setColor([1, 0, 0])
-objs.append(Model('res/models/link_1.stl'))
-objs[-1].setColor([0, 1, 0])
-objs.append(Model('res/models/link_2.stl'))
-objs[-1].setColor([1, 1, 0])
-objs.append(Model('res/models/link_3.stl'))
-objs[-1].setColor([0, 0, 1])
-objs.append(Model('res/models/link_4.stl'))
-objs[-1].setColor([1, 0, 1])
-objs.append(Model('res/models/link_5.stl'))
-objs[-1].setColor([0, 1, 1])
-objs.append(Model('res/models/link_6.stl'))
-objs[-1].setColor([1, 1, 1])
-objs.append(Model('res/models/link_7.stl'))
-objs[-1].setColor([0, 0, 0])
+Assets.KUKA_MODEL
+Assets.KUKA_MODEL[0].setColor([1.0, 0.0, 0.0])
+Assets.KUKA_MODEL[1].setColor([1.0, 0.0, 0.0])
+Assets.KUKA_MODEL[2].setColor([1.0, 1.0, 0.0])
+Assets.KUKA_MODEL[3].setColor([0.0, 0.0, 1.0])
+Assets.KUKA_MODEL[4].setColor([1.0, 0.0, 1.0])
+Assets.KUKA_MODEL[5].setColor([0.0, 1.0, 1.0])
+Assets.KUKA_MODEL[6].setColor([1.0, 1.0, 1.0])
+Assets.KUKA_MODEL[7].setColor([0.5, 0.5, 0.5])
 
-for obj in objs:
-    obj.setProjectionMatrix(createProjectionMatrix())
-
-# obj = Model('res/models/teapot.stl')
-# obj.setProjectionMatrix(createProjectionMatrix())
+for obj in Assets.KUKA_MODEL:
+    obj.setProjectionMatrix(createProjectionMatrix(800, 800, FOV, NEAR_PLANE, FAR_PLANE))
 
 rx = 0
 ry = 0
@@ -165,14 +100,13 @@ while True:
 
     GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
     #############################Start Render#############################
-    q = np.array([0,0,0,0,0,0,0])
+
+    q = np.array([0,0,0,pi/2,0,0,0])
     Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(q)
-    for i in range(len(objs)):
-        # print(Robot1_T_0_[i])
-        objs[i].setTransformMatrix(Robot1_T_0_[i])
-        objs[i].setViewMatrix(createViewMatrix(0, 0.5, 2, -45, 0, rz))
-        # objs[i].setTransformMatrix(createTranslationMatrix(0,0,-3,0,0,0))
-        objs[i].render()
+    for i in range(len(Assets.KUKA_MODEL)):
+        Assets.KUKA_MODEL[i].setTransformMatrix(Robot1_T_0_[i])
+        Assets.KUKA_MODEL[i].setViewMatrix(createViewMatrix(0, 0.5, 2, -45, 0, rz))
+        Assets.KUKA_MODEL[i].render()
 
     ############################# End Render #############################
     pygame.display.flip()
