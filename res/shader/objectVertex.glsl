@@ -12,10 +12,14 @@ out float shade;
 out vec3 color;
 
 void main() {
-  vec3 lightVec = normalize(vec3(-0.5, -2, 1));
+  vec3 lightVec1 = normalize(vec3(-0.5, -2, 1));
+  vec3 lightVec2 = normalize(vec3(0.5, 2, 1));
   vec4 tnormal = transformationMatrix * vec4(vertexNormal,0.0);
 
-  shade = dot(lightVec, tnormal.xyz)/2+0.5;
+  float shade1 = dot(lightVec1, tnormal.xyz)/2+0.5;
+  float shade2 = dot(lightVec2, tnormal.xyz)/2+0.5;
+  shade = max(shade1, shade2);
+
   color = vertexColor;
 
   vec4 worldPos = transformationMatrix * vec4(vertexPos, 1.0);
@@ -23,3 +27,4 @@ void main() {
   vec4 screenPos = projectionMatrix*relPos;
   gl_Position = screenPos;
 }
+

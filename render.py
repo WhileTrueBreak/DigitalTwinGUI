@@ -23,6 +23,7 @@ from opcua import Opcua
 from mathHelper import *
 from model import *
 
+import signal
 
 FOV = 60
 NEAR_PLANE = 0.1;
@@ -74,9 +75,6 @@ GL.glEnable(GL.GL_CULL_FACE)
 GL.glEnable(GL.GL_DEPTH_TEST)
 GL.glCullFace(GL.GL_BACK)
 
-clock = pygame.time.Clock()
-
-Assets.KUKA_MODEL
 Assets.KUKA_MODEL[0].setColor([0.5, 0.5, 0.5])
 Assets.KUKA_MODEL[1].setColor([0.5, 0.5, 0.5])
 Assets.KUKA_MODEL[2].setColor([0.9, 0.4, 0.0])
@@ -97,17 +95,26 @@ start = time.time_ns()
 end = start
 deltaT = 0
 
-dataQueue = Queue()
 threadStopFlag = False
-dataThread = Opcua.createOpcuaThread(dataQueue, ['ns=24;s=R4d_Joi1', 
-                                        'ns=24;s=R4d_Joi2', 
-                                        'ns=24;s=R4d_Joi3', 
-                                        'ns=24;s=R4d_Joi4', 
-                                        'ns=24;s=R4d_Joi5', 
-                                        'ns=24;s=R4d_Joi6', 
-                                        'ns=24;s=R4d_Joi7'], lambda:threadStopFlag)
 
-jointsRad = np.array([0]*7)
+dataQueue = Queue()
+dataThread = Opcua.createOpcuaThread(dataQueue, ['ns=24;s=R4d_Joi1', 
+                                                 'ns=24;s=R4d_Joi2', 
+                                                 'ns=24;s=R4d_Joi3', 
+                                                 'ns=24;s=R4d_Joi4', 
+                                                 'ns=24;s=R4d_Joi5', 
+                                                 'ns=24;s=R4d_Joi6', 
+                                                 'ns=24;s=R4d_Joi7'], lambda:threadStopFlag)
+
+jointsRad = np.array([0]*7, dtype='float32')
+
+def handler(signum, frame):
+    pygame.quit()
+    threadStopFlag = True
+    dataThread.join()
+    quit()
+
+signal.signal(signal.SIGINT, handler)
 
 while True:
     end = start
@@ -135,14 +142,20 @@ while True:
         jointsRad[4] = radians(data['ns=24;s=R4d_Joi5'])
         jointsRad[5] = radians(data['ns=24;s=R4d_Joi6'])
         jointsRad[6] = radians(data['ns=24;s=R4d_Joi7'])
-    
     Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(jointsRad)
 
     #############################Start Render#############################
-    for i in range(len(Assets.KUKA_MODEL)):
-        Assets.KUKA_MODEL[i].setTransformMatrix(Robot1_T_0_[i])
-        Assets.KUKA_MODEL[i].setViewMatrix(createViewMatrix(0, 0.5, 2, -50, 0, rot))
-        Assets.KUKA_MODEL[i].render()
+
+    for x in range(-3,3):
+        for y in range(-3,3):
+            for i in range(len(Assets.KUKA_MODEL)):
+                t = Robot1_T_0_[i].copy()
+                t[0][3] += x*2/3
+                t[1][3] += y*2/3
+                Assets.KUKA_MODEL[i].setTransformMatrix(t)
+                Assets.KUKA_MODEL[i].setViewMatrix(createViewMatrix(0, 0.5, 2, -60, 0, 45))
+                Assets.KUKA_MODEL[i].render()
+
 
     ############################# End Render #############################
     pygame.display.flip()
@@ -154,3 +167,5 @@ while True:
         print(f'fps: {frames}')
         secTimer -= 1
         frames = 0
+
+
