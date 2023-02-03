@@ -81,17 +81,20 @@ class Window(Base):
             if event['action'] == 'release' and event['obj'] in self.tabBtns:
                 if self.currentScene != None:
                     self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
+                    self.currentScene.stop()
                 self.currentScene = self.sceneMap[event['obj']]
                 if self.currentScene != None:
                     self.windowWrapper.addChild(self.currentScene.sceneWrapper)
+                    self.currentScene.start()
             if self.currentScene: self.currentScene.eventHandler(event)
         self.uiEvents = []
 
     def update(self):
         self.eventHandler()
         if self.currentScene != None:
-            self.currentScene.update()
-        self.windowWrapper.update()
+            self.currentScene.update(self.delta_time)
+        print(self.delta_time)
+        self.windowWrapper.update(self.delta_time)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.windowWrapper.render()
         return

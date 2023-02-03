@@ -5,16 +5,11 @@ import pygame
 from pygame.locals import *
 from OpenGL import GL
 from OpenGL import GLU
-import matplotlib.cm
-from vectors import *
 from math import *
 import numpy as np
-from stl import mesh
 from asset import *
-import functools
 import time
 
-from threading import Thread
 from queue import Queue
 
 import asyncio
