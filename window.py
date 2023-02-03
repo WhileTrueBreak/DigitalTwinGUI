@@ -1,5 +1,5 @@
-from uiElement import *
-from uiHelper import *
+from ui.uiElement import *
+from ui.uiHelper import *
 from constraintManager import *
 
 import pygame
@@ -14,9 +14,6 @@ from vectors import *
 from math import *
 
 from py3d.core.base import Base
-from py3d.core.utils import Utils
-from py3d.core.attribute import Attribute
-from py3d.core.uniform import Uniform
 from asset import *
 
 class Window(Base):
@@ -57,7 +54,8 @@ class Window(Base):
                 RELATIVE(T_H, 0.9, P_H),
                 COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
             ]
-            btn, text = centeredTextButton(self, constraints, Assets.TEST_SHADER)
+            # btn = UiButton(self, constraints, Assets.SOLID_SHADER)
+            btn, text = centeredTextButton(self, constraints, Assets.SOLID_SHADER)
             text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
             text.setFontSize(24)
             text.setTextSpacing(15)
@@ -93,7 +91,6 @@ class Window(Base):
         self.eventHandler()
         if self.currentScene != None:
             self.currentScene.update(self.delta_time)
-        print(self.delta_time)
         self.windowWrapper.update(self.delta_time)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.windowWrapper.render()

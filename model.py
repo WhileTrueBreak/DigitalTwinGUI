@@ -7,13 +7,13 @@ import time
 
 class Model:
     def __init__(self, file, shader, transform=np.identity(4)):
-        print(f'Loading Model: {file}')
         self.color = [1,1,1]
-        
+        self.shader = shader
         self.mesh = self.loadSTL(file)
         self.vertices, self.indices = self.createVertices(transform)
+    
+    def initGLContext(self):
         self.initVertices(self.vertices, self.indices)
-        self.shader = shader
         self.initUniforms(self.shader)
         self.setTransformMatrix(np.identity(4))
         self.setProjectionMatrix(np.identity(4))

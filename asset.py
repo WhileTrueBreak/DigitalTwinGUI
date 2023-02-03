@@ -2,11 +2,12 @@ from model import *
 from mathHelper import *
 
 from pathlib import Path
-from py3d.core.base import Base
 from py3d.core.utils import Utils
-from py3d.core.attribute import Attribute
 import OpenGL.GL as GL
 import freetype
+
+from queue import Queue
+from threading import Thread
 
 class Assets:
     INIT = False
@@ -16,33 +17,34 @@ class Assets:
     @staticmethod
     def init():
         if Assets.INIT: return
-        Assets.TEXT_FRAG = Path('./res/shader/textFragment.glsl').read_text()
-        Assets.TEXT_VERT = Path('./res/shader/textVertex.glsl').read_text()
-        Assets.TEST_FRAG = Path('./res/shader/testFragment.glsl').read_text()
-        Assets.TEST_VERT = Path('./res/shader/testVertex.glsl').read_text()
-        Assets.STREAM_FRAG = Path('./res/shader/streamFragment.glsl').read_text()
-        Assets.STREAM_VERT = Path('./res/shader/streamVertex.glsl').read_text()
-        Assets.OBJECT_FRAG = Path('./res/shader/objectFragment.glsl').read_text()
-        Assets.OBJECT_VERT = Path('./res/shader/objectVertex.glsl').read_text()
+        Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textVertex.glsl', 'res/shader/textFragment.glsl')
+        Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
+        Assets.STREAM_SHADER = Assets.linkShaders('res/shader/streamVertex.glsl', 'res/shader/streamFragment.glsl')
+        Assets.OBJECT_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/objectFragment.glsl')
 
-        Assets.TEXT_SHADER = Utils.initialize_program(Assets.TEXT_VERT, Assets.TEXT_FRAG)
-        Assets.TEST_SHADER = Utils.initialize_program(Assets.TEST_VERT, Assets.TEST_FRAG)
-        Assets.STREAM_SHADER = Utils.initialize_program(Assets.STREAM_VERT, Assets.STREAM_FRAG)
-        Assets.OBJECT_SHADER = Utils.initialize_program(Assets.OBJECT_VERT, Assets.OBJECT_FRAG)
-
-        Assets.VERA_FONT = Assets.loadFont('fonts/Vera.ttf', 48*64)
-        Assets.MONACO_FONT = Assets.loadFont('fonts/MONACO.TTF', 48*64)
-        Assets.FIRACODE_FONT = Assets.loadFont('fonts/FiraCode-Retina.ttf', 48*64)
+        Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf', 48*64)
+        Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF', 48*64)
+        Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf', 48*64)
         
+        modelQueues = []
+        modelQueues.append(Assets.loadModel('res/models/link_0.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+        modelQueues.append(Assets.loadModel('res/models/link_1.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0)))
+        modelQueues.append(Assets.loadModel('res/models/link_2.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
+        modelQueues.append(Assets.loadModel('res/models/link_3.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0)))
+        modelQueues.append(Assets.loadModel('res/models/link_4.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+        modelQueues.append(Assets.loadModel('res/models/link_5.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180)))
+        modelQueues.append(Assets.loadModel('res/models/link_6.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
+        modelQueues.append(Assets.loadModel('res/models/link_7.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+
         Assets.KUKA_MODEL = []
-        Assets.KUKA_MODEL.append(Model('res/models/link_0.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
-        Assets.KUKA_MODEL.append(Model('res/models/link_1.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0)))
-        Assets.KUKA_MODEL.append(Model('res/models/link_2.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
-        Assets.KUKA_MODEL.append(Model('res/models/link_3.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0)))
-        Assets.KUKA_MODEL.append(Model('res/models/link_4.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
-        Assets.KUKA_MODEL.append(Model('res/models/link_5.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180)))
-        Assets.KUKA_MODEL.append(Model('res/models/link_6.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
-        Assets.KUKA_MODEL.append(Model('res/models/link_7.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[0]))
+        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[1]))
+        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[2]))
+        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[3]))
+        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[4]))
+        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[5]))
+        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[6]))
+        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[7]))
 
         Assets.INIT = True
     
@@ -73,6 +75,53 @@ class Assets:
             characters[chr(i)] = CharacterSlot(texture,glyph)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         return characters
+    @staticmethod
+    def complieShader(shaderFile, shaderType):
+        print(f'Compiling shader: {shaderFile}')
+        shaderCode = Path(shaderFile).read_text()
+        shaderRef = GL.glCreateShader(shaderType)
+        GL.glShaderSource(shaderRef, shaderCode)
+        GL.glCompileShader(shaderRef)
+        compile_success = GL.glGetShaderiv(shaderRef, GL.GL_COMPILE_STATUS)
+        if not compile_success:
+            error_message = GL.glGetShaderInfoLog(shaderRef)
+            GL.glDeleteShader(shaderRef)
+            error_message = '\n' + error_message.decode('utf-8')
+            raise Exception(error_message)
+        return shaderRef
+    @staticmethod
+    def linkShaders(vertexShaderFile, fragmentShaderFile):
+        vertRef = Assets.complieShader(vertexShaderFile, GL.GL_VERTEX_SHADER)
+        fragRef = Assets.complieShader(fragmentShaderFile, GL.GL_FRAGMENT_SHADER)
+        print(f'Linking shader: {vertexShaderFile} & {fragmentShaderFile}')
+        programRef = GL.glCreateProgram()
+        GL.glAttachShader(programRef, vertRef)
+        GL.glAttachShader(programRef, fragRef)
+        GL.glLinkProgram(programRef)
+        link_success = GL.glGetProgramiv(programRef, GL.GL_LINK_STATUS)
+        if not link_success:
+            error_message = GL.glGetProgramInfoLog(programRef)
+            GL.glDeleteProgram(programRef)
+            error_message = '\n' + error_message.decode('utf-8')
+            raise Exception(error_message)
+            return
+        return programRef
+    @staticmethod
+    def loadModel(file, shader, tmat):
+        q = Queue()
+        t = Thread(target = Assets.modelLoader, args =(q, file, shader, tmat))
+        t.start()
+        return q
+    @staticmethod
+    def modelLoader(q, file, shader, tmat):
+        print(f'Loading model: {file}')
+        q.put(Model(file, shader, tmat))
+    @staticmethod
+    def modelInit(q):
+        model = q.get()
+        print(f'Init model context: {model}')
+        model.initGLContext()
+        return model
 
 class CharacterSlot:
     def __init__(self, texture, glyph):

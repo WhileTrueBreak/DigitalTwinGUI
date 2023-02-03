@@ -7,11 +7,6 @@ from abc import ABC, abstractmethod
 import time
 import OpenGL.GL as GL
 
-from py3d.core.base import Base
-from py3d.core.utils import Utils
-from py3d.core.attribute import Attribute
-from py3d.core.uniform import Uniform
-
 import pygame
 
 from mjpeg.client import MJPEGClient
@@ -22,12 +17,14 @@ from PIL import Image
 from PIL.Image import Transpose
 from io import BytesIO
 
+import ctypes
+
 class GlElement:
-    def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
+    def __init__(self, window, constraints, dim=(0,0,0,0)):
         self.window = window
         self.constraints = constraints
-        self.shader = shader
         self.dim = dim
+        self.openGLDim = self.dim
 
         self.children = []
         self.parent = None
@@ -35,26 +32,26 @@ class GlElement:
         self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
         self.lastMouseState = self.window.mouseButtons
 
-        self.vertices = np.array([[-0.5, -0.5, 0.0],
-                                  [-0.5,  0.5, 0.0],
-                                  [ 0.5,  0.5, 0.0],
-                                  [ 0.5, -0.5, 0.0]], dtype = 'float32')
-        self.indices = np.array([1,2,0,2,3,0], dtype='int32')
+        # self.vertices = np.array([[-0.5, -0.5, 0.0],
+        #                           [-0.5,  0.5, 0.0],
+        #                           [ 0.5,  0.5, 0.0],
+        #                           [ 0.5, -0.5, 0.0]], dtype = 'float32')
+        # self.indices = np.array([1,2,0,2,3,0], dtype='int32')
 
-        self.vao = GL.glGenVertexArrays(1)
-        GL.glBindVertexArray(self.vao)
-        self.vbo = GL.glGenBuffers(1)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
-        self.ebo = GL.glGenBuffers(1)
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
-        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
+        # self.vao = GL.glGenVertexArrays(1)
+        # GL.glBindVertexArray(self.vao)
+        # self.vbo = GL.glGenBuffers(1)
+        # GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        # self.ebo = GL.glGenBuffers(1)
+        # GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
+        # GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
 
-        self.verticesAttrib = Attribute('vec3', self.vertices)
-        self.verticesAttrib.associate_variable(self.shader, 'position')
-        self.translation = Uniform('vec3', [0.0, 0.0, 0.0])
-        self.translation.locate_variable(self.shader, 'translation')
-        self.baseColor = Uniform('vec3', [1.0, 0.8, 0.8])
-        self.baseColor.locate_variable(self.shader, 'baseColor')
+        # self.verticesAttrib = Attribute('vec3', self.vertices)
+        # self.verticesAttrib.associate_variable(self.shader, 'position')
+        # self.translation = Uniform('vec3', [0.0, 0.0, 0.0])
+        # self.translation.locate_variable(self.shader, 'translation')
+        # self.baseColor = Uniform('vec3', [1.0, 0.8, 0.8])
+        # self.baseColor.locate_variable(self.shader, 'baseColor')
 
         self.type = 'nothing'
 
@@ -67,29 +64,24 @@ class GlElement:
         if self.isDirty and self.parent != None:
             relDim = self.parent.constraintManager.calcConstraints(*self.constraints)
             self.dim = (relDim[0] + self.parent.dim[0], relDim[1] + self.parent.dim[1], relDim[2], relDim[3])
-            openglDim = (
+            self.openGLDim = (
                 (2*self.dim[0])/self.window.dim[0] - 1,
                 (2*(self.window.dim[1]-self.dim[1]-self.dim[3]))/self.window.dim[1] - 1,
                 (2*self.dim[2])/self.window.dim[0],
                 (2*self.dim[3])/self.window.dim[1],
             )
-            self.vertices = np.array([[openglDim[0],openglDim[1],0.0],
-                                      [openglDim[0],openglDim[1]+openglDim[3],0.0],
-                                      [openglDim[0]+openglDim[2],openglDim[1]+openglDim[3], 0.0],
-                                      [openglDim[0]+openglDim[2],openglDim[1],0.0]], dtype = 'float32')
-            
             self.constraintManager.pos = (self.dim[0], self.dim[1])
             self.constraintManager.dim = (self.dim[2], self.dim[3])
-
-            self.verticesAttrib.data = self.vertices
-            self.verticesAttrib.upload_data()
-
+            self.reshape()
             self.isDirty = False
         for child in self.children:
             child.update(delta)
         self.actions()
         self.absUpdate(delta)
         return
+    @abstractmethod
+    def reshape(self):
+        ...
     @abstractmethod
     def absUpdate(self, delta):
         ...
@@ -122,15 +114,15 @@ class GlElement:
         return
     
     def onPress(self, callback=None):
-        self.window.uiEvents.append({'obj':self, 'action':'press', 'type':self.type, 'time':time.time_ns()})
+        return
     
     def onRelease(self, callback=None):
-        self.window.uiEvents.append({'obj':self, 'action':'release', 'type':self.type, 'time':time.time_ns()})
+        return
 
     def addChild(self, child):
         if child.parent != None: return
         if child in self.children: return
-        self.setDirty()
+        child.setDirty()
         self.children.append(child)
         child.parent = self
     
@@ -154,43 +146,92 @@ class GlElement:
         for child in self.children:
             child.setDirty()
 
-    def setColor(self, color):
-        self.baseColor.data = [*color]
-
-    def setTranslate(self, translate=(0,0,0)):
-        self.translate.data = [*translate]
-
 class UiButton(GlElement):
     def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
-        super().__init__(window, constraints, shader, dim)
+        super().__init__(window, constraints, dim)
         self.type = 'button'
+
+        self.shader = shader
+        self.color = (1, 1, 1)
+        self.vertices = np.array([
+            [self.openGLDim[0], self.openGLDim[1], *self.color],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], *self.color],
+            [self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3], *self.color],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3], *self.color]
+        ], dtype='float32')
+        self.indices = np.array([1, 0, 3, 3, 0, 2], dtype='int32')
+
+        self.vao = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(self.vao)
+
+        self.vbo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_DYNAMIC_DRAW)
+
+        GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, GL.GL_FALSE, 5*4, ctypes.c_void_p(0*4))
+        GL.glEnableVertexAttribArray(0)
+        GL.glVertexAttribPointer(1, 3, GL.GL_FLOAT, GL.GL_TRUE, 5*4, ctypes.c_void_p(2*4))
+        GL.glEnableVertexAttribArray(1)
+
+        self.ebo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
+        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
+
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+        GL.glBindVertexArray(0)
+
+    def reshape(self):
+        self.vertices = np.array([
+            [self.openGLDim[0], self.openGLDim[1], *self.color],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], *self.color],
+            [self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3], *self.color],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3], *self.color]
+        ], dtype='float32')
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.vertices.nbytes, self.vertices)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+        return
 
     def absUpdate(self, delta):
         return
 
     def absRender(self):
         GL.glUseProgram(self.shader)
-
         GL.glBindVertexArray(self.vao)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
 
-        self.translation.upload_data()
-        self.baseColor.upload_data()
+        GL.glEnableVertexAttribArray(0)
+        GL.glEnableVertexAttribArray(1)
 
         GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
+
+        GL.glDisableVertexAttribArray(1)
+        GL.glDisableVertexAttribArray(0)
         return
+
+    def setColor(self, color):
+        self.color = color
+        self.reshape()
+        return
+
+    def onPress(self, callback=None):
+        self.window.uiEvents.append({'obj':self, 'action':'press', 'type':self.type, 'time':time.time_ns()})
+    
+    def onRelease(self, callback=None):
+        self.window.uiEvents.append({'obj':self, 'action':'release', 'type':self.type, 'time':time.time_ns()})
 
 class UiText(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):
         constraints.append(ABSOLUTE(T_W, 0))
         constraints.append(ABSOLUTE(T_H, 0))
-        super().__init__(window, constraints, Assets.TEST_SHADER, dim)
+        super().__init__(window, constraints, dim)
         self.type = 'text'
         
         self.dirtyText = True
         self.font = Assets.FIRACODE_FONT
-        self.text = 'abcdefghijklmnopqrstuvwxyz'
+        self.text = 'default'
         self.fontSize = 48
         self.textSpacing = 5
         self.textColor = (1,1,1)
@@ -220,6 +261,9 @@ class UiText(GlElement):
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
+    
+    def reshape(self):
+        return
 
     def absUpdate(self, delta):
         self.updateTextBound()
@@ -344,24 +388,21 @@ class UiText(GlElement):
 
 class UiWrapper(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):
-        super().__init__(window, constraints, Assets.TEST_SHADER, dim)
+        super().__init__(window, constraints, dim)
         self.type = 'wrapper'
+
+    def reshape(self):
+        return
 
     def absUpdate(self, delta):
         return
 
     def absRender(self):
         return
-    
-    def onPress(self, callback=None):
-        return
-    
-    def onRelease(self, callback=None):
-        return
 
 class UiStream(GlElement):
     def __init__(self, window, constraints, url, dim=(0,0,0,0)):
-        super().__init__(window, constraints, Assets.TEST_SHADER, dim)
+        super().__init__(window, constraints, dim)
         self.type = 'stream'
 
         self.url = url
@@ -375,28 +416,48 @@ class UiStream(GlElement):
             pass
         self.image = None
 
-        self.streamIndices = np.array([1,2,0,2,3,0], dtype='int32')
+        self.vertices = np.array([
+            [self.openGLDim[0], self.openGLDim[1], 0, 0],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], 1, 0],
+            [self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3], 0, 1],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3], 1, 1]
+        ], dtype='float32')
+        
+        self.indices = np.array([1, 0, 3, 3, 0, 2], dtype='int32')
         
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         
-        self.streamVao = GL.glGenVertexArrays(1)
-        GL.glBindVertexArray(self.streamVao)
+        self.vao = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(self.vao)
 
-        self.streamVbo = GL.glGenBuffers(1)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.streamVbo)
+        self.vbo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBufferData(GL.GL_ARRAY_BUFFER, 4 * 4 * 4, None, GL.GL_DYNAMIC_DRAW)
 
         GL.glVertexAttribPointer(0, 4, GL.GL_FLOAT, GL.GL_FALSE, 0, None)
         GL.glEnableVertexAttribArray(0)
         
-        self.streamEbo = GL.glGenBuffers(1)
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.streamEbo)
-        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.streamIndices, GL.GL_DYNAMIC_DRAW)
+        self.ebo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
+        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
 
         # unbind vao vbo ebo
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
+
+    def reshape(self):
+        self.vertices = np.array([
+            [self.openGLDim[0], self.openGLDim[1], 0, 0],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], 1, 0],
+            [self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3], 0, 1],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3], 1, 1]
+        ], dtype='float32')
+
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.vertices.nbytes, self.vertices)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+        return
 
     def absUpdate(self, delta):
         buf = self.client.dequeue_buffer()
@@ -427,20 +488,13 @@ class UiStream(GlElement):
                 self.image)       # data to load as texture
         GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-
-        self.streamVertices = np.array([[self.vertices[0][0], self.vertices[0][1], 0.0, 0.0],
-                                        [self.vertices[1][0], self.vertices[1][1], 0.0, 1.0],
-                                        [self.vertices[2][0], self.vertices[2][1], 1.0, 1.0],
-                                        [self.vertices[3][0], self.vertices[3][1], 1.0, 0.0]], dtype = 'float32')
         return
 
     def absRender(self):
         GL.glUseProgram(Assets.STREAM_SHADER)
-        GL.glBindVertexArray(self.streamVao)
 
-        GL.glActiveTexture(GL.GL_TEXTURE0)
-        GL.glEnable(GL.GL_BLEND)
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glBindVertexArray(self.vao)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         
         GL.glActiveTexture(GL.GL_TEXTURE0)
         GL.glEnable(GL.GL_BLEND)
@@ -448,25 +502,16 @@ class UiStream(GlElement):
 
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
 
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.streamVbo)
-
-        GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.streamVertices.nbytes, self.streamVertices)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-
         #render quad
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.streamVbo)
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.streamEbo)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
+
         GL.glEnableVertexAttribArray(0)
-        GL.glDrawElements(GL.GL_TRIANGLES, len(self.streamIndices), GL.GL_UNSIGNED_INT, None)
+        GL.glDrawElements(GL.GL_TRIANGLES, len(self.indices), GL.GL_UNSIGNED_INT, None)
         GL.glDisableVertexAttribArray(0)
         
         return
     
-    def onPress(self, callback=None):
-        return
-    
-    def onRelease(self, callback=None):
-        return
 
 
 

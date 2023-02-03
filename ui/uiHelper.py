@@ -1,4 +1,4 @@
-from uiElement import *
+from ui.uiElement import *
 from constraintManager import *
 
 def centeredTextButton(window, constraints, shader):
