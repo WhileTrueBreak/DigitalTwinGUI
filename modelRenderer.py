@@ -78,10 +78,14 @@ class BatchRenderer:
         self.models.append(model)
         self.modelRange[model] = (self.currentIndex, self.currentIndex + len(model.vertices))
 
-        for vertex in model.vertices:
-            self.vertices[self.currentIndex] = [*vertex, 1, 1, 1, matrixIndex]
-            self.indices[self.currentIndex] = self.currentIndex
-            self.currentIndex += 1
+        vShape = model.vertices.shape
+        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 0:6] = model.vertices
+        data = np.tile([1, 1, 1, matrixIndex], (vShape[0], 1))
+        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 6:10] = data
+        indices = np.arange(self.currentIndex, self.currentIndex+vShape[0])
+        self.indices[self.currentIndex:self.currentIndex+vShape[0]] = indices
+
+        self.currentIndex += vShape[0]
         self.isDirty = True
 
         return len(self.models) - 1
