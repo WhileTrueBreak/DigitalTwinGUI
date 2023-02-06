@@ -37,14 +37,14 @@ class Assets:
         modelQueues.append(Assets.loadModel('res/models/link_7.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
 
         Assets.KUKA_MODEL = []
-        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[0]))
-        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[1]))
-        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[2]))
-        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[3]))
-        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[4]))
-        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[5]))
-        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[6]))
-        Assets.KUKA_MODEL.append(Assets.modelInit(modelQueues[7]))
+        Assets.KUKA_MODEL.append(modelQueues[0].get())
+        Assets.KUKA_MODEL.append(modelQueues[1].get())
+        Assets.KUKA_MODEL.append(modelQueues[2].get())
+        Assets.KUKA_MODEL.append(modelQueues[3].get())
+        Assets.KUKA_MODEL.append(modelQueues[4].get())
+        Assets.KUKA_MODEL.append(modelQueues[5].get())
+        Assets.KUKA_MODEL.append(modelQueues[6].get())
+        Assets.KUKA_MODEL.append(modelQueues[7].get())
 
         Assets.INIT = True
     
@@ -116,12 +116,6 @@ class Assets:
     def modelLoader(q, file, shader, tmat):
         print(f'Loading model: {file}')
         q.put(Model(file, shader, tmat))
-    @staticmethod
-    def modelInit(q):
-        model = q.get()
-        print(f'Init model context: {model}')
-        model.initGLContext()
-        return model
 
 class CharacterSlot:
     def __init__(self, texture, glyph):

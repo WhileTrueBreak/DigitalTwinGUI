@@ -17,6 +17,7 @@ from opcua import Opcua
 
 from mathHelper import *
 from model import *
+from modelRenderer import *
 
 import signal
 
@@ -70,17 +71,36 @@ GL.glEnable(GL.GL_CULL_FACE)
 GL.glEnable(GL.GL_DEPTH_TEST)
 GL.glCullFace(GL.GL_BACK)
 
-Assets.KUKA_MODEL[0].setColor([0.5, 0.5, 0.5])
-Assets.KUKA_MODEL[1].setColor([0.5, 0.5, 0.5])
-Assets.KUKA_MODEL[2].setColor([0.9, 0.4, 0.0])
-Assets.KUKA_MODEL[3].setColor([0.5, 0.5, 0.5])
-Assets.KUKA_MODEL[4].setColor([0.5, 0.5, 0.5])
-Assets.KUKA_MODEL[5].setColor([0.9, 0.4, 0.0])
-Assets.KUKA_MODEL[6].setColor([0.5, 0.5, 0.5])
-Assets.KUKA_MODEL[7].setColor([0.8, 0.8, 0.8])
+# Assets.KUKA_MODEL[0].setColor([0.5, 0.5, 0.5])
+# Assets.KUKA_MODEL[1].setColor([0.5, 0.5, 0.5])
+# Assets.KUKA_MODEL[2].setColor([0.9, 0.4, 0.0])
+# Assets.KUKA_MODEL[3].setColor([0.5, 0.5, 0.5])
+# Assets.KUKA_MODEL[4].setColor([0.5, 0.5, 0.5])
+# Assets.KUKA_MODEL[5].setColor([0.9, 0.4, 0.0])
+# Assets.KUKA_MODEL[6].setColor([0.5, 0.5, 0.5])
+# Assets.KUKA_MODEL[7].setColor([0.8, 0.8, 0.8])
 
-for obj in Assets.KUKA_MODEL:
-    obj.setProjectionMatrix(createProjectionMatrix(*window.get_size(), FOV, NEAR_PLANE, FAR_PLANE))
+# for obj in Assets.KUKA_MODEL:
+#     obj.setProjectionMatrix(createProjectionMatrix(*window.get_size(), FOV, NEAR_PLANE, FAR_PLANE))
+
+Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
+
+modelRenderer = Renderer(Assets.OBJECT_SHADER)
+
+modelRenderer.setProjectionMatrix(createProjectionMatrix(*window.get_size(), FOV, NEAR_PLANE, FAR_PLANE))
+modelRenderer.setViewMatrix(createViewMatrix(0, 0.5, 2, -60, 0, 45))
+
+pos = {}
+ids = []
+for x in range(0, 10):
+    for y in range(0, 10):
+        for i in range(8):
+            mat = Robot1_T_0_[i].copy()
+            mat[0][3] = x*2/3
+            mat[1][3] = y*2/3
+            ids.append(modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
+            print(ids[-1])
+            pos[ids[-1]] = (x, y, i)
 
 rot = 0
 
@@ -111,18 +131,38 @@ def handler(signum, frame):
 
 signal.signal(signal.SIGINT, handler)
 
+keyState = {}
+for i in range(1000):
+    keyState[i] = False
+
+rotYaw = 0
+rotPitch = 0
+
 while True:
     end = start
     start = time.time_ns()
     for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            keyState[event.key] = True
+        if event.type == pygame.KEYUP:
+            keyState[event.key] = False
         if event.type == pygame.QUIT:
             pygame.quit()
             threadStopFlag = True
             dataThread.join()
             quit()
 
-    if deltaT != 0:
-        rot += 19*deltaT
+    if keyState[K_j]:
+        rotYaw += 50*deltaT
+    if keyState[K_l]:
+        rotYaw -= 50*deltaT
+    if keyState[K_i]:
+        rotPitch += 50*deltaT
+    if keyState[K_k]:
+        rotPitch -= 50*deltaT
+
+    # if deltaT != 0:
+    #     rot += 19*deltaT
 
     GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
     #############################Start Update#############################
@@ -140,18 +180,15 @@ while True:
     Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(jointsRad)
 
     #############################Start Render#############################
+    for id in ids:
+        mat = Robot1_T_0_[pos[id][2]].copy()
+        mat[0][3] += pos[id][0]*2/3
+        mat[1][3] += pos[id][1]*2/3
+        modelRenderer.setTransformMatrix(id, mat)
+    
+    modelRenderer.setViewMatrix(createViewMatrix(0, 0.5, 2, rotPitch, 0, rotYaw))
 
-    for x in range(-3,3):
-        for y in range(-3,3):
-            for i in range(len(Assets.KUKA_MODEL)):
-                t = Robot1_T_0_[i].copy()
-                t[0][3] += x*2/3
-                t[1][3] += y*2/3
-                Assets.KUKA_MODEL[i].setTransformMatrix(t)
-                Assets.KUKA_MODEL[i].setViewMatrix(createViewMatrix(0, 0.5, 2, -60, 0, 45))
-                Assets.KUKA_MODEL[i].render()
-
-
+    modelRenderer.render()
     ############################# End Render #############################
     pygame.display.flip()
 
@@ -159,7 +196,7 @@ while True:
     secTimer += deltaT
     frames += 1
     if secTimer >= 1:
-        print(f'fps: {frames}')
+        print(f'frame time: {1/frames*1000:.2f}ms | fps: {frames}')
         secTimer -= 1
         frames = 0
 
