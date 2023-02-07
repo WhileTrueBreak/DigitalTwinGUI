@@ -146,6 +146,12 @@ class BatchRenderer:
         GL.glBufferSubData(GL.GL_SHADER_STORAGE_BUFFER, 0, self.transformationMatrices.nbytes, self.transformationMatrices)
         GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssbo)
 
+    def setColor(self, id, color):
+        model = self.models[id]
+        colorMat = np.tile(color, (self.modelRange[model][1]-self.modelRange[model][0], 1))
+        self.vertices[self.modelRange[model][0]:self.modelRange[model][1], 6:9] = colorMat
+        self.isDirty = True
+
 class Renderer:
     def __init__(self, shader):
         self.shader = shader
@@ -183,6 +189,9 @@ class Renderer:
     
     def setTransformMatrix(self, id, matrix):
         self.batches[id[0]].setTransformMatrix(id[1], matrix)
+
+    def setColor(self, id, color):
+        self.batches[id[0]].setColor(id[1], color)
 
     def render(self):
         for batch in self.batches:

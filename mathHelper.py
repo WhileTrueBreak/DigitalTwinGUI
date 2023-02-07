@@ -53,6 +53,11 @@ def createTransformationMatrix(x, y, z, rotx, roty, rotz):
     return tmat
 
 def createViewMatrix(x, y, z, rotx, roty, rotz):
-    return createTransformationMatrix(-x, -y, -z, rotx, roty, rotz)
+    rrotx = radians(rotx)
+    rroty = radians(roty)
+    rrotz = radians(rotz)
+    trans = createTransformationMatrix(-x, -y, -z, 0, 0, 0)
+    rot = createTransformationMatrix(0, 0, 0, rotx, roty, rotz)
+    return rot.dot(trans)
 
 
