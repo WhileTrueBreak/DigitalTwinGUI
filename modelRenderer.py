@@ -9,7 +9,7 @@ class BatchRenderer:
     def __init__(self, shader):
         start_time = time.time_ns()
         self.shader = shader
-        self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, 10), dtype='float32')
+        self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, 11), dtype='float32')
         self.indices = np.zeros(BatchRenderer.MAX_VERTICES, dtype='int32')
         print(f'init vertices: {(time.time_ns()-start_time)/1000}us')
 
@@ -39,13 +39,13 @@ class BatchRenderer:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_DYNAMIC_DRAW)
 
-        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 10*4, ctypes.c_void_p(0*4))
+        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 11*4, ctypes.c_void_p(0*4))
         GL.glEnableVertexAttribArray(0)
-        GL.glVertexAttribPointer(1, 3, GL.GL_FLOAT, GL.GL_TRUE, 10*4, ctypes.c_void_p(3*4))
+        GL.glVertexAttribPointer(1, 3, GL.GL_FLOAT, GL.GL_TRUE, 11*4, ctypes.c_void_p(3*4))
         GL.glEnableVertexAttribArray(1)
-        GL.glVertexAttribPointer(2, 3, GL.GL_FLOAT, GL.GL_FALSE, 10*4, ctypes.c_void_p(6*4))
+        GL.glVertexAttribPointer(2, 4, GL.GL_FLOAT, GL.GL_FALSE, 11*4, ctypes.c_void_p(6*4))
         GL.glEnableVertexAttribArray(2)
-        GL.glVertexAttribPointer(3, 1, GL.GL_FLOAT, GL.GL_FALSE, 10*4, ctypes.c_void_p(9*4))
+        GL.glVertexAttribPointer(3, 1, GL.GL_FLOAT, GL.GL_FALSE, 11*4, ctypes.c_void_p(10*4))
         GL.glEnableVertexAttribArray(3)
 
         self.ebo = GL.glGenBuffers(1)
@@ -80,8 +80,8 @@ class BatchRenderer:
 
         vShape = model.vertices.shape
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 0:6] = model.vertices
-        data = np.tile([1, 1, 1, matrixIndex], (vShape[0], 1))
-        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 6:10] = data
+        data = np.tile([1, 1, 1, 1, matrixIndex], (vShape[0], 1))
+        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 6:11] = data
         indices = np.arange(self.currentIndex, self.currentIndex+vShape[0])
         self.indices[self.currentIndex:self.currentIndex+vShape[0]] = indices
 
@@ -149,7 +149,7 @@ class BatchRenderer:
     def setColor(self, id, color):
         model = self.models[id]
         colorMat = np.tile(color, (self.modelRange[model][1]-self.modelRange[model][0], 1))
-        self.vertices[self.modelRange[model][0]:self.modelRange[model][1], 6:9] = colorMat
+        self.vertices[self.modelRange[model][0]:self.modelRange[model][1], 6:10] = colorMat
         self.isDirty = True
 
 class Renderer:

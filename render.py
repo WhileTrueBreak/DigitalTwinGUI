@@ -67,8 +67,10 @@ Assets.init()
 
 print('\n'*10)
 
+GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);  
 GL.glEnable(GL.GL_CULL_FACE)
 GL.glEnable(GL.GL_DEPTH_TEST)
+GL.glEnable(GL.GL_BLEND)
 GL.glCullFace(GL.GL_BACK)
 
 # Assets.KUKA_MODEL[0].setColor([0.5, 0.5, 0.5])
@@ -99,7 +101,7 @@ for x in range(-3, 4):
             mat[0][3] = x*2
             mat[1][3] = y*2
             ids.append(modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
-            modelRenderer.setColor(ids[-1], [1, i/7, 0])
+            modelRenderer.setColor(ids[-1], [1, i/7, 0, 1])
             armData[ids[-1]] = (x, y, i)
 
 rot = 0
@@ -107,7 +109,7 @@ rot = 0
 secTimer = 0
 frames = 0
 start = time.time_ns()
-end = start
+end = start 
 deltaT = 0
 
 threadStopFlag = False
@@ -163,22 +165,23 @@ while True:
     if keyState[K_k]:
         rotPitch -= 90*deltaT
     
-    deltaPos = [0,0,0,0]
+    deltaPos = [0,0,0]
     if keyState[K_a]: #left
-          deltaPos[0] -= 1*deltaT
+          deltaPos[0] -= 1
     if keyState[K_d]: #right
-          deltaPos[0] += 1*deltaT
+          deltaPos[0] += 1
     if keyState[K_w]: #forward
-          deltaPos[1] -= 1*deltaT
+          deltaPos[1] -= 1
     if keyState[K_s]: #back
-          deltaPos[1] += 1*deltaT
+          deltaPos[1] += 1
     if keyState[K_LALT]: #down
-          deltaPos[2] -= 1*deltaT
+          deltaPos[2] -= 1
     if keyState[K_SPACE]: #up
-          deltaPos[2] += 1*deltaT
-    
+          deltaPos[2] += 1
+    deltaPos = [x*deltaT for x in normalize(deltaPos)]
     radPitch = radians(rotPitch)
     radYaw = radians(rotYaw)
+
     yawX = deltaPos[0]*cos(radYaw)+deltaPos[2]*sin(radYaw)
     yawY = deltaPos[2]*cos(radYaw)-deltaPos[0]*sin(radYaw)
 
