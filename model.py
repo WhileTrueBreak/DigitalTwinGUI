@@ -15,8 +15,7 @@ class Model:
             self.mesh = self.loadSTL(file)
             self.vertices, self.indices = self.createVertices(transform)
         if vertices != None:
-            self.vertices = np.zeros((len(vertices), 6))
-            self.vertices[0:len(self.vertices), 0:3] = vertices
+            self.createVertexData(vertices)
             self.indices = np.arange(len(self.vertices))
     
     def loadSTL(self, file):
@@ -25,6 +24,15 @@ class Model:
         except Exception:
             raise Exception(f'Error loading stl: {file}')
     
+    def createVertexData(self, vertices):
+        self.vertices = np.zeros((len(vertices), 6))
+        self.vertices[0:len(self.vertices), 0:3] = vertices
+        for i in range(0, len(self.vertices), 3):
+            v1 = np.subtract(vertices[i+1], vertices[i+0])
+            v2 = np.subtract(vertices[i+2], vertices[i+0])
+            normal = normalize(np.cross(v1, v2))
+            self.vertices[i:i+3, 3:6] = np.tile(normal, (3,1))
+
     def createVertices(self, transformationMatrix):
         numVertices = len(self.mesh.vectors) * 3
         vertices = np.zeros((numVertices, 6), dtype='float32')
