@@ -9,7 +9,9 @@ def normalize(v):
     return v / norm
 
 def createProjectionMatrix(width, height, FOV, NEAR_PLANE, FAR_PLANE):
-    aspectRatio = width/height
+    aspectRatio = 1
+    if height != 0:
+        aspectRatio = width/height
     yScale = (float) ((1/tan(radians(FOV/2)))*aspectRatio)
     xScale = yScale/aspectRatio
     frustumLength = FAR_PLANE-NEAR_PLANE

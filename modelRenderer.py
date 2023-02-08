@@ -24,6 +24,7 @@ class BatchRenderer:
         self.models = []
         self.currentIndex = 0
 
+        self.isDirty = False
         self.initGLContext()
 
     def initGLContext(self):

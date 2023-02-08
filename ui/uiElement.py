@@ -1,5 +1,7 @@
 from constraintManager import *
 from asset import *
+from mathHelper import *
+from modelRenderer import *
 
 import numpy as np
 
@@ -512,6 +514,41 @@ class UiStream(GlElement):
         
         return
     
+class Ui3DScene(GlElement):
+    def __init__(self, window, constraints, dim=(0,0,0,0)):
+        super().__init__(window, constraints, dim)
+
+        self.NEAR_PLANE = 0.1
+        self.FAR_PLANE = 1000
+        self.FOV = 80
+
+        self.modelRenderer = Renderer(Assets.OBJECT_SHADER)
+        self.modelRenderer.setProjectionMatrix(createProjectionMatrix(self.dim[2], self.dim[3], self.FOV, self.NEAR_PLANE, self.FAR_PLANE))
+        self.modelRenderer.setViewMatrix(createViewMatrix(0, 0, 0, 0, 0, 0))
+        self.type = '3d scene'
+
+    def reshape(self):
+        self.modelRenderer.setProjectionMatrix(createProjectionMatrix(self.dim[2], self.dim[3], self.FOV, self.NEAR_PLANE, self.FAR_PLANE))
+        return
+
+    def absUpdate(self, delta):
+        return
+
+    def absRender(self):
+        GL.glEnable(GL.GL_CULL_FACE)
+        GL.glEnable(GL.GL_DEPTH_TEST)
+        self.modelRenderer.render()
+        GL.glDisable(GL.GL_DEPTH_TEST)
+        GL.glDisable(GL.GL_CULL_FACE)
+        return
+
+    def setViewMatrix(self, matrix):
+        self.modelRenderer.setViewMatrix(matrix)
+    
+    def getRenderer(self):
+        return self.modelRenderer
+
+
 
 
 

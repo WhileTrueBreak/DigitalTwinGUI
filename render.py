@@ -68,22 +68,11 @@ Assets.init()
 print('\n'*10)
 
 GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);  
-GL.glEnable(GL.GL_CULL_FACE)
-GL.glEnable(GL.GL_DEPTH_TEST)
+# GL.glEnable(GL.GL_CULL_FACE)
+# GL.glEnable(GL.GL_DEPTH_TEST)
 GL.glEnable(GL.GL_BLEND)
 GL.glCullFace(GL.GL_BACK)
-
-# Assets.KUKA_MODEL[0].setColor([0.5, 0.5, 0.5])
-# Assets.KUKA_MODEL[1].setColor([0.5, 0.5, 0.5])
-# Assets.KUKA_MODEL[2].setColor([0.9, 0.4, 0.0])
-# Assets.KUKA_MODEL[3].setColor([0.5, 0.5, 0.5])
-# Assets.KUKA_MODEL[4].setColor([0.5, 0.5, 0.5])
-# Assets.KUKA_MODEL[5].setColor([0.9, 0.4, 0.0])
-# Assets.KUKA_MODEL[6].setColor([0.5, 0.5, 0.5])
-# Assets.KUKA_MODEL[7].setColor([0.8, 0.8, 0.8])
-
-# for obj in Assets.KUKA_MODEL:
-#     obj.setProjectionMatrix(createProjectionMatrix(*window.get_size(), FOV, NEAR_PLANE, FAR_PLANE))
+GL.glClearColor(1, 1, 1, 1)
 
 Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
 
@@ -94,17 +83,14 @@ modelRenderer.setViewMatrix(createViewMatrix(0, 0.5, 2, -60, 0, 45))
 
 armData = {}
 ids = []
-for x in range(-3, 4):
-    for y in range(-3, 4):
-        for i in range(8):
-            mat = Robot1_T_0_[i].copy()
-            mat[0][3] = x*2
-            mat[1][3] = y*2
-            ids.append(modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
-            modelRenderer.setColor(ids[-1], [1, i/7, 0, 1])
-            armData[ids[-1]] = (x, y, i)
-
-rot = 0
+for x in range(-1, 2):
+    for y in range(-1, 2):
+        for z in range(0, 1):
+            for i in range(8):
+                mat = Robot1_T_0_[i].copy()
+                ids.append(modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
+                modelRenderer.setColor(ids[-1], [1, i/7, 0, 1])
+                armData[ids[-1]] = (x, y, z, i)
 
 secTimer = 0
 frames = 0
@@ -178,7 +164,7 @@ while True:
           deltaPos[2] -= 1
     if keyState[K_SPACE]: #up
           deltaPos[2] += 1
-    deltaPos = [x*deltaT for x in normalize(deltaPos)]
+    deltaPos = [x*deltaT*2 for x in normalize(deltaPos)]
     radPitch = radians(rotPitch)
     radYaw = radians(rotYaw)
 
@@ -208,12 +194,13 @@ while True:
 
     #############################Start Render#############################
     for id in ids:
-        mat = Robot1_T_0_[armData[id][2]].copy()
-        mat[0][3] += armData[id][0]*2/3
-        mat[1][3] += armData[id][1]*2/3
+        mat = Robot1_T_0_[armData[id][3]].copy()
+        mat[0][3] += armData[id][0]*2/2
+        mat[1][3] += armData[id][1]*2/2
+        mat[2][3] += armData[id][2]*2/2
         modelRenderer.setTransformMatrix(id, mat)
     
-    modelRenderer.setViewMatrix(createViewMatrix(pos[0], pos[1]+0.5, pos[2]+2, rotPitch, 0, rotYaw))
+    modelRenderer.setViewMatrix(createViewMatrix(pos[0], pos[1], pos[2], rotPitch, 0, rotYaw))
 
     modelRenderer.render()
     ############################# End Render #############################

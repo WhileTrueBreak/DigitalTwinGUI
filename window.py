@@ -21,11 +21,20 @@ class Window(Base):
     TAB_HEIGHT = 40
     
     def initialize(self):
+        self.timeCounter = 0
+        self.frames = 0
+
         self.dim = self._screen.get_size()
+
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);  
+        GL.glEnable(GL.GL_BLEND)
+        GL.glCullFace(GL.GL_BACK)
+        GL.glClearColor(1, 1, 1, 1)
 
         self.uiEvents = []
         self.mousePos = (0,0)
         self.mouseButtons = [False]*5
+        self.keyState = {}
 
         self.scenes = [None]
         self.sceneMap = {}
@@ -65,16 +74,24 @@ class Window(Base):
             self.sceneMap[self.tabBtns[-1]] = self.scenes[i]
         self.tabWrapper.addChildren(*self.tabBtns)
 
+    def getKeyState(self, key):
+        if not key in self.keyState:
+            return False
+        return self.keyState[key]
+
     def eventHandler(self):
         self.mousePos = pygame.mouse.get_pos()
         self.mouseButtons = pygame.mouse.get_pressed(num_buttons=5)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.running = False
+                self._running = False
+                if self.currentScene != None:
+                    self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
+                    self.currentScene.stop()
             if event.type == pygame.KEYDOWN:
-                self.keyState[event.unicode] = True
+                self.keyState[event.key] = True
             if event.type == pygame.KEYUP:
-                self.keyState[event.unicode] = False
+                self.keyState[event.key] = False
         for event in self.uiEvents:
             if event['action'] == 'release' and event['obj'] in self.tabBtns:
                 if self.currentScene != None:
@@ -92,8 +109,16 @@ class Window(Base):
         if self.currentScene != None:
             self.currentScene.update(self.delta_time)
         self.windowWrapper.update(self.delta_time)
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
         self.windowWrapper.render()
+
+        self.timeCounter += self.delta_time
+        self.frames += 1
+        if self.timeCounter >= 1:
+            print(f'frame time: {1/self.frames:.2f} | FPS: {self.frames}')
+            self.timeCounter -= 1
+            self.frames = 0
+
         return
 
 

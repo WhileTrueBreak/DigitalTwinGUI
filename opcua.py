@@ -36,10 +36,11 @@ class Opcua:
         return t
     @staticmethod
     def opcuaConnection(q, data, stop):
-        print('')
+        print('Opcua thread started')
         client = Opcua()
         while not stop():
             asyncio.run(Opcua.OpcuaGetData(q, data, client))
+        print('Opcua thread stopped')
     @staticmethod
     async def OpcuaGetData(q, data, client):
         ddict = {}
