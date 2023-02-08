@@ -1,6 +1,7 @@
 from ui.uiElement import *
 from ui.uiHelper import *
 from constraintManager import *
+from asset import *
 
 import pygame
 
@@ -12,8 +13,8 @@ from OpenGL.GLU import *
 import matplotlib.cm
 from vectors import *
 from math import *
+import sys
 
-from asset import *
 
 class Window():
     
@@ -60,17 +61,16 @@ class Window():
     def createUi(self):
         self.windowWrapper = UiWrapper(self, [], (0,0,self.dim[0], self.dim[1]))
         
-        constraints = [
-            ABSOLUTE(T_X, 0),
-            ABSOLUTE(T_Y, 0),
-            RELATIVE(T_W, 1, P_W),
-            ABSOLUTE(T_H, 40),
-        ]
+        constraints = [ABSOLUTE(T_X, 0),
+                       ABSOLUTE(T_Y, 0),
+                       RELATIVE(T_W, 1, P_W),
+                       ABSOLUTE(T_H, 40)]
         self.tabWrapper = UiWrapper(self, constraints)
         self.windowWrapper.addChild(self.tabWrapper)
 
         self.tabBtns = []
         numBtns = len(self.scenes)
+        
         for i in range(numBtns):
             constraints = [
                 COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H)),
@@ -87,6 +87,7 @@ class Window():
             self.tabBtns.append(btn)
             self.tabBtns[-1].setColor([1.0,0.8,0.8])
             self.sceneMap[self.tabBtns[-1]] = self.scenes[i]
+        
         self.tabWrapper.addChildren(*self.tabBtns)
 
     def getKeyState(self, key):

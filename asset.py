@@ -16,9 +16,9 @@ class Assets:
     @staticmethod
     def init():
         if Assets.INIT: return
-        Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textVertex.glsl', 'res/shader/textFragment.glsl')
+        Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
+        Assets.STREAM_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/streamFragment.glsl')
         Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
-        Assets.STREAM_SHADER = Assets.linkShaders('res/shader/streamVertex.glsl', 'res/shader/streamFragment.glsl')
         Assets.OBJECT_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/objectFragment.glsl')
 
         Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf', 48*64)
