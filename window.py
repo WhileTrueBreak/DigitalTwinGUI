@@ -13,18 +13,33 @@ import matplotlib.cm
 from vectors import *
 from math import *
 
-from py3d.core.base import Base
 from asset import *
 
-class Window(Base):
+class Window():
     
     TAB_HEIGHT = 40
+
+    def __init__(self, size, title):
+        pygame.init()
+        display_flags = pygame.DOUBLEBUF | pygame.OPENGL
+        self.screen = pygame.display.set_mode(size, display_flags)
+        pygame.display.set_caption(title)
+
+        self.dim = self.screen.get_size()
+
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glCullFace(GL.GL_BACK)
+        GL.glClearColor(1, 1, 1, 1)
+
+        self.delta = 1
+
+        self.running = True
+        self.initialize()
     
     def initialize(self):
         self.timeCounter = 0
         self.frames = 0
-
-        self.dim = self._screen.get_size()
 
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);  
         GL.glEnable(GL.GL_BLEND)
@@ -84,7 +99,7 @@ class Window(Base):
         self.mouseButtons = pygame.mouse.get_pressed(num_buttons=5)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self._running = False
+                self.running = False
                 if self.currentScene != None:
                     self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
                     self.currentScene.stop()
@@ -107,20 +122,30 @@ class Window(Base):
     def update(self):
         self.eventHandler()
         if self.currentScene != None:
-            self.currentScene.update(self.delta_time)
-        self.windowWrapper.update(self.delta_time)
+            self.currentScene.update(self.delta)
+        self.windowWrapper.update(self.delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
         self.windowWrapper.render()
-
-        self.timeCounter += self.delta_time
-        self.frames += 1
-        if self.timeCounter >= 1:
-            print(f'frame time: {1/self.frames:.2f} | FPS: {self.frames}')
-            self.timeCounter -= 1
-            self.frames = 0
-
         return
 
+    def run(self):
+        start = time.time_ns()
+        while self.running:
+            end = start
+            start = time.time_ns()
 
+            self.update()
+
+            pygame.display.flip()
+
+            self.delta = (start - end)/1000000000
+            self.timeCounter += self.delta
+            self.frames += 1
+            if self.timeCounter >= 1:
+                print(f'frame time: {1/self.frames:.2f} | FPS: {self.frames}')
+                self.timeCounter -= 1
+                self.frames = 0
+        pygame.quit()
+        sys.exit()
 
 

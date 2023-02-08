@@ -12,7 +12,7 @@ class Scene:
         self.window = window
         self.name = name
 
-        self.dim = self.window._screen.get_size()
+        self.dim = self.window.screen.get_size()
         constraints = [
             ABSOLUTE(T_X, 0),
             ABSOLUTE(T_Y, Window.TAB_HEIGHT),

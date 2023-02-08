@@ -2,7 +2,6 @@ from model import *
 from mathHelper import *
 
 from pathlib import Path
-from py3d.core.utils import Utils
 import OpenGL.GL as GL
 import freetype
 
