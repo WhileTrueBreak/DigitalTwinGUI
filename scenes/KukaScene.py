@@ -48,7 +48,7 @@ class KukaScene(Scene):
     
     def __init__(self, window, name):
         super().__init__(window, name)
-        self.cameraTransform = [0, 0.5, 2, -60, 0, 45]
+        self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
 
         self.jointsRad = [0,0,0,0,0,0,0]
 
@@ -57,11 +57,12 @@ class KukaScene(Scene):
         return
 
     def createUi(self):
+        padding = 20
         constraints = [
-            ABSOLUTE(T_X, 0),
-            ABSOLUTE(T_Y, 0),
-            RELATIVE(T_W, 1, P_W),
-            RELATIVE(T_H, 1, P_H),
+            ABSOLUTE(T_X, padding),
+            ABSOLUTE(T_Y, padding),
+            COMPOUND(RELATIVE(T_W, 0.5, P_W), ABSOLUTE(T_W, -2*padding)),
+            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.renderWindow = Ui3DScene(self.window, constraints)
         self.modelRenderer = self.renderWindow.getRenderer()
@@ -73,15 +74,11 @@ class KukaScene(Scene):
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
         self.modelData = {}
         self.modelIds = []
-        for x in range(-1, 2):
-            for y in range(-1, 2):
-                for z in range(0, 1):
-                    for i in range(8):
-                        print(x, y, z, i)
-                        mat = Robot1_T_0_[i].copy()
-                        self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
-                        self.modelRenderer.setColor(self.modelIds[-1], [1, i/7, 0, 1])
-                        self.modelData[self.modelIds[-1]] = (x, y, z, i)
+        for i in range(8):
+            mat = Robot1_T_0_[i].copy()
+            self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
+            self.modelRenderer.setColor(self.modelIds[-1], [1, i/7, 0, 1])
+            self.modelData[self.modelIds[-1]] = (0, 0, 0, i)
 
     def handleUiEvents(self, event):
         return

@@ -29,7 +29,7 @@ class Window(Base):
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);  
         GL.glEnable(GL.GL_BLEND)
         GL.glCullFace(GL.GL_BACK)
-        GL.glClearColor(1, 1, 1, 1)
+        GL.glClearColor(0.5, 0.5, 0.5, 1)
 
         self.uiEvents = []
         self.mousePos = (0,0)

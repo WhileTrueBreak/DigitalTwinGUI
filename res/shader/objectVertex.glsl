@@ -16,6 +16,10 @@ layout (location = 3) in float tmatIndex;
 out float shade;
 out vec4 color;
 
+float map(float value, float min1, float max1, float min2, float max2) {
+  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+}
+
 void main() {
   int index = int(tmatIndex);
 
@@ -32,6 +36,6 @@ void main() {
   vec4 worldPos = TMAT[index] * vec4(vertexPos, 1.0);
   vec4 relPos = viewMatrix * worldPos;
   vec4 screenPos = projectionMatrix*relPos;
+
   gl_Position = screenPos;
 }
-

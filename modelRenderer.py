@@ -7,18 +7,13 @@ class BatchRenderer:
     MAX_TRANSFORMS = 30
     MAX_VERTICES = 1000000
     def __init__(self, shader):
-        start_time = time.time_ns()
         self.shader = shader
         self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, 11), dtype='float32')
         self.indices = np.zeros(BatchRenderer.MAX_VERTICES, dtype='int32')
-        print(f'init vertices: {(time.time_ns()-start_time)/1000}us')
 
         self.transformationMatrices = np.array([np.identity(4)]*BatchRenderer.MAX_TRANSFORMS, dtype='float32')
         self.modelTransformIndex = {}
         self.matrixIndex = 0
-
-        self.projectionMatrix = np.identity(4)
-        self.viewMatrix = np.identity(4)
 
         self.modelRange = {}
         self.models = []
@@ -146,7 +141,7 @@ class BatchRenderer:
         GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssbo)
         GL.glBufferSubData(GL.GL_SHADER_STORAGE_BUFFER, 0, self.transformationMatrices.nbytes, self.transformationMatrices)
         GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssbo)
-
+    
     def setColor(self, id, color):
         model = self.models[id]
         colorMat = np.tile(color, (self.modelRange[model][1]-self.modelRange[model][0], 1))
