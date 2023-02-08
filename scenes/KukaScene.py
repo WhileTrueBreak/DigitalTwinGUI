@@ -68,6 +68,21 @@ class KukaScene(Scene):
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
         self.addModels()
+
+        padding = 10
+        constraints = [
+            ABSOLUTE(T_X, padding),
+            ABSOLUTE(T_Y, padding),
+            ABSOLUTE(T_W, 30),
+            RELATIVE(T_H, 1, T_W)
+        ]
+        self.recenterBtn, self.recenterText = centeredTextButton(self.window, constraints, Assets.SOLID_SHADER)
+        self.recenterText.setText('RE')
+        self.recenterText.setFontSize(20)
+        self.recenterText.setTextSpacing(20)
+        self.recenterText.setTextColor((1, 1, 1))
+        self.recenterBtn.setColor((0, 0, 0))
+        self.renderWindow.addChild(self.recenterBtn)
         return
     
     def addModels(self):
@@ -77,10 +92,15 @@ class KukaScene(Scene):
         for i in range(8):
             mat = Robot1_T_0_[i].copy()
             self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
-            self.modelRenderer.setColor(self.modelIds[-1], [1, i/7, 0, 1])
+            self.modelRenderer.setColor(self.modelIds[-1], (1, i/7, 0, 1))
             self.modelData[self.modelIds[-1]] = (0, 0, 0, i)
+        self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
+        self.modelRenderer.setColor(self.floorId, (0.5, 0.5, 0.5, 1))
 
     def handleUiEvents(self, event):
+        if event['action'] == 'release':
+            if event['obj'] != self.recenterBtn: return
+            self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
         return
     
     def absUpdate(self, delta):
@@ -157,4 +177,6 @@ class KukaScene(Scene):
     def stop(self):
         self.threadStopFlag = True
         return
+
+
 

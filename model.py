@@ -8,15 +8,16 @@ from mathHelper import normalize
 
 
 class Model:
-    def __init__(self, file, shader, transform=np.identity(4)):
-        self.file = file
-        self.isDirty = True
-        self.color = [1,1,1]
+    def __init__(self, shader, file=None, vertices=None, transform=np.identity(4)):
         self.shader = shader
-        self.mesh = self.loadSTL(file)
-        self.vertices, self.indices = self.createVertices(transform)
-        # self.projectionMatrix = np.identity(4)
-        # self.viewMatrix = np.identity(4)
+        if file != None:
+            self.file = file
+            self.mesh = self.loadSTL(file)
+            self.vertices, self.indices = self.createVertices(transform)
+        if vertices != None:
+            self.vertices = np.zeros((len(vertices), 6))
+            self.vertices[0:len(self.vertices), 0:3] = vertices
+            self.indices = np.arange(len(self.vertices))
     
     def loadSTL(self, file):
         try:
@@ -45,6 +46,3 @@ class Model:
                 counter += 1
         return (vertices, indices)
 
-    def setColor(self, color):
-        self.color = color
-        self.isDirty = True

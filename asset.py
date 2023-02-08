@@ -45,6 +45,16 @@ class Assets:
         Assets.KUKA_MODEL.append(modelQueues[6].get())
         Assets.KUKA_MODEL.append(modelQueues[7].get())
 
+        floorVertices = [
+            [-1.5,-1.5, 0.0],
+            [ 1.5,-1.5, 0.0],
+            [-1.5, 1.5, 0.0],
+            [-1.5, 1.5, 0.0],
+            [ 1.5,-1.5, 0.0],
+            [ 1.5, 1.5, 0.0],
+        ]
+        Assets.FLOOR = Model(Assets.OBJECT_SHADER, vertices=floorVertices)
+
         Assets.INIT = True
     
     @staticmethod
@@ -114,7 +124,7 @@ class Assets:
     @staticmethod
     def modelLoader(q, file, shader, tmat):
         print(f'Loading model: {file}')
-        q.put(Model(file, shader, tmat))
+        q.put(Model(shader, file=file, transform=tmat))
 
 class CharacterSlot:
     def __init__(self, texture, glyph):

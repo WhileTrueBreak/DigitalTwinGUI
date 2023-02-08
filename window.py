@@ -130,6 +130,11 @@ class Window():
         return
 
     def run(self):
+        
+        self.currentScene = self.scenes[2]
+        self.windowWrapper.addChild(self.currentScene.sceneWrapper)
+        self.currentScene.start()
+
         start = time.time_ns()
         while self.running:
             end = start
