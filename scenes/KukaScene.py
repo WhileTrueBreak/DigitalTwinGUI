@@ -9,6 +9,8 @@ import pygame
 
 from math import *
 
+from queue import Queue
+
 from asyncua import Client, ua
 import asyncio
 import asyncio

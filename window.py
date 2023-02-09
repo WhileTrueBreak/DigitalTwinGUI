@@ -130,7 +130,6 @@ class Window():
         return
 
     def run(self):
-        
         self.currentScene = self.scenes[2]
         self.windowWrapper.addChild(self.currentScene.sceneWrapper)
         self.currentScene.start()
@@ -153,5 +152,3 @@ class Window():
                 self.frames = 0
         pygame.quit()
         sys.exit()
-
-

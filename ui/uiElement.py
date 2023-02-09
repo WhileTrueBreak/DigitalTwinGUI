@@ -2,6 +2,7 @@ from constraintManager import *
 from asset import *
 from mathHelper import *
 from modelRenderer import *
+from mjpegThread import *
 
 import numpy as np
 
@@ -14,6 +15,7 @@ import pygame
 from mjpeg.client import MJPEGClient
 
 import glm
+from queue import Queue
 
 from PIL import Image
 from PIL.Image import Transpose
@@ -408,14 +410,9 @@ class UiStream(GlElement):
         self.type = 'stream'
 
         self.url = url
-        try:
-            self.client = MJPEGClient(self.url)
-            bufs = self.client.request_buffers(65536, 50)
-            for b in bufs:
-                self.client.enqueue_buffer(b)
-            self.start()
-        except:
-            pass
+        self.container = StreamContainer()
+        self.threadStopFlag = True
+        self.thread = createMjpegThread(self.container, self.url, lambda:self.threadStopFlag)
         self.image = None
 
         self.vertices = np.array([
@@ -426,8 +423,9 @@ class UiStream(GlElement):
         ], dtype='float32')
         
         self.indices = np.array([1, 0, 3, 3, 0, 2], dtype='int32')
-        
-        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        self.texture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         
         self.vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(self.vao)
@@ -462,9 +460,14 @@ class UiStream(GlElement):
         return
 
     def absUpdate(self, delta):
-        buf = self.client.dequeue_buffer()
-        stream = BytesIO(buf.data)
-        self.client.enqueue_buffer(buf)
+        self.updateImage()
+        return
+    
+    def updateImage(self):
+        stream = self.container.getStream()
+        if stream == None: return
+
+        # stream = BytesIO(buf.data)
         image = Image.open(stream).convert("RGBA")
         stream.close()
         self.image = image.transpose(Transpose.FLIP_TOP_BOTTOM).tobytes()
@@ -490,7 +493,6 @@ class UiStream(GlElement):
                 self.image)       # data to load as texture
         GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-        return
 
     def absRender(self):
         GL.glUseProgram(Assets.STREAM_SHADER)
@@ -515,18 +517,11 @@ class UiStream(GlElement):
         return
     
     def start(self):
-        try:
-            self.client.start()
-        except:
-            pass
-        return
+        self.threadStopFlag = False
+        self.thread = createMjpegThread(self.container, self.url, lambda:self.threadStopFlag)
 
     def stop(self):
-        try:
-            self.client.stop()
-        except:
-            pass
-        return
+        self.threadStopFlag = True
 
 class Ui3DScene(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):

@@ -64,22 +64,21 @@ class CamScene(Scene):
             for i in range(len(self.streams)):
                 if event['obj'] != self.camBtns[i]: continue
                 self.sceneWrapper.removeChildren(*self.streams)
+                for stream in self.streams:
+                    stream.stop()
                 self.sceneWrapper.addChild(self.streams[i])
+                self.streams[i].start()
         return
     
     def absUpdate(self, delta):
         return
 
     def start(self):
-        print('Starting streams')
-        # for stream in self.streams:
-        #     stream.start()
         return
     
     def stop(self):
-        print('Stopping streams')
-        # for stream in self.streams:
-        #     stream.stop()
+        for stream in self.streams:
+            stream.stop()
         return
 
 
