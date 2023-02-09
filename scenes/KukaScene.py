@@ -94,8 +94,13 @@ class KukaScene(Scene):
         for i in range(8):
             mat = Robot1_T_0_[i].copy()
             self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
-            self.modelRenderer.setColor(self.modelIds[-1], (1, i/7, 0, 1))
+            self.modelRenderer.setColor(self.modelIds[-1], (0, i/7, 1, 0.5))
             self.modelData[self.modelIds[-1]] = (0, 0, 0, i)
+        for i in range(8):
+            mat = Robot1_T_0_[i].copy()
+            self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
+            self.modelRenderer.setColor(self.modelIds[-1], (1, i/7, 0, 0.5))
+            self.modelData[self.modelIds[-1]] = (0, 0, 0.1, i)
         self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
         self.modelRenderer.setColor(self.floorId, (0.5, 0.5, 0.5, 1))
 
@@ -151,7 +156,7 @@ class KukaScene(Scene):
             deltaPos[2] -= 1
         if self.window.getKeyState(K_SPACE): #up
             deltaPos[2] += 1
-        deltaPos = [x*delta*2 for x in normalize(deltaPos)]
+        deltaPos = [x*delta for x in normalize(deltaPos)]
         radPitch = radians(self.cameraTransform[3])
         radYaw = radians(self.cameraTransform[5])
 

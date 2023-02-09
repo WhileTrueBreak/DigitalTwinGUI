@@ -27,6 +27,9 @@ class Window():
 
         self.dim = self.screen.get_size()
 
+
+        # GL.glDepthFunc(GL.GL_ALWAYS)
+
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         GL.glEnable(GL.GL_BLEND)
         GL.glCullFace(GL.GL_BACK)
@@ -146,7 +149,7 @@ class Window():
             self.timeCounter += self.delta
             self.frames += 1
             if self.timeCounter >= 1:
-                print(f'frame time: {1/self.frames:.2f} | FPS: {self.frames}')
+                print(f'frame time: {1000000/self.frames:.0f}us | FPS: {self.frames}')
                 self.timeCounter -= 1
                 self.frames = 0
         pygame.quit()

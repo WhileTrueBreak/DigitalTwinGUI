@@ -26,14 +26,14 @@ class Assets:
         Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf', 48*64)
         
         modelQueues = []
-        modelQueues.append(Assets.loadModel('res/models/link_0.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
-        modelQueues.append(Assets.loadModel('res/models/link_1.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0)))
-        modelQueues.append(Assets.loadModel('res/models/link_2.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
-        modelQueues.append(Assets.loadModel('res/models/link_3.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0)))
-        modelQueues.append(Assets.loadModel('res/models/link_4.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
-        modelQueues.append(Assets.loadModel('res/models/link_5.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180)))
-        modelQueues.append(Assets.loadModel('res/models/link_6.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
-        modelQueues.append(Assets.loadModel('res/models/link_7.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_0.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_1.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0)))
+        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_2.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
+        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_3.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0)))
+        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_4.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_5.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180)))
+        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_6.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
+        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_7.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
 
         Assets.KUKA_MODEL = []
         Assets.KUKA_MODEL.append(modelQueues[0].get())

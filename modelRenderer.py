@@ -6,11 +6,12 @@ import time
 class BatchRenderer:
     MAX_TRANSFORMS = 30
     MAX_VERTICES = 1000000
-    def __init__(self, shader):
+    def __init__(self, shader, isTransparent=False):
         self.shader = shader
         self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, 11), dtype='float32')
         self.indices = np.zeros(BatchRenderer.MAX_VERTICES, dtype='int32')
 
+        self.isTransparent = isTransparent
         self.transformationMatrices = np.array([np.identity(4)]*BatchRenderer.MAX_TRANSFORMS, dtype='float32')
         self.modelTransformIndex = {}
         self.matrixIndex = 0
