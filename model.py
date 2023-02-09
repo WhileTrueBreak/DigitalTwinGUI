@@ -25,32 +25,35 @@ class Model:
             raise Exception(f'Error loading stl: {file}')
     
     def createVertexData(self, vertices):
+        vertices = np.array(vertices)
         self.vertices = np.zeros((len(vertices), 6))
-        self.vertices[0:len(self.vertices), 0:3] = vertices
-        for i in range(0, len(self.vertices), 3):
-            v1 = np.subtract(vertices[i+1], vertices[i+0])
-            v2 = np.subtract(vertices[i+2], vertices[i+0])
-            normal = normalize(np.cross(v1, v2))
-            self.vertices[i:i+3, 3:6] = np.tile(normal, (3,1))
+        self.vertices[::, 0:3] = vertices
+
+        normals = np.cross(vertices[1::3] - vertices[0::3], vertices[2::3] - vertices[0::3])
+        normals /= np.sqrt((normals ** 2).sum(-1))[..., np.newaxis]
+        normals = np.repeat(normals, 3, axis=0)
+        self.vertices[::,3:6] = normals
 
     def createVertices(self, transformationMatrix):
+        start = time.time_ns()
         numVertices = len(self.mesh.vectors) * 3
         vertices = np.zeros((numVertices, 6), dtype='float32')
         indices = np.zeros(numVertices, dtype='float32')
 
-        counter = 0
-        for face in self.mesh.vectors:
-            v1 = np.subtract(face[1], face[0])
-            v2 = np.subtract(face[2], face[0])
-            normal = normalize(np.cross(v1, v2))
-            tnormal = transformationMatrix.dot([*normal, 0])
-            for i in range(3):
-                if counter % 10000 == 0:
-                    print(f'{self.file}: {(counter/(len(self.mesh.vectors)*3)*100):.0f}% done')
-                tface = transformationMatrix.dot([*face[i], 1])
-                vertices[counter, 0:3] = tface[:-1]
-                vertices[counter, 3:6] = tnormal[:-1]
-                indices[counter] = counter
-                counter += 1
+        normals = np.cross(self.mesh.vectors[::, 1] - self.mesh.vectors[::, 0], self.mesh.vectors[::, 2] - self.mesh.vectors[::, 0])
+        vectors = np.zeros((normals.shape[0], 4))
+        vectors[::, 0:3] = normals
+        vectors = transformationMatrix.dot(vectors.T)
+        normals = vectors.T[::, 0:3]
+        normals /= np.sqrt((normals ** 2).sum(-1))[..., np.newaxis]
+        normals = np.repeat(normals, 3, axis=0)
+        vertices[::,3:6] = normals
+        
+        flattened = self.mesh.vectors.reshape(self.mesh.vectors.shape[0]*3, 3)
+        vectors = np.ones((flattened.shape[0], 4))
+        vectors[::,0:3] = flattened
+        vectors = transformationMatrix.dot(vectors.T)
+        vertices[::,0:3] = vectors.T[::,0:3]
+
         return (vertices, indices)
 

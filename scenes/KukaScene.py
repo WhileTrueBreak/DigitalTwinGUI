@@ -63,7 +63,7 @@ class KukaScene(Scene):
         constraints = [
             ABSOLUTE(T_X, padding),
             ABSOLUTE(T_Y, padding),
-            COMPOUND(RELATIVE(T_W, 0.5, P_W), ABSOLUTE(T_W, -2*padding)),
+            COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.renderWindow = Ui3DScene(self.window, constraints)
