@@ -74,6 +74,8 @@ class CamScene(Scene):
         return
 
     def start(self):
+        for stream in self.streams:
+            stream.start()
         return
     
     def stop(self):

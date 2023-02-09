@@ -17,7 +17,6 @@ import sys
 
 
 class Window():
-    
     TAB_HEIGHT = 40
 
     def __init__(self, size, title):

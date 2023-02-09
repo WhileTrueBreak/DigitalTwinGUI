@@ -518,6 +518,7 @@ class UiStream(GlElement):
     
     def start(self):
         self.threadStopFlag = False
+        if self.thread.is_alive(): return
         self.thread = createMjpegThread(self.container, self.url, lambda:self.threadStopFlag)
 
     def stop(self):

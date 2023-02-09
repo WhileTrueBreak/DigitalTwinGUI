@@ -55,7 +55,7 @@ class KukaScene(Scene):
         self.jointsRad = [0,0,0,0,0,0,0]
 
         self.threadStopFlag = False
-        self.dataQueue = Queue()
+        self.opcuaContainer = OpcuaContainer()
         return
 
     def createUi(self):
@@ -112,17 +112,14 @@ class KukaScene(Scene):
         return
     
     def updateJoints(self):
-        if not self.dataQueue.empty():
-            data = self.dataQueue.get()
-            while not self.dataQueue.empty():
-                data = self.dataQueue.get()
-            self.jointsRad[0] = radians(data['ns=24;s=R4d_Joi1'])
-            self.jointsRad[1] = radians(data['ns=24;s=R4d_Joi2'])
-            self.jointsRad[2] = radians(data['ns=24;s=R4d_Joi3'])
-            self.jointsRad[3] = radians(data['ns=24;s=R4d_Joi4'])
-            self.jointsRad[4] = radians(data['ns=24;s=R4d_Joi5'])
-            self.jointsRad[5] = radians(data['ns=24;s=R4d_Joi6'])
-            self.jointsRad[6] = radians(data['ns=24;s=R4d_Joi7'])
+        if self.opcuaContainer.hasUpdated():
+            self.jointsRad[0] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi1', default=0))
+            self.jointsRad[1] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi2', default=0))
+            self.jointsRad[2] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi3', default=0))
+            self.jointsRad[3] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi4', default=0))
+            self.jointsRad[4] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi5', default=0))
+            self.jointsRad[5] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi6', default=0))
+            self.jointsRad[6] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi7', default=0))
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(self.jointsRad)
         for id in self.modelIds:
             mat = Robot1_T_0_[self.modelData[id][3]].copy()
@@ -167,13 +164,16 @@ class KukaScene(Scene):
 
     def start(self):
         self.threadStopFlag = False
-        self.dataThread = Opcua.createOpcuaThread(self.dataQueue, ['ns=24;s=R4d_Joi1', 
-                                                                   'ns=24;s=R4d_Joi2', 
-                                                                   'ns=24;s=R4d_Joi3', 
-                                                                   'ns=24;s=R4d_Joi4', 
-                                                                   'ns=24;s=R4d_Joi5', 
-                                                                   'ns=24;s=R4d_Joi6', 
-                                                                   'ns=24;s=R4d_Joi7'], lambda:self.threadStopFlag)
+        self.dataThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            [
+                'ns=24;s=R4d_Joi1', 
+                'ns=24;s=R4d_Joi2', 
+                'ns=24;s=R4d_Joi3', 
+                'ns=24;s=R4d_Joi4', 
+                'ns=24;s=R4d_Joi5', 
+                'ns=24;s=R4d_Joi6', 
+                'ns=24;s=R4d_Joi7'
+            ], lambda:self.threadStopFlag)
         return
     
     def stop(self):

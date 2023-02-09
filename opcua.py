@@ -3,9 +3,25 @@ import asyncio
 
 from threading import Thread
 
-class Opcua:
+class OpcuaContainer:
     def __init__(self):
-        self.OpcUaHost = 'oct.tpc://172.31.1.236:4840/server/'
+        self.updated = False
+        self.opcuaDict = {}
+    
+    def getValue(self, key, default=None):
+        if not key in self.opcuaDict: return default
+        return self.opcuaDict[key]
+    
+    def setValue(self, key, value):
+        self.updated = True
+        self.opcuaDict[key] = value
+    
+    def hasUpdated(self):
+        return self.updated
+
+class Opcua:
+    def __init__(self, host):
+        self.OpcUaHost = host #'oct.tpc://172.31.1.236:4840/server/'
         self.opcuaClient = Client(self.OpcUaHost)
         asyncio.run(self.opcuaClient.connect())
         self.nodeDict = {}
@@ -30,23 +46,21 @@ class Opcua:
         except Exception:
             raise Exception(f'Error getting value')
     @staticmethod
-    def createOpcuaThread(q, data, stop):
-        t = Thread(target = Opcua.opcuaConnection, args =(q, data, stop))
+    def createOpcuaThread(container, host, data, stop):
+        t = Thread(target = Opcua.opcuaConnection, args =(container, host, data, stop))
         t.start()
         return t
     @staticmethod
-    def opcuaConnection(q, data, stop):
-        print('Opcua thread started')
-        client = Opcua()
+    def opcuaConnection(container, host, data, stop):
+        print(f'Opcua thread started: {host}')
+        client = Opcua(host)
         while not stop():
-            asyncio.run(Opcua.OpcuaGetData(q, data, client))
-        print('Opcua thread stopped')
+            asyncio.run(Opcua.OpcuaGetData(container, data, client))
+        print(f'Opcua thread stopped: {host}')
     @staticmethod
-    async def OpcuaGetData(q, data, client):
-        ddict = {}
+    async def OpcuaGetData(container, data, client):
         for d in data:
-            ddict[d] = await client.getValue(d)
-        q.put(ddict)
+            container.setValue(d, await client.getValue(d))
     
 
 

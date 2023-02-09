@@ -13,7 +13,6 @@ class StreamContainer:
     
     def setStream(self, stream):
         self.stream = stream
-
 @staticmethod
 def createMjpegThread(container, url, stop):
     t = Thread(target = MjpegConnection, args =(container, url, stop))
@@ -21,7 +20,7 @@ def createMjpegThread(container, url, stop):
     return t
 @staticmethod
 def MjpegConnection(container, url, stop):
-    print(f'mjpeg thread started with: {url}')
+    print(f'mjpeg thread started: {url}')
     try:
         client = MJPEGClient(url)
         bufs = client.request_buffers(65536, 50)
@@ -36,4 +35,5 @@ def MjpegConnection(container, url, stop):
         stream = BytesIO(buf.data)
         container.setStream(stream)
         client.enqueue_buffer(buf)
-    print('mjpeg thread stopped')
+    client.stop()
+    print(f'mjpeg thread stopped: {url}')
