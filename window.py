@@ -31,9 +31,10 @@ class Window():
         # GL.glDepthFunc(GL.GL_ALWAYS)
 
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        # GL.glBlendFunc(GL.GL_ONE, GL.GL_ONE)
         GL.glEnable(GL.GL_BLEND)
         GL.glCullFace(GL.GL_BACK)
-        GL.glClearColor(1, 1, 1, 1)
+        GL.glClearColor(0, 0, 0, 1)
 
         self.delta = 1
 
@@ -46,6 +47,7 @@ class Window():
 
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);  
         GL.glEnable(GL.GL_BLEND)
+        GL.glEnable(GL.GL_DEPTH_TEST)
         GL.glCullFace(GL.GL_BACK)
         GL.glClearColor(0.5, 0.5, 0.5, 1)
 

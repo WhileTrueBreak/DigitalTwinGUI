@@ -20,30 +20,50 @@ class Assets:
         Assets.STREAM_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/streamFragment.glsl')
         Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
         Assets.OBJECT_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/objectFragment.glsl')
+        Assets.OBJECT_T_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/objectTransparencyFragment.glsl')
 
         Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf', 48*64)
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF', 48*64)
         Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf', 48*64)
         
-        modelQueues = []
-        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_0.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
-        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_1.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0)))
-        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_2.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
-        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_3.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0)))
-        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_4.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
-        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_5.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180)))
-        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_6.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 180)))
-        modelQueues.append(Assets.loadModel('res/models/iiwa14/visual/link_7.stl', Assets.OBJECT_SHADER, createTransformationMatrix(0, 0, 0, 0, 0, 0)))
+        modelQueues = {}
+        modelQueues['k14l0'] = Assets.loadModel('res/models/iiwa14/visual/link_0.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        modelQueues['k14l1'] = Assets.loadModel('res/models/iiwa14/visual/link_1.stl', createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0))
+        modelQueues['k14l2'] = Assets.loadModel('res/models/iiwa14/visual/link_2.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
+        modelQueues['k14l3'] = Assets.loadModel('res/models/iiwa14/visual/link_3.stl', createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0))
+        modelQueues['k14l4'] = Assets.loadModel('res/models/iiwa14/visual/link_4.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        modelQueues['k14l5'] = Assets.loadModel('res/models/iiwa14/visual/link_5.stl', createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180))
+        modelQueues['k14l6'] = Assets.loadModel('res/models/iiwa14/visual/link_6.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
+        modelQueues['k14l7'] = Assets.loadModel('res/models/iiwa14/visual/link_7.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
 
-        Assets.KUKA_MODEL = []
-        Assets.KUKA_MODEL.append(modelQueues[0].get())
-        Assets.KUKA_MODEL.append(modelQueues[1].get())
-        Assets.KUKA_MODEL.append(modelQueues[2].get())
-        Assets.KUKA_MODEL.append(modelQueues[3].get())
-        Assets.KUKA_MODEL.append(modelQueues[4].get())
-        Assets.KUKA_MODEL.append(modelQueues[5].get())
-        Assets.KUKA_MODEL.append(modelQueues[6].get())
-        Assets.KUKA_MODEL.append(modelQueues[7].get())
+        modelQueues['k7l0'] = Assets.loadModel('res/models/iiwa7/visual/link_0.stl')
+        modelQueues['k7l1'] = Assets.loadModel('res/models/iiwa7/visual/link_1.stl')
+        modelQueues['k7l2'] = Assets.loadModel('res/models/iiwa7/visual/link_2.stl')
+        modelQueues['k7l3'] = Assets.loadModel('res/models/iiwa7/visual/link_3.stl')
+        modelQueues['k7l4'] = Assets.loadModel('res/models/iiwa7/visual/link_4.stl')
+        modelQueues['k7l5'] = Assets.loadModel('res/models/iiwa7/visual/link_5.stl')
+        modelQueues['k7l6'] = Assets.loadModel('res/models/iiwa7/visual/link_6.stl')
+        modelQueues['k7l7'] = Assets.loadModel('res/models/iiwa7/visual/link_7.stl')
+
+        Assets.KUKA_IIWA14_MODEL = []
+        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l0'].get())
+        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l1'].get())
+        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l2'].get())
+        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l3'].get())
+        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l4'].get())
+        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l5'].get())
+        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l6'].get())
+        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l7'].get())
+
+        Assets.KUKA_IIWA7_MODEL = []
+        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l0'].get())
+        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l1'].get())
+        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l2'].get())
+        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l3'].get())
+        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l4'].get())
+        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l5'].get())
+        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l6'].get())
+        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l7'].get())
 
         floorVertices = [
             [-1.5,-1.5, 0.0],[ 1.5,-1.5, 0.0],[-1.5, 1.5, 0.0],
@@ -114,9 +134,9 @@ class Assets:
             return
         return programRef
     @staticmethod
-    def loadModel(file, shader, tmat):
+    def loadModel(file, tmat=np.identity(4)):
         q = Queue()
-        t = Thread(target = Assets.modelLoader, args =(q, file, shader, tmat))
+        t = Thread(target = Assets.modelLoader, args =(q, file, Assets.OBJECT_SHADER, tmat))
         t.start()
         return q
     @staticmethod

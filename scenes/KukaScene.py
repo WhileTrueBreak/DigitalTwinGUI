@@ -54,8 +54,18 @@ class KukaScene(Scene):
 
         self.jointsRad = [0,0,0,0,0,0,0]
 
-        self.threadStopFlag = False
+        self.threadStopFlag = True
         self.opcuaContainer = OpcuaContainer()
+        self.dataThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            [
+                'ns=24;s=R4d_Joi1', 
+                'ns=24;s=R4d_Joi2', 
+                'ns=24;s=R4d_Joi3', 
+                'ns=24;s=R4d_Joi4', 
+                'ns=24;s=R4d_Joi5', 
+                'ns=24;s=R4d_Joi6', 
+                'ns=24;s=R4d_Joi7'
+            ], lambda:self.threadStopFlag)
         return
 
     def createUi(self):
@@ -66,7 +76,7 @@ class KukaScene(Scene):
             COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
-        self.renderWindow = Ui3DScene(self.window, constraints)
+        self.renderWindow = Ui3DScene(self.window, constraints, True)
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
         self.addModels()
@@ -91,16 +101,17 @@ class KukaScene(Scene):
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
         self.modelData = {}
         self.modelIds = []
-        for i in range(8):
+        for i in range(0,8):
             mat = Robot1_T_0_[i].copy()
-            self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
-            self.modelRenderer.setColor(self.modelIds[-1], (0, i/7, 1, 0.5))
+            self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
+            self.modelRenderer.setColor(self.modelIds[-1], (0, i/7, 1, 1))
             self.modelData[self.modelIds[-1]] = (0, 0, 0, i)
-        for i in range(8):
+
             mat = Robot1_T_0_[i].copy()
-            self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_MODEL[i], mat))
+            self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
             self.modelRenderer.setColor(self.modelIds[-1], (1, i/7, 0, 0.5))
-            self.modelData[self.modelIds[-1]] = (0, 0, 0.1, i)
+            self.modelData[self.modelIds[-1]] = (0, 0, 0, i)
+
         self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
         self.modelRenderer.setColor(self.floorId, (0.5, 0.5, 0.5, 1))
 
@@ -169,6 +180,7 @@ class KukaScene(Scene):
 
     def start(self):
         self.threadStopFlag = False
+        if self.dataThread.is_alive(): return
         self.dataThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
                 'ns=24;s=R4d_Joi1', 

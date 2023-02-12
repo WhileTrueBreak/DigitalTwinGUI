@@ -14,7 +14,7 @@ layout (location = 2) in vec4 vertexColor;
 layout (location = 3) in float tmatIndex;
 
 out float shade;
-out vec4 color;
+out vec4 objColor;
 
 float map(float value, float min1, float max1, float min2, float max2) {
   return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
@@ -31,7 +31,7 @@ void main() {
   float shade2 = dot(lightVec2, tnormal.xyz)/2+0.5;
   shade = max(shade1, shade2);
 
-  color = vertexColor;
+  objColor = vertexColor;
 
   vec4 worldPos = TMAT[index] * vec4(vertexPos, 1.0);
   vec4 relPos = viewMatrix * worldPos;

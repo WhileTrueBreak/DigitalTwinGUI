@@ -4,20 +4,21 @@ import ctypes
 import time
 
 class BatchRenderer:
-    MAX_TRANSFORMS = 30
+    MAX_TRANSFORMS = 9
     MAX_VERTICES = 1000000
     def __init__(self, shader, isTransparent=False):
         self.shader = shader
         self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, 11), dtype='float32')
-        self.indices = np.zeros(BatchRenderer.MAX_VERTICES, dtype='int32')
+        self.indices = np.arange(BatchRenderer.MAX_VERTICES, dtype='int32')
 
         self.isTransparent = isTransparent
-        self.transformationMatrices = np.array([np.identity(4)]*BatchRenderer.MAX_TRANSFORMS, dtype='float32')
-        self.modelTransformIndex = {}
-        self.matrixIndex = 0
 
-        self.modelRange = {}
-        self.models = []
+        self.isAvaliable = [True]*BatchRenderer.MAX_TRANSFORMS
+
+        self.transformationMatrices = np.array([np.identity(4)]*BatchRenderer.MAX_TRANSFORMS, dtype='float32')
+        self.modelRange = np.zeros((BatchRenderer.MAX_TRANSFORMS, 2), dtype='int32')
+        self.models = [None]*BatchRenderer.MAX_TRANSFORMS
+        
         self.currentIndex = 0
 
         self.isDirty = False
@@ -61,31 +62,45 @@ class BatchRenderer:
 
     def addModel(self, model, transformationMatrix):
         transformationMatrix = transformationMatrix.T
-
-        if self.matrixIndex >= BatchRenderer.MAX_TRANSFORMS:
+        if not True in self.isAvaliable:
             return -1
         if self.currentIndex + len(model.vertices) > BatchRenderer.MAX_VERTICES:
             return -1
-        
-        self.transformationMatrices[self.matrixIndex] = transformationMatrix
-        matrixIndex = self.matrixIndex
-        self.modelTransformIndex[model] = matrixIndex
-        self.matrixIndex += 1
-
-        self.models.append(model)
-        self.modelRange[model] = (self.currentIndex, self.currentIndex + len(model.vertices))
 
         vShape = model.vertices.shape
+        index = self.isAvaliable.index(True)
+        self.isAvaliable[index] = False
+
+        self.models[index] = model
+        self.transformationMatrices[index] = transformationMatrix
+        self.modelRange[index] = [self.currentIndex, self.currentIndex+vShape[0]]
+
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 0:6] = model.vertices
-        data = np.tile([1, 1, 1, 1, matrixIndex], (vShape[0], 1))
+        data = np.tile([1, 1, 1, 1, index], (vShape[0], 1))
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 6:11] = data
-        indices = np.arange(self.currentIndex, self.currentIndex+vShape[0])
-        self.indices[self.currentIndex:self.currentIndex+vShape[0]] = indices
 
         self.currentIndex += vShape[0]
         self.isDirty = True
 
-        return len(self.models) - 1
+        return index
+
+    def removeModel(self, id):
+        self.isAvaliable[id] = True
+        # shift vertices
+        lower = self.modelRange[id][0]
+        upper = self.modelRange[id][1]
+        right = self.vertices[upper::]
+        self.vertices[lower:lower+len(right)] = right
+
+        #update all later ranges
+        for i in range(len(self.modelRange)):
+            if self.modelRange[i][0] < upper: continue
+            self.modelRange[i][0] -= upper-lower
+            self.modelRange[i][1] -= upper-lower
+
+        self.currentIndex -= upper-lower
+        self.isDirty = True
+        return
 
     def updateContext(self):
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
@@ -96,7 +111,7 @@ class BatchRenderer:
 
         GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssbo)
         GL.glBufferSubData(GL.GL_SHADER_STORAGE_BUFFER, 0, self.transformationMatrices.nbytes, self.transformationMatrices)
-        GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssbo);
+        GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssbo)
 
         GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, 0)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
@@ -144,33 +159,58 @@ class BatchRenderer:
         GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssbo)
     
     def setColor(self, id, color):
-        model = self.models[id]
-        colorMat = np.tile(color, (self.modelRange[model][1]-self.modelRange[model][0], 1))
-        self.vertices[self.modelRange[model][0]:self.modelRange[model][1], 6:10] = colorMat
+        lower = self.modelRange[id][0]
+        upper = self.modelRange[id][1]
+        colorMat = np.tile(color, (upper-lower, 1))
+        self.vertices[lower:upper, 6:10] = colorMat
         self.isDirty = True
 
+    def getData(self, id):
+        return (self.models[id], self.transformationMatrices[id])
+
 class Renderer:
-    def __init__(self, shader):
+    def __init__(self, shader, supportTransparency=False):
         self.shader = shader
+        self.supportTransparency = supportTransparency
+
+        self.idDict = {}
+        self.nextId = 0
 
         self.projectionMatrix = np.identity(4)
         self.viewMatrix = np.identity(4)
+
+        self.transparentBatch = []
+        self.solidBatch = []
         self.batches = []
-        self.addBatch()
     
     def addModel(self, model, matrix):
         for i in range(len(self.batches)):
             id = self.batches[i].addModel(model, matrix)
-            if id != -1:
-                return (i, id)
+            if id == -1: continue
+            modelId = self.nextId
+            self.nextId += 1
+            self.idDict[modelId] = (i, id)
+            return modelId
         self.addBatch()
         id = self.batches[-1].addModel(model, matrix)
         if id == -1:
-            return (-1, -1)
-        return (len(self.batches) - 1, id)
+            return -1
+        modelId = self.nextId
+        self.nextId += 1
+        self.idDict[modelId] = (len(self.batches) - 1, id)
+        return modelId
     
-    def addBatch(self):
-        self.batches.append(BatchRenderer(self.shader))
+    def removeModel(self, id):
+        self.batches[self.idDict[id][0]].removeModel(self.idDict[id][1])
+        self.idDict.pop(id)
+    
+    def addBatch(self, transparent=False):
+        print('creating new batch')
+        self.batches.append(BatchRenderer(self.shader, transparent))
+        if transparent:
+            self.transparentBatch.append(self.batches[-1])
+        else:
+            self.solidBatch.append(self.batches[-1])
         self.batches[-1].setProjectionMatrix(self.projectionMatrix)
         self.batches[-1].setViewMatrix(self.viewMatrix)
 
@@ -185,13 +225,54 @@ class Renderer:
             batch.setViewMatrix(matrix)
     
     def setTransformMatrix(self, id, matrix):
-        self.batches[id[0]].setTransformMatrix(id[1], matrix)
+        self.batches[self.idDict[id][0]].setTransformMatrix(self.idDict[id][1], matrix)
 
     def setColor(self, id, color):
-        self.batches[id[0]].setColor(id[1], color)
+        batch = self.batches[self.idDict[id][0]]
+        objId = self.idDict[id][1]
+        isTransparent = color[3] != 1
+
+        #is trans or solid
+        if not (isTransparent ^ batch.isTransparent):
+            batch.setColor(objId, color)
+            return
+
+        # remove from batch and added to new batch
+        model, matrix = batch.getData(objId)
+        batch.removeModel(objId)
+
+        #loop through batches
+        for i in range(len(self.batches)):
+            if isTransparent ^ self.batches[i].isTransparent: continue
+            objId = self.batches[i].addModel(model, matrix)
+            if objId == -1: continue
+            self.batches[i].setColor(objId, color)
+            self.idDict[id] = (i, objId)
+            return
+
+        #if didnt find suitable batch
+        self.addBatch(isTransparent)
+        batchId = len(self.batches)-1
+        objId = self.batches[-1].addModel(model, matrix)
+        if objId == -1:
+            print('failed to update color')
+            return
+        self.batches[batchId].setColor(objId, color)
+        self.idDict[id] = (batchId, objId)
 
     def render(self):
-        for batch in self.batches:
+        for batch in self.solidBatch:
+            batch.render()
+        
+        depthFunc = GL.glGetIntegerv(GL.GL_DEPTH_FUNC)
+        GL.glDepthFunc(GL.GL_ALWAYS)
+
+        for batch in self.transparentBatch:
+            batch.render()
+        
+        GL.glDepthFunc(GL.GL_LESS)
+        
+        for batch in self.solidBatch:
             batch.render()
 
 
