@@ -562,7 +562,7 @@ class Ui3DScene(GlElement):
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
 
-        self.modelRenderer = Renderer(Assets.OBJECT_SHADER, supportTransparency)
+        self.modelRenderer = Renderer(self.window, supportTransparency)
         self.modelRenderer.setProjectionMatrix(createProjectionMatrix(self.dim[2], self.dim[3], self.FOV, self.NEAR_PLANE, self.FAR_PLANE))
         self.modelRenderer.setViewMatrix(createViewMatrix(0, 0, 0, 0, 0, 0))
         self.type = '3d scene'

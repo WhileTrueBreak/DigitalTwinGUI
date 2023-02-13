@@ -18,7 +18,13 @@ class Assets:
         if Assets.INIT: return
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
         Assets.STREAM_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/streamFragment.glsl')
+
         Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
+        Assets.OPAQUE_SHADER = Assets.linkShaders('res/shader/opaqueVertex.glsl', 'res/shader/opaqueFragment.glsl')
+        Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shader/compositeVertex.glsl', 'res/shader/compositeFragment.glsl')
+        Assets.SCREEN_SHADER = Assets.linkShaders('res/shader/screenVertex.glsl', 'res/shader/screenFragment.glsl')
+
+        Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/transparentVertex.glsl', 'res/shader/transparentFragment.glsl')
         Assets.OBJECT_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/objectFragment.glsl')
         Assets.OBJECT_T_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/objectTransparencyFragment.glsl')
 
