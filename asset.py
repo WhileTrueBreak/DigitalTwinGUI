@@ -20,7 +20,6 @@ class Assets:
         Assets.STREAM_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/streamFragment.glsl')
         Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
         Assets.OBJECT_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/objectFragment.glsl')
-        Assets.OBJECT_T_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/objectTransparencyFragment.glsl')
 
         Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf', 48*64)
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF', 48*64)

@@ -88,9 +88,11 @@ class Window():
             text.setFontSize(24)
             text.setTextSpacing(15)
             text.setTextColor((0,0,0))
+            btn.setDefaultColor([1.0,0.8,0.8])
+            btn.setHoverColor([1.0,0.7,0.7])
+            btn.setPressColor([1.0,0.6,0.6])
+            self.sceneMap[btn] = self.scenes[i]
             self.tabBtns.append(btn)
-            self.tabBtns[-1].setColor([1.0,0.8,0.8])
-            self.sceneMap[self.tabBtns[-1]] = self.scenes[i]
         
         self.tabWrapper.addChildren(*self.tabBtns)
 

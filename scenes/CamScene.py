@@ -28,7 +28,7 @@ class CamScene(Scene):
             ABSOLUTE(T_H, 30)
         ]
         btn, text = centeredTextButton(self.window, constraints, Assets.SOLID_SHADER)
-        btn.setColor((1,1,1))
+        btn.setDefaultColor((1,1,1))
         text.setText('stream 1')
         text.setFontSize(24)
         text.setTextSpacing(15)
@@ -42,7 +42,7 @@ class CamScene(Scene):
             ABSOLUTE(T_H, 30)
         ]
         btn, text = centeredTextButton(self.window, constraints, Assets.SOLID_SHADER)
-        btn.setColor((1,1,1))
+        btn.setDefaultColor((1,1,1))
         text.setText('stream 2')
         text.setFontSize(24)
         text.setTextSpacing(15)
