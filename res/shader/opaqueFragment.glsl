@@ -3,10 +3,9 @@
 // shader outputs
 layout (location = 0) out vec4 frag;
 
-// material color
-uniform vec3 color;
+in vec4 objColor;
 
 void main()
 {
-	frag = vec4(color, 1);
+	frag = objColor;
 }

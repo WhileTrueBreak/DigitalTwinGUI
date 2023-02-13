@@ -190,6 +190,9 @@ class Renderer:
         self.initCompositeLayers()
     
     def initCompositeLayers(self):
+        self.accumClear = np.array([0,0,0,0], dtype='float32')
+        self.revealClear = np.array([1,0,0,0], dtype='float32')
+
         self.quadVertices = np.array([
             [-1,-1,-1, 0, 0],
             [ 1,-1,-1, 1, 0],
@@ -353,6 +356,9 @@ class Renderer:
 
         # render opaque
         GL.glUseProgram(self.opaqueShader)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
+
         for batch in self.solidBatch:
             batch.render()
 
@@ -365,6 +371,10 @@ class Renderer:
 
         # render transparent
         GL.glUseProgram(self.transparentShader)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.transparentFBO)
+        GL.glClearBufferfv(GL.GL_COLOR, 0, self.accumClear)
+        GL.glClearBufferfv(GL.GL_COLOR, 1, self.revealClear)
+
         for batch in self.transparentBatch:
             batch.render()
 

@@ -8,8 +8,7 @@ from mathHelper import normalize
 
 
 class Model:
-    def __init__(self, shader, file=None, vertices=None, transform=np.identity(4)):
-        self.shader = shader
+    def __init__(self, file=None, vertices=None, transform=np.identity(4)):
         if file != None:
             self.file = file
             self.mesh = self.loadSTL(file)
