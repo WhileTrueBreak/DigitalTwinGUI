@@ -251,6 +251,8 @@ class Renderer:
         self.transparentDrawBuffers = (GL.GL_COLOR_ATTACHMENT0, GL.GL_COLOR_ATTACHMENT1)
         GL.glDrawBuffers(self.transparentDrawBuffers)
 
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+
     def addModel(self, model, matrix):
         for i in range(len(self.batches)):
             id = self.batches[i].addModel(model, matrix)
@@ -335,6 +337,13 @@ class Renderer:
         self.idDict[id] = (batchId, objId)
 
     def render(self):
+        # remember previous values
+        depthFunc = GL.glGetIntegerv(GL.GL_DEPTH_FUNC)
+        depthTest = GL.glGetIntegerv(GL.GL_DEPTH_TEST)
+        depthMask = GL.glGetIntegerv(GL.GL_DEPTH_WRITEMASK)
+        blend = GL.glGetIntegerv(GL.GL_BLEND)
+        clearColor = GL.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE)
+
         # config states
         GL.glEnable(GL.GL_DEPTH_TEST)
         GL.glDepthFunc(GL.GL_LESS)
@@ -359,7 +368,7 @@ class Renderer:
         for batch in self.transparentBatch:
             batch.render()
 
-        # config states
+        # # config states
         GL.glDepthFunc(GL.GL_ALWAYS)
         GL.glEnable(GL.GL_BLEND)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
@@ -385,8 +394,6 @@ class Renderer:
 
         # render to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
-        GL.glClearColor(0,0,0,0)
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT)
 
         GL.glUseProgram(self.screenShader)
 
@@ -396,11 +403,14 @@ class Renderer:
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
         # reset states
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-        GL.glDepthFunc(GL.GL_LESS)
-        GL.glEnable(GL.GL_DEPTH_TEST)
-        GL.glEnable(GL.GL_BLEND)
-        GL.glCullFace(GL.GL_BACK)
-        GL.glClearColor(0, 0, 0, 1)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        GL.glDepthFunc(depthFunc)
+        if depthTest:
+            GL.glEnable(GL.GL_DEPTH_TEST)
+        GL.glDepthMask(depthMask)
+        if blend:
+            GL.glEnable(GL.GL_BLEND)
+        GL.glClearColor(*clearColor)
+        return
 
 

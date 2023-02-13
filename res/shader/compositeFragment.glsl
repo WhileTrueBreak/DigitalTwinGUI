@@ -31,6 +31,7 @@ void main()
 	
 	// fragment revealage
 	float revealage = texelFetch(reveal, coords, 0).r;
+	
 	// save the blending and color texture fetch cost if there is not a transparent fragment
 	if (isApproximatelyEqual(revealage, 1.0f)) 
 		discard;
