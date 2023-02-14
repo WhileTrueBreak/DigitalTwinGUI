@@ -368,10 +368,6 @@ class Renderer:
         for batch in self.solidBatch:
             batch.render()
 
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
-        GL.glBindVertexArray(self.quadVAO)
-        GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
-
         # config states
         GL.glDepthMask(GL.GL_FALSE)
         GL.glEnable(GL.GL_BLEND)

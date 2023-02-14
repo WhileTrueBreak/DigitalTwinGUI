@@ -101,7 +101,7 @@ class KukaScene(Scene):
                 for y in range(0, 3):
                     mat = Robot1_T_0_[i].copy()
                     self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-                    self.modelRenderer.setColor(self.modelIds[-1], (random.random(), random.random(), random.random(), 0.3))
+                    self.modelRenderer.setColor(self.modelIds[-1], (0.5, i/7, 1, 0.7))
                     self.modelData[self.modelIds[-1]] = (x/3, y/3, 0, i)
 
         self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
@@ -164,11 +164,11 @@ class KukaScene(Scene):
         radYaw = radians(self.cameraTransform[5])
 
         yawX =  deltaPos[0]*cos(radYaw)#+deltaPos[2]*sin(radYaw)
-        yawY = -deltaPos[0]*sin(radYaw)#+deltaPos[2]*cos(radYaw)
+        yawY =  -deltaPos[0]*sin(radYaw)#+deltaPos[2]*cos(radYaw)
 
-        self.cameraTransform[0] += yawX+deltaPos[1]*sin(radPitch)*sin(radYaw)
-        self.cameraTransform[1] += yawY+deltaPos[1]*sin(radPitch)*cos(radYaw)
-        self.cameraTransform[2] += deltaPos[1]*cos(radPitch)-deltaPos[2]*sin(radPitch)
+        self.cameraTransform[0] += yawX-deltaPos[1]*sin(radYaw)#*sin(radPitch)
+        self.cameraTransform[1] += yawY-deltaPos[1]*cos(radYaw)#*sin(radPitch)
+        self.cameraTransform[2] += -deltaPos[2]*sin(radPitch)#+deltaPos[1]*cos(radPitch)
 
     def start(self):
         self.threadStopFlag = False
