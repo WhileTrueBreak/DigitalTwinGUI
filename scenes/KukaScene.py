@@ -76,7 +76,7 @@ class KukaScene(Scene):
             COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
-        self.renderWindow = Ui3DScene(self.window, constraints, True)
+        self.renderWindow = Ui3DScene(self.window, constraints)
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
         self.addModels()
@@ -88,12 +88,14 @@ class KukaScene(Scene):
             ABSOLUTE(T_W, 30),
             RELATIVE(T_H, 1, T_W)
         ]
-        self.recenterBtn, self.recenterText = centeredTextButton(self.window, constraints, Assets.SOLID_SHADER)
+        self.recenterBtn, self.recenterText = centeredTextButton(self.window, constraints)
         self.recenterText.setText('RE')
         self.recenterText.setFontSize(20)
         self.recenterText.setTextSpacing(20)
         self.recenterText.setTextColor((1, 1, 1))
-        self.recenterBtn.setColor((0, 0, 0))
+        self.recenterBtn.setDefaultColor((0, 0, 0))
+        self.recenterBtn.setHoverColor((0.1, 0.1, 0.1))
+        self.recenterBtn.setPressColor((1, 0, 0))
         self.renderWindow.addChild(self.recenterBtn)
         return
     
@@ -111,6 +113,7 @@ class KukaScene(Scene):
             self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
             self.modelRenderer.setColor(self.modelIds[-1], (1, i/7, 0, 0.5))
             self.modelData[self.modelIds[-1]] = (0.1, 0, 0, i)
+
 
         self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
         self.modelRenderer.setColor(self.floorId, (0.5, 0.5, 0.5, 1))

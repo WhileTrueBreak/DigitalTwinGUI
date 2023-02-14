@@ -36,33 +36,7 @@ class GlElement:
         self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
         self.lastMouseState = self.window.mouseButtons
 
-        # self.vertices = np.array([[-0.5, -0.5, 0.0],
-        #                           [-0.5,  0.5, 0.0],
-        #                           [ 0.5,  0.5, 0.0],
-        #                           [ 0.5, -0.5, 0.0]], dtype = 'float32')
-        # self.indices = np.array([1,2,0,2,3,0], dtype='int32')
-
-        # self.vao = GL.glGenVertexArrays(1)
-        # GL.glBindVertexArray(self.vao)
-        # self.vbo = GL.glGenBuffers(1)
-        # GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
-        # self.ebo = GL.glGenBuffers(1)
-        # GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
-        # GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
-
-        # self.verticesAttrib = Attribute('vec3', self.vertices)
-        # self.verticesAttrib.associate_variable(self.shader, 'position')
-        # self.translation = Uniform('vec3', [0.0, 0.0, 0.0])
-        # self.translation.locate_variable(self.shader, 'translation')
-        # self.baseColor = Uniform('vec3', [1.0, 0.8, 0.8])
-        # self.baseColor.locate_variable(self.shader, 'baseColor')
-
         self.type = 'nothing'
-
-        self.defaultCall = None
-        self.pressCall = None
-        self.releaseCall = None
-        self.hoverCall = None
 
     def update(self, delta):
         if self.isDirty and self.parent != None:
@@ -100,15 +74,20 @@ class GlElement:
     
     def actions(self):
         mousePos = self.window.mousePos
+        self.isDefault = False
         if mousePos[0] > self.dim[0] and mousePos[0] < self.dim[0] + self.dim[2] and mousePos[1] > self.dim[1] and mousePos[1] < self.dim[1] + self.dim[3]:
+            self.isDefault = False
             if self.window.mouseButtons[0] and not self.lastMouseState[0]:
-                self.onPress(self.pressCall)
-            if not self.window.mouseButtons[0] and self.lastMouseState[0]:
-                self.onRelease(self.releaseCall)
-            if not self.window.mouseButtons[0] and not self.lastMouseState[0]:
-                self.onHover(self.hoverCall)
-        else:
-            self.onDefault(self.defaultCall)
+                self.onPress()
+            elif not self.window.mouseButtons[0] and self.lastMouseState[0]:
+                self.onRelease()
+            elif not self.window.mouseButtons[0] and not self.lastMouseState[0]:
+                self.onHover()
+            else:
+                self.onHeld()
+        elif not self.isDefault:
+            self.onDefault()
+            self.isDefault = True
         self.lastMouseState = self.window.mouseButtons
 
     def onDefault(self, callback=None):
@@ -121,6 +100,9 @@ class GlElement:
         return
     
     def onRelease(self, callback=None):
+        return
+    
+    def onHeld(self, callback=None):
         return
 
     def addChild(self, child):
@@ -151,17 +133,21 @@ class GlElement:
             child.setDirty()
 
 class UiButton(GlElement):
-    def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
+    def __init__(self, window, constraints, dim=(0,0,0,0)):
         super().__init__(window, constraints, dim)
         self.type = 'button'
 
-        self.shader = shader
-        self.color = (1, 1, 1)
+        self.shader = Assets.SOLID_SHADER
+        self.currentColor = (1, 1, 1)
+        self.defaultColor = (1, 1, 1)
+        self.hoverColor = (1, 1, 1)
+        self.pressColor = (1, 1, 1)
+
         self.vertices = np.array([
-            [self.openGLDim[0], self.openGLDim[1], *self.color],
-            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], *self.color],
-            [self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3], *self.color],
-            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3], *self.color]
+            [self.openGLDim[0], self.openGLDim[1], *self.currentColor],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], *self.currentColor],
+            [self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3], *self.currentColor],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3], *self.currentColor]
         ], dtype='float32')
         self.indices = np.array([1, 0, 3, 3, 0, 2], dtype='int32')
 
@@ -187,10 +173,10 @@ class UiButton(GlElement):
 
     def reshape(self):
         self.vertices = np.array([
-            [self.openGLDim[0], self.openGLDim[1], *self.color],
-            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], *self.color],
-            [self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3], *self.color],
-            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3], *self.color]
+            [self.openGLDim[0], self.openGLDim[1], *self.currentColor],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], *self.currentColor],
+            [self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3], *self.currentColor],
+            [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3], *self.currentColor]
         ], dtype='float32')
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.vertices.nbytes, self.vertices)
@@ -216,9 +202,27 @@ class UiButton(GlElement):
         return
 
     def setColor(self, color):
-        self.color = color
+        self.currentColor = color
         self.reshape()
         return
+
+    def setDefaultColor(self, color):
+        self.defaultColor = color
+
+    def setHoverColor(self, color):
+        self.hoverColor = color
+
+    def setPressColor(self, color):
+        self.pressColor = color
+
+    def onDefault(self, callback=None):
+        self.setColor(self.defaultColor)
+    
+    def onHover(self, callback=None):
+        self.setColor(self.hoverColor)
+    
+    def onHeld(self, callback=None):
+        self.setColor(self.pressColor)
 
     def onPress(self, callback=None):
         self.window.uiEvents.append({'obj':self, 'action':'press', 'type':self.type, 'time':time.time_ns()})
@@ -616,7 +620,7 @@ class Ui3DScene(GlElement):
     def getRenderer(self):
         return self.modelRenderer
 
-    def setColor(self, color):
+    def setBackgroundColor(self, color):
         self.color = color
         self.reshape()
         return
