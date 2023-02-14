@@ -15,6 +15,8 @@ from asyncua import Client, ua
 import asyncio
 import asyncio
 
+import random
+
 def DH(DH_table):
     T_0_ = np.ndarray(shape=(len(DH_table)+1,4,4))
     T_0_[:][:][0] = np.eye(4)
@@ -104,11 +106,12 @@ class KukaScene(Scene):
         self.modelData = {}
         self.modelIds = []
         for i in range(0,8):
-            for j in range(0, 11):
-                mat = Robot1_T_0_[i].copy()
-                self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-                self.modelRenderer.setColor(self.modelIds[-1], (0, i/7, 1, 0.1))
-                self.modelData[self.modelIds[-1]] = (0, 0, j, i)
+            for x in range(0, 3):
+                for y in range(0, 3):
+                    mat = Robot1_T_0_[i].copy()
+                    self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
+                    self.modelRenderer.setColor(self.modelIds[-1], (random.random(), random.random(), random.random(), 0.3))
+                    self.modelData[self.modelIds[-1]] = (x/3, y/3, 0, i)
 
 
         self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
@@ -170,8 +173,8 @@ class KukaScene(Scene):
         radPitch = radians(self.cameraTransform[3])
         radYaw = radians(self.cameraTransform[5])
 
-        yawX = deltaPos[0]*cos(radYaw)+deltaPos[2]*sin(radYaw)
-        yawY = deltaPos[2]*cos(radYaw)-deltaPos[0]*sin(radYaw)
+        yawX =  deltaPos[0]*cos(radYaw)#+deltaPos[2]*sin(radYaw)
+        yawY = -deltaPos[0]*sin(radYaw)#+deltaPos[2]*cos(radYaw)
 
         self.cameraTransform[0] += yawX+deltaPos[1]*sin(radPitch)*sin(radYaw)
         self.cameraTransform[1] += yawY+deltaPos[1]*sin(radPitch)*cos(radYaw)
