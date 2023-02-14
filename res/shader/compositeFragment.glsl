@@ -3,6 +3,8 @@
 // shader outputs
 layout (location = 0) out vec4 frag;
 
+in vec2 texPos;
+
 // color accumulation buffer
 uniform sampler2D accum;
 
@@ -24,14 +26,15 @@ float max3(vec3 v)
 	return max(max(v.x, v.y), v.z);
 }
 
-void main()
-{
+void main() {
 	// fragment coordination
 	ivec2 coords = ivec2(gl_FragCoord.xy);
+	// frag = vec4(float(coords.x)/1000, float(coords.y)/1000, 0, 1);
+	// return;
 	
 	// fragment revealage
 	float revealage = texelFetch(reveal, coords, 0).r;
-	
+
 	// save the blending and color texture fetch cost if there is not a transparent fragment
 	if (isApproximatelyEqual(revealage, 1.0f)) 
 		discard;

@@ -5,7 +5,6 @@ layout (location = 0) out vec4 frag;
 
 in vec4 objColor;
 
-void main()
-{
+void main() {
 	frag = objColor;
 }

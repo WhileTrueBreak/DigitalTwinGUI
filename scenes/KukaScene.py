@@ -64,7 +64,7 @@ class KukaScene(Scene):
                 'ns=24;s=R4d_Joi4', 
                 'ns=24;s=R4d_Joi5', 
                 'ns=24;s=R4d_Joi6', 
-                'ns=24;s=R4d_Joi7'
+                'ns=24;s=R4d_Joi7' 
             ], lambda:self.threadStopFlag)
         return
 
@@ -104,15 +104,11 @@ class KukaScene(Scene):
         self.modelData = {}
         self.modelIds = []
         for i in range(0,8):
-            mat = Robot1_T_0_[i].copy()
-            self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-            self.modelRenderer.setColor(self.modelIds[-1], (0, i/7, 1, 0.5))
-            self.modelData[self.modelIds[-1]] = (0, 0, 0, i)
-
-            mat = Robot1_T_0_[i].copy()
-            self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-            self.modelRenderer.setColor(self.modelIds[-1], (1, i/7, 0, 0.5))
-            self.modelData[self.modelIds[-1]] = (0.1, 0, 0, i)
+            for j in range(0, 11):
+                mat = Robot1_T_0_[i].copy()
+                self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
+                self.modelRenderer.setColor(self.modelIds[-1], (0, i/7, 1, (j+1)/11))
+                self.modelData[self.modelIds[-1]] = ((j-5)/5, 0, 0, i)
 
 
         self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))

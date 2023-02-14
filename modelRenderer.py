@@ -6,7 +6,7 @@ import ctypes
 import time
 
 class BatchRenderer:
-    MAX_TRANSFORMS = 9
+    MAX_TRANSFORMS = 30
     MAX_VERTICES = 1000000
     def __init__(self, isTransparent=False):
         self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, 11), dtype='float32')
@@ -201,6 +201,7 @@ class Renderer:
             [-1, 1,-1, 0, 1],
             [-1,-1,-1, 0, 0],
         ], dtype='float32')
+
         self.quadVAO = GL.glGenVertexArrays(1)
         self.quadVBO = GL.glGenBuffers(1)
         GL.glBindVertexArray(self.quadVAO)
@@ -215,16 +216,19 @@ class Renderer:
         self.opaqueFBO = GL.glGenFramebuffers(1)
         self.transparentFBO = GL.glGenFramebuffers(1)
 
+        textureDim = self.window.dim
+        # textureDim = GL.glGetIntegerv(GL.GL_VIEWPORT)[2::]
+
         self.opaqueTexture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, self.window.dim[0], self.window.dim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
         self.depthTexture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.depthTexture)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, self.window.dim[0], self.window.dim[1], 0, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT, None)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, textureDim[0], textureDim[1], 0, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
@@ -234,14 +238,14 @@ class Renderer:
 
         self.accumTexture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.accumTexture)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, self.window.dim[0], self.window.dim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
         self.revealTexture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_R8, self.window.dim[0], self.window.dim[1], 0, GL.GL_RED, GL.GL_FLOAT, None)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_R8, textureDim[0], textureDim[1], 0, GL.GL_RED, GL.GL_FLOAT, None)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
@@ -340,12 +344,16 @@ class Renderer:
         self.idDict[id] = (batchId, objId)
 
     def render(self):
+
         # remember previous values
         depthFunc = GL.glGetIntegerv(GL.GL_DEPTH_FUNC)
         depthTest = GL.glGetIntegerv(GL.GL_DEPTH_TEST)
         depthMask = GL.glGetIntegerv(GL.GL_DEPTH_WRITEMASK)
         blend = GL.glGetIntegerv(GL.GL_BLEND)
         clearColor = GL.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE)
+        viewport = GL.glGetIntegerv(GL.GL_VIEWPORT)
+
+        GL.glViewport(0, 0, *self.window.dim)
 
         # config states
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -361,6 +369,10 @@ class Renderer:
 
         for batch in self.solidBatch:
             batch.render()
+
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
+        GL.glBindVertexArray(self.quadVAO)
+        GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
         # config states
         GL.glDepthMask(GL.GL_FALSE)
@@ -401,10 +413,10 @@ class Renderer:
         GL.glDisable(GL.GL_DEPTH_TEST)
         GL.glDepthMask(GL.GL_TRUE)
         GL.glDisable(GL.GL_BLEND)
+        GL.glViewport(*viewport)
 
         # render to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
-
         GL.glUseProgram(self.screenShader)
 
         GL.glActiveTexture(GL.GL_TEXTURE0)
@@ -422,5 +434,4 @@ class Renderer:
             GL.glEnable(GL.GL_BLEND)
         GL.glClearColor(*clearColor)
         return
-
 
