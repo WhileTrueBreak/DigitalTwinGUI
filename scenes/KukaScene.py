@@ -96,11 +96,12 @@ class KukaScene(Scene):
         self.modelData = {}
         self.modelIds = []
         for i in range(0,8):
-            for j in range(0, 11):
-                mat = Robot1_T_0_[i].copy()
-                self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-                self.modelRenderer.setColor(self.modelIds[-1], (0, i/7, 1, 0.1))
-                self.modelData[self.modelIds[-1]] = (0, 0, j, i)
+            for x in range(0, 11):
+                for y in range(0, 11):
+                    mat = Robot1_T_0_[i].copy()
+                    self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
+                    self.modelRenderer.setColor(self.modelIds[-1], (0, i/7, 1, 0.1))
+                    self.modelData[self.modelIds[-1]] = (x/5, y/5, 0, i)
 
 
         self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))

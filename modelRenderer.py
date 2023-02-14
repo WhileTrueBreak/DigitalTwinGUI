@@ -5,8 +5,8 @@ import numpy as np
 import ctypes
 
 class BatchRenderer:
-    MAX_TRANSFORMS = 30
-    MAX_VERTICES = 1000000
+    MAX_TRANSFORMS = 60
+    MAX_VERTICES = 2000000
     def __init__(self, isTransparent=False):
         self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, 11), dtype='float32')
         self.indices = np.arange(BatchRenderer.MAX_VERTICES, dtype='int32')
@@ -25,7 +25,6 @@ class BatchRenderer:
         self.initGLContext()
 
     def initGLContext(self):
-        vertexSize = self.vertices.nbytes
 
         self.vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(self.vao)
