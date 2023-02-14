@@ -95,6 +95,12 @@ class Window():
         
         self.tabWrapper.addChildren(*self.tabBtns)
 
+    def getMousePos(self):
+        return self.mousePos
+    
+    def getMouseState(self, button):
+        return self.mouseButtons[button]
+
     def getKeyState(self, key):
         if not key in self.keyState:
             return False
