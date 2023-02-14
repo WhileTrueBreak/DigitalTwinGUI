@@ -5,15 +5,7 @@ from scenes.scene import *
 from mathHelper import *
 from opcua import *
 
-import pygame
-
 from math import *
-
-from queue import Queue
-
-from asyncua import Client, ua
-import asyncio
-import asyncio
 
 def DH(DH_table):
     T_0_ = np.ndarray(shape=(len(DH_table)+1,4,4))

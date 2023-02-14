@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from opcua import Opcua
+
 from window import *
 from scenes.CamScene import *
 from scenes.KukaScene import *

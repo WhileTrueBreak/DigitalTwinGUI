@@ -3,7 +3,6 @@ from asset import *
 import OpenGL.GL as GL
 import numpy as np
 import ctypes
-import time
 
 class BatchRenderer:
     MAX_TRANSFORMS = 30

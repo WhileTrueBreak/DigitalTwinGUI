@@ -6,20 +6,14 @@ from mjpegThread import *
 
 import numpy as np
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import time
 import OpenGL.GL as GL
 
-import pygame
-
 from mjpeg.client import MJPEGClient
-
-import glm
-from queue import Queue
 
 from PIL import Image
 from PIL.Image import Transpose
-from io import BytesIO
 
 import ctypes
 

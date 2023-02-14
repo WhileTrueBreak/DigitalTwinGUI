@@ -1,10 +1,6 @@
-from OpenGL import GL
 from stl import mesh
 import numpy as np
-import ctypes
 import time
-
-from mathHelper import normalize
 
 
 class Model:

@@ -6,11 +6,9 @@ from asset import *
 import pygame
 
 import time
-import numpy as np
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import matplotlib.cm
 from vectors import *
 from math import *
 import sys
