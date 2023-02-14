@@ -5,16 +5,7 @@ from scenes.scene import *
 from mathHelper import *
 from opcua import *
 
-import pygame
-
 from math import *
-
-from queue import Queue
-
-from asyncua import Client, ua
-import asyncio
-import asyncio
-
 import random
 
 def DH(DH_table):
@@ -112,7 +103,6 @@ class KukaScene(Scene):
                     self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
                     self.modelRenderer.setColor(self.modelIds[-1], (random.random(), random.random(), random.random(), 0.3))
                     self.modelData[self.modelIds[-1]] = (x/3, y/3, 0, i)
-
 
         self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
         self.modelRenderer.setColor(self.floorId, (0.5, 0.5, 0.5, 1))

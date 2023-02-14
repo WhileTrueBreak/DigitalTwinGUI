@@ -13,12 +13,12 @@ class StreamContainer:
     
     def setStream(self, stream):
         self.stream = stream
-@staticmethod
+
 def createMjpegThread(container, url, stop):
     t = Thread(target = MjpegConnection, args =(container, url, stop))
     t.start()
     return t
-@staticmethod
+
 def MjpegConnection(container, url, stop):
     print(f'mjpeg thread started: {url}')
     try:

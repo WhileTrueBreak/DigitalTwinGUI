@@ -3,14 +3,6 @@ from ui.uiHelper import *
 from constraintManager import *
 from scenes.scene import *
 
-import pygame
-
-import random
-
-from asyncua import Client, ua
-import asyncio
-import asyncio
-
 class CamScene(Scene):
     
     def __init__(self, window, name):

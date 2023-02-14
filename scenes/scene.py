@@ -3,9 +3,7 @@ from ui.uiElement import *
 
 from window import *
 
-import pygame
-
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 class Scene:
     def __init__(self, window, name):
