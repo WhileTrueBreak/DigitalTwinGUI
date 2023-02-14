@@ -9,10 +9,9 @@ from queue import Queue
 from threading import Thread
 
 class Assets:
+    
     INIT = False
-    GUI_SHADER = None
-    DEFAULT_SHADER = None
-    TEST_SHADER = ''
+
     @staticmethod
     def init():
         if Assets.INIT: return
@@ -147,8 +146,11 @@ class Assets:
         print(f'Loading model: {file}')
         q.put(Model(file=file, transform=tmat))
 
-    def loadModel(file=file, tmat=np.identity(4), vertices=None):
-        return Model(file=file, transform=tmat, vertices=vertices)
+    def loadModelFile(file, tmat=np.identity(4)):
+        return Model(file=file, transform=tmat)
+    
+    def loadModelVertices(vertices):
+        return Model(vertices=vertices)
 
 class CharacterSlot:
     def __init__(self, texture, glyph):
