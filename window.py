@@ -17,10 +17,13 @@ import sys
 class Window():
     TAB_HEIGHT = 40
 
-    def __init__(self, size, title):
+    def __init__(self, size, title, fullscreen=False):
         pygame.init()
         display_flags = pygame.DOUBLEBUF | pygame.OPENGL
-        self.screen = pygame.display.set_mode(size, display_flags)
+        if fullscreen:
+            self.screen = pygame.display.set_mode((0,0), display_flags, pygame.FULLSCREEN)
+        else:
+            self.screen = pygame.display.set_mode(size, display_flags)
         pygame.display.set_caption(title)
 
         self.dim = self.screen.get_size()
