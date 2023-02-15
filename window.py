@@ -6,11 +6,9 @@ from asset import *
 import pygame
 
 import time
-import numpy as np
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import matplotlib.cm
 from vectors import *
 from math import *
 import sys
@@ -19,10 +17,13 @@ import sys
 class Window():
     TAB_HEIGHT = 40
 
-    def __init__(self, size, title):
+    def __init__(self, size, title, fullscreen=False):
         pygame.init()
         display_flags = pygame.DOUBLEBUF | pygame.OPENGL
-        self.screen = pygame.display.set_mode(size, display_flags)
+        if fullscreen:
+            self.screen = pygame.display.set_mode((0,0), display_flags, pygame.FULLSCREEN)
+        else:
+            self.screen = pygame.display.set_mode(size, display_flags)
         pygame.display.set_caption(title)
 
         self.dim = self.screen.get_size()
@@ -82,8 +83,7 @@ class Window():
                 RELATIVE(T_H, 0.9, P_H),
                 COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
             ]
-            # btn = UiButton(self, constraints, Assets.SOLID_SHADER)
-            btn, text = centeredTextButton(self, constraints, Assets.SOLID_SHADER)
+            btn, text = centeredTextButton(self, constraints)
             text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
             text.setFontSize(24)
             text.setTextSpacing(15)
@@ -95,6 +95,12 @@ class Window():
             self.tabBtns.append(btn)
         
         self.tabWrapper.addChildren(*self.tabBtns)
+
+    def getMousePos(self):
+        return self.mousePos
+    
+    def getMouseState(self, button):
+        return self.mouseButtons[button]
 
     def getKeyState(self, key):
         if not key in self.keyState:

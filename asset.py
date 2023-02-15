@@ -9,40 +9,44 @@ from queue import Queue
 from threading import Thread
 
 class Assets:
+    
     INIT = False
-    GUI_SHADER = None
-    DEFAULT_SHADER = None
-    TEST_SHADER = ''
+
     @staticmethod
     def init():
         if Assets.INIT: return
+
+        modelQueues = {}
+        modelQueues['k14l0'] = Assets.loadModelQ('res/models/iiwa14/visual/link_0.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        modelQueues['k14l1'] = Assets.loadModelQ('res/models/iiwa14/visual/link_1.stl', createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0))
+        modelQueues['k14l2'] = Assets.loadModelQ('res/models/iiwa14/visual/link_2.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
+        modelQueues['k14l3'] = Assets.loadModelQ('res/models/iiwa14/visual/link_3.stl', createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0))
+        modelQueues['k14l4'] = Assets.loadModelQ('res/models/iiwa14/visual/link_4.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        modelQueues['k14l5'] = Assets.loadModelQ('res/models/iiwa14/visual/link_5.stl', createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180))
+        modelQueues['k14l6'] = Assets.loadModelQ('res/models/iiwa14/visual/link_6.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
+        modelQueues['k14l7'] = Assets.loadModelQ('res/models/iiwa14/visual/link_7.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+
+        modelQueues['k7l0'] = Assets.loadModelQ('res/models/iiwa7/visual/link_0.stl')
+        modelQueues['k7l1'] = Assets.loadModelQ('res/models/iiwa7/visual/link_1.stl')
+        modelQueues['k7l2'] = Assets.loadModelQ('res/models/iiwa7/visual/link_2.stl')
+        modelQueues['k7l3'] = Assets.loadModelQ('res/models/iiwa7/visual/link_3.stl')
+        modelQueues['k7l4'] = Assets.loadModelQ('res/models/iiwa7/visual/link_4.stl')
+        modelQueues['k7l5'] = Assets.loadModelQ('res/models/iiwa7/visual/link_5.stl')
+        modelQueues['k7l6'] = Assets.loadModelQ('res/models/iiwa7/visual/link_6.stl')
+        modelQueues['k7l7'] = Assets.loadModelQ('res/models/iiwa7/visual/link_7.stl')
+
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
         Assets.STREAM_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/streamFragment.glsl')
         Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
-        Assets.OBJECT_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/objectFragment.glsl')
+
+        Assets.OPAQUE_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/opaqueFragment.glsl')
+        Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/transparentFragment.glsl')
+        Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shader/compositeVertex.glsl', 'res/shader/compositeFragment.glsl')
+        Assets.SCREEN_SHADER = Assets.linkShaders('res/shader/screenVertex.glsl', 'res/shader/screenFragment.glsl')
 
         Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf', 48*64)
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF', 48*64)
         Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf', 48*64)
-        
-        modelQueues = {}
-        modelQueues['k14l0'] = Assets.loadModel('res/models/iiwa14/visual/link_0.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
-        modelQueues['k14l1'] = Assets.loadModel('res/models/iiwa14/visual/link_1.stl', createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0))
-        modelQueues['k14l2'] = Assets.loadModel('res/models/iiwa14/visual/link_2.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
-        modelQueues['k14l3'] = Assets.loadModel('res/models/iiwa14/visual/link_3.stl', createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0))
-        modelQueues['k14l4'] = Assets.loadModel('res/models/iiwa14/visual/link_4.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
-        modelQueues['k14l5'] = Assets.loadModel('res/models/iiwa14/visual/link_5.stl', createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180))
-        modelQueues['k14l6'] = Assets.loadModel('res/models/iiwa14/visual/link_6.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
-        modelQueues['k14l7'] = Assets.loadModel('res/models/iiwa14/visual/link_7.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
-
-        modelQueues['k7l0'] = Assets.loadModel('res/models/iiwa7/visual/link_0.stl')
-        modelQueues['k7l1'] = Assets.loadModel('res/models/iiwa7/visual/link_1.stl')
-        modelQueues['k7l2'] = Assets.loadModel('res/models/iiwa7/visual/link_2.stl')
-        modelQueues['k7l3'] = Assets.loadModel('res/models/iiwa7/visual/link_3.stl')
-        modelQueues['k7l4'] = Assets.loadModel('res/models/iiwa7/visual/link_4.stl')
-        modelQueues['k7l5'] = Assets.loadModel('res/models/iiwa7/visual/link_5.stl')
-        modelQueues['k7l6'] = Assets.loadModel('res/models/iiwa7/visual/link_6.stl')
-        modelQueues['k7l7'] = Assets.loadModel('res/models/iiwa7/visual/link_7.stl')
 
         Assets.KUKA_IIWA14_MODEL = []
         Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l0'].get())
@@ -70,10 +74,9 @@ class Assets:
             [-1.5,-1.5, 0.0],[-1.5, 1.5, 0.0],[ 1.5,-1.5, 0.0],
             [ 1.5,-1.5, 0.0],[-1.5, 1.5, 0.0],[ 1.5, 1.5, 0.0],
         ]
-        Assets.FLOOR = Model(Assets.OBJECT_SHADER, vertices=floorVertices)
+        Assets.FLOOR = Model(vertices=floorVertices)
 
         Assets.INIT = True
-    
     @staticmethod
     def loadFont(fontFile, size=48*64):
         print(f'Loading font: {fontFile}')
@@ -133,15 +136,21 @@ class Assets:
             return
         return programRef
     @staticmethod
-    def loadModel(file, tmat=np.identity(4)):
+    def loadModelQ(file, tmat=np.identity(4)):
         q = Queue()
-        t = Thread(target = Assets.modelLoader, args =(q, file, Assets.OBJECT_SHADER, tmat))
+        t = Thread(target = Assets.modelLoader, args =(q, file, tmat))
         t.start()
         return q
     @staticmethod
-    def modelLoader(q, file, shader, tmat):
+    def modelLoader(q, file, tmat):
         print(f'Loading model: {file}')
-        q.put(Model(shader, file=file, transform=tmat))
+        q.put(Model(file=file, transform=tmat))
+
+    def loadModelFile(file, tmat=np.identity(4)):
+        return Model(file=file, transform=tmat)
+    
+    def loadModelVertices(vertices):
+        return Model(vertices=vertices)
 
 class CharacterSlot:
     def __init__(self, texture, glyph):

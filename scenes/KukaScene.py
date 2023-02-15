@@ -5,15 +5,8 @@ from scenes.scene import *
 from mathHelper import *
 from opcua import *
 
-import pygame
-
 from math import *
-
-from queue import Queue
-
-from asyncua import Client, ua
-import asyncio
-import asyncio
+import random
 
 def DH(DH_table):
     T_0_ = np.ndarray(shape=(len(DH_table)+1,4,4))
@@ -64,7 +57,7 @@ class KukaScene(Scene):
                 'ns=24;s=R4d_Joi4', 
                 'ns=24;s=R4d_Joi5', 
                 'ns=24;s=R4d_Joi6', 
-                'ns=24;s=R4d_Joi7'
+                'ns=24;s=R4d_Joi7' 
             ], lambda:self.threadStopFlag)
         return
 
@@ -76,7 +69,7 @@ class KukaScene(Scene):
             COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
-        self.renderWindow = Ui3DScene(self.window, constraints, True)
+        self.renderWindow = Ui3DScene(self.window, constraints)
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
         self.addModels()
@@ -88,7 +81,7 @@ class KukaScene(Scene):
             ABSOLUTE(T_W, 30),
             RELATIVE(T_H, 1, T_W)
         ]
-        self.recenterBtn, self.recenterText = centeredTextButton(self.window, constraints, Assets.SOLID_SHADER)
+        self.recenterBtn, self.recenterText = centeredTextButton(self.window, constraints)
         self.recenterText.setText('RE')
         self.recenterText.setFontSize(20)
         self.recenterText.setTextSpacing(20)
@@ -104,15 +97,12 @@ class KukaScene(Scene):
         self.modelData = {}
         self.modelIds = []
         for i in range(0,8):
-            mat = Robot1_T_0_[i].copy()
-            self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-            self.modelRenderer.setColor(self.modelIds[-1], (0, i/7, 1, 1))
-            self.modelData[self.modelIds[-1]] = (0, 0, 0, i)
-
-            # mat = Robot1_T_0_[i].copy()
-            # self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-            # self.modelRenderer.setColor(self.modelIds[-1], (1, i/7, 0, 0.5))
-            # self.modelData[self.modelIds[-1]] = (0, 0, 0, i)
+            for x in range(0, 3):
+                for y in range(0, 3):
+                    mat = Robot1_T_0_[i].copy()
+                    self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
+                    self.modelRenderer.setColor(self.modelIds[-1], (0.5, i/7, 1, 0.7))
+                    self.modelData[self.modelIds[-1]] = (x/3, y/3, 0, i)
 
         self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
         self.modelRenderer.setColor(self.floorId, (0.5, 0.5, 0.5, 1))
@@ -173,12 +163,12 @@ class KukaScene(Scene):
         radPitch = radians(self.cameraTransform[3])
         radYaw = radians(self.cameraTransform[5])
 
-        yawX = deltaPos[0]*cos(radYaw)+deltaPos[2]*sin(radYaw)
-        yawY = deltaPos[2]*cos(radYaw)-deltaPos[0]*sin(radYaw)
+        yawX =  deltaPos[0]*cos(radYaw)#+deltaPos[2]*sin(radYaw)
+        yawY =  -deltaPos[0]*sin(radYaw)#+deltaPos[2]*cos(radYaw)
 
-        self.cameraTransform[0] += yawX+deltaPos[1]*sin(radPitch)*sin(radYaw)
-        self.cameraTransform[1] += yawY+deltaPos[1]*sin(radPitch)*cos(radYaw)
-        self.cameraTransform[2] += deltaPos[1]*cos(radPitch)-deltaPos[2]*sin(radPitch)
+        self.cameraTransform[0] += yawX-deltaPos[1]*sin(radYaw)#*sin(radPitch)
+        self.cameraTransform[1] += yawY-deltaPos[1]*cos(radYaw)#*sin(radPitch)
+        self.cameraTransform[2] += -deltaPos[2]*sin(radPitch)#+deltaPos[1]*cos(radPitch)
 
     def start(self):
         self.threadStopFlag = False

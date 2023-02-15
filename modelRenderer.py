@@ -1,13 +1,13 @@
+from asset import *
+
 import OpenGL.GL as GL
 import numpy as np
 import ctypes
-import time
 
 class BatchRenderer:
-    MAX_TRANSFORMS = 9
-    MAX_VERTICES = 1000000
-    def __init__(self, shader, isTransparent=False):
-        self.shader = shader
+    MAX_TRANSFORMS = 60
+    MAX_VERTICES = 2000000
+    def __init__(self, isTransparent=False):
         self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, 11), dtype='float32')
         self.indices = np.arange(BatchRenderer.MAX_VERTICES, dtype='int32')
 
@@ -25,10 +25,6 @@ class BatchRenderer:
         self.initGLContext()
 
     def initGLContext(self):
-        vertexSize = self.vertices.nbytes
-
-        self.projectionMatrix = GL.glGetUniformLocation(self.shader, 'projectionMatrix')
-        self.viewMatrix = GL.glGetUniformLocation(self.shader, 'viewMatrix')
 
         self.vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(self.vao)
@@ -124,7 +120,6 @@ class BatchRenderer:
         if self.isDirty:
             self.updateContext()
 
-        GL.glUseProgram(self.shader)
         GL.glBindVertexArray(self.vao)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
@@ -144,13 +139,15 @@ class BatchRenderer:
         GL.glDisableVertexAttribArray(1)
         GL.glDisableVertexAttribArray(0)
 
-    def setProjectionMatrix(self, matrix):
-        GL.glUseProgram(self.shader)
-        GL.glUniformMatrix4fv(self.projectionMatrix, 1, GL.GL_FALSE, matrix)
+    def setProjectionMatrix(self, shader, matrix):
+        GL.glUseProgram(shader)
+        projectionMatrix = GL.glGetUniformLocation(shader, 'projectionMatrix')
+        GL.glUniformMatrix4fv(projectionMatrix, 1, GL.GL_FALSE, matrix)
         
-    def setViewMatrix(self, matrix):
-        GL.glUseProgram(self.shader)
-        GL.glUniformMatrix4fv(self.viewMatrix, 1, GL.GL_TRUE, matrix)
+    def setViewMatrix(self, shader, matrix):
+        GL.glUseProgram(shader)
+        viewMatrix = GL.glGetUniformLocation(shader, 'viewMatrix')
+        GL.glUniformMatrix4fv(viewMatrix, 1, GL.GL_TRUE, matrix)
     
     def setTransformMatrix(self, id, matrix):
         self.transformationMatrices[id] = matrix.T 
@@ -169,9 +166,14 @@ class BatchRenderer:
         return (self.models[id], self.transformationMatrices[id])
 
 class Renderer:
-    def __init__(self, shader, supportTransparency=False):
-        self.shader = shader
+    def __init__(self, window, supportTransparency=False):
+        self.window = window
         self.supportTransparency = supportTransparency
+
+        self.opaqueShader = Assets.OPAQUE_SHADER
+        self.transparentShader = Assets.TRANSPARENT_SHADER
+        self.compositeShader = Assets.COMPOSITE_SHADER
+        self.screenShader = Assets.SCREEN_SHADER
 
         self.idDict = {}
         self.nextId = 0
@@ -182,7 +184,80 @@ class Renderer:
         self.transparentBatch = []
         self.solidBatch = []
         self.batches = []
+
+        self.initCompositeLayers()
     
+    def initCompositeLayers(self):
+        self.accumClear = np.array([0,0,0,0], dtype='float32')
+        self.revealClear = np.array([1,0,0,0], dtype='float32')
+
+        self.quadVertices = np.array([
+            [-1,-1,-1, 0, 0],
+            [ 1,-1,-1, 1, 0],
+            [ 1, 1,-1, 1, 1],
+            [ 1, 1,-1, 1, 1],
+            [-1, 1,-1, 0, 1],
+            [-1,-1,-1, 0, 0],
+        ], dtype='float32')
+
+        self.quadVAO = GL.glGenVertexArrays(1)
+        self.quadVBO = GL.glGenBuffers(1)
+        GL.glBindVertexArray(self.quadVAO)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.quadVBO)
+        GL.glBufferData(GL.GL_ARRAY_BUFFER, self.quadVertices.nbytes, self.quadVertices, GL.GL_DYNAMIC_DRAW)
+        GL.glEnableVertexAttribArray(0)
+        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 5 * 4, ctypes.c_void_p(0*4))
+        GL.glEnableVertexAttribArray(1)
+        GL.glVertexAttribPointer(1, 2, GL.GL_FLOAT, GL.GL_FALSE, 5 * 4, ctypes.c_void_p(3*4))
+        GL.glBindVertexArray(0)
+
+        self.opaqueFBO = GL.glGenFramebuffers(1)
+        self.transparentFBO = GL.glGenFramebuffers(1)
+
+        textureDim = self.window.dim
+        # textureDim = GL.glGetIntegerv(GL.GL_VIEWPORT)[2::]
+
+        self.opaqueTexture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        self.depthTexture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.depthTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, textureDim[0], textureDim[1], 0, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, self.opaqueTexture, 0)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_TEXTURE_2D, self.depthTexture, 0)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+
+        self.accumTexture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.accumTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        self.revealTexture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_R8, textureDim[0], textureDim[1], 0, GL.GL_RED, GL.GL_FLOAT, None)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.transparentFBO)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, self.accumTexture, 0)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT1, GL.GL_TEXTURE_2D, self.revealTexture, 0)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_TEXTURE_2D, self.depthTexture, 0)
+
+        self.transparentDrawBuffers = (GL.GL_COLOR_ATTACHMENT0, GL.GL_COLOR_ATTACHMENT1)
+        GL.glDrawBuffers(self.transparentDrawBuffers)
+
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+
     def addModel(self, model, matrix):
         for i in range(len(self.batches)):
             id = self.batches[i].addModel(model, matrix)
@@ -206,23 +281,29 @@ class Renderer:
     
     def addBatch(self, transparent=False):
         print('creating new batch')
-        self.batches.append(BatchRenderer(self.shader, transparent))
+        self.batches.append(BatchRenderer(transparent))
+        shader = self.opaqueShader
         if transparent:
+            shader = self.transparentShader
             self.transparentBatch.append(self.batches[-1])
         else:
             self.solidBatch.append(self.batches[-1])
-        self.batches[-1].setProjectionMatrix(self.projectionMatrix)
-        self.batches[-1].setViewMatrix(self.viewMatrix)
+        self.batches[-1].setProjectionMatrix(shader, self.projectionMatrix)
+        self.batches[-1].setViewMatrix(shader, self.viewMatrix)
 
     def setProjectionMatrix(self, matrix):
         self.projectionMatrix = matrix
-        for batch in self.batches:
-            batch.setProjectionMatrix(matrix)
+        for batch in self.solidBatch:
+            batch.setProjectionMatrix(self.opaqueShader, matrix)
+        for batch in self.transparentBatch:
+            batch.setProjectionMatrix(self.transparentShader, matrix)
         
     def setViewMatrix(self, matrix):
         self.viewMatrix = matrix
-        for batch in self.batches:
-            batch.setViewMatrix(matrix)
+        for batch in self.solidBatch:
+            batch.setViewMatrix(self.opaqueShader, matrix)
+        for batch in self.transparentBatch:
+            batch.setViewMatrix(self.transparentShader, matrix)
     
     def setTransformMatrix(self, id, matrix):
         self.batches[self.idDict[id][0]].setTransformMatrix(self.idDict[id][1], matrix)
@@ -261,18 +342,90 @@ class Renderer:
         self.idDict[id] = (batchId, objId)
 
     def render(self):
+
+        # remember previous values
+        depthFunc = GL.glGetIntegerv(GL.GL_DEPTH_FUNC)
+        depthTest = GL.glGetIntegerv(GL.GL_DEPTH_TEST)
+        depthMask = GL.glGetIntegerv(GL.GL_DEPTH_WRITEMASK)
+        blend = GL.glGetIntegerv(GL.GL_BLEND)
+        clearColor = GL.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE)
+        viewport = GL.glGetIntegerv(GL.GL_VIEWPORT)
+
+        GL.glViewport(0, 0, *self.window.dim)
+
+        # config states
+        GL.glEnable(GL.GL_DEPTH_TEST)
+        GL.glDepthFunc(GL.GL_LESS)
+        GL.glDepthMask(GL.GL_TRUE)
+        GL.glDisable(GL.GL_BLEND)
+        GL.glClearColor(0,0,0,0)
+
+        # render opaque
+        GL.glUseProgram(self.opaqueShader)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
+
         for batch in self.solidBatch:
             batch.render()
-        
-        depthFunc = GL.glGetIntegerv(GL.GL_DEPTH_FUNC)
-        GL.glDepthFunc(GL.GL_ALWAYS)
+
+        # config states
+        GL.glDepthMask(GL.GL_FALSE)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glBlendFunci(0, GL.GL_ONE, GL.GL_ONE)
+        GL.glBlendFunci(1, GL.GL_ZERO, GL.GL_ONE_MINUS_SRC_COLOR)
+        GL.glBlendEquation(GL.GL_FUNC_ADD)
+
+        # render transparent
+        GL.glUseProgram(self.transparentShader)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.transparentFBO)
+        GL.glClearBufferfv(GL.GL_COLOR, 0, self.accumClear)
+        GL.glClearBufferfv(GL.GL_COLOR, 1, self.revealClear)
 
         for batch in self.transparentBatch:
             batch.render()
-        
-        GL.glDepthFunc(GL.GL_LESS)
-        
-        for batch in self.solidBatch:
-            batch.render()
 
+        # # config states
+        GL.glDepthFunc(GL.GL_ALWAYS)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+
+        # render composite
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
+
+        GL.glUseProgram(self.compositeShader)
+
+        GL.glActiveTexture(GL.GL_TEXTURE0)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.accumTexture)
+        GL.glUniform1i(GL.glGetUniformLocation(Assets.COMPOSITE_SHADER, "accum"), 0)
+        GL.glActiveTexture(GL.GL_TEXTURE1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
+        GL.glUniform1i(GL.glGetUniformLocation(Assets.COMPOSITE_SHADER, "reveal"), 1)
+        GL.glBindVertexArray(self.quadVAO)
+        GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
+
+        # config states
+        GL.glDisable(GL.GL_DEPTH_TEST)
+        GL.glDepthMask(GL.GL_TRUE)
+        GL.glDisable(GL.GL_BLEND)
+        GL.glViewport(*viewport)
+
+        # render to screen
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        GL.glUseProgram(self.screenShader)
+
+        GL.glActiveTexture(GL.GL_TEXTURE0)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
+        GL.glBindVertexArray(self.quadVAO)
+        GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
+
+        # reset states
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        GL.glDepthFunc(depthFunc)
+        if depthTest:
+            GL.glEnable(GL.GL_DEPTH_TEST)
+        GL.glDepthMask(depthMask)
+        if blend:
+            GL.glEnable(GL.GL_BLEND)
+        GL.glClearColor(*clearColor)
+        return
 

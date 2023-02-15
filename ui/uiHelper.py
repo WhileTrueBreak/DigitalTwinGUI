@@ -1,8 +1,8 @@
 from ui.uiElement import *
 from constraintManager import *
 
-def centeredTextButton(window, constraints, shader):
-    btn = UiButton(window, constraints, shader)
+def centeredTextButton(window, constraints):
+    btn = UiButton(window, constraints,)
 
     textConstraints = [
         COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5, P_W)),

@@ -3,14 +3,6 @@ from ui.uiHelper import *
 from constraintManager import *
 from scenes.scene import *
 
-import pygame
-
-import random
-
-from asyncua import Client, ua
-import asyncio
-import asyncio
-
 class CamScene(Scene):
     
     def __init__(self, window, name):
@@ -27,7 +19,7 @@ class CamScene(Scene):
             COMPOUND(RELATIVE(T_W, 0.25, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
             ABSOLUTE(T_H, 30)
         ]
-        btn, text = centeredTextButton(self.window, constraints, Assets.SOLID_SHADER)
+        btn, text = centeredTextButton(self.window, constraints)
         btn.setDefaultColor((1,1,1))
         text.setText('stream 1')
         text.setFontSize(24)
@@ -41,7 +33,7 @@ class CamScene(Scene):
             COMPOUND(RELATIVE(T_W, 0.25, P_W), ABSOLUTE(T_W, -2 * btnPadding)),
             ABSOLUTE(T_H, 30)
         ]
-        btn, text = centeredTextButton(self.window, constraints, Assets.SOLID_SHADER)
+        btn, text = centeredTextButton(self.window, constraints)
         btn.setDefaultColor((1,1,1))
         text.setText('stream 2')
         text.setFontSize(24)

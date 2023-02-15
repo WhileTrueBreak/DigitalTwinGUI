@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from opcua import Opcua
+
 from window import *
 from scenes.CamScene import *
 from scenes.KukaScene import *
@@ -9,7 +9,7 @@ from asset import *
 
 nest_asyncio.apply()
 
-window = Window((1600, 800), 'hello world')
+window = Window((1600, 800), 'hello world', fullscreen=False)
 
 scene3 = CamScene(window, 'Cam1')
 scene3.createUi()

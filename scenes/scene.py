@@ -3,9 +3,7 @@ from ui.uiElement import *
 
 from window import *
 
-import pygame
-
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 class Scene:
     def __init__(self, window, name):
@@ -20,7 +18,6 @@ class Scene:
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -Window.TAB_HEIGHT))
         ]
         self.sceneWrapper = UiWrapper(self.window, constraints)
-
     @abstractmethod
     def createUi(self):
         ...

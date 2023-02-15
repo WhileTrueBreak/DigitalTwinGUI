@@ -3,12 +3,7 @@ from uiHelper import *
 from constraintManager import *
 import scene
 
-import pygame
-
-import random
-
-from asyncua import Client, ua
-import asyncio
+from asyncua import ua
 import asyncio
 
 class AirPScene(scene.Scene):

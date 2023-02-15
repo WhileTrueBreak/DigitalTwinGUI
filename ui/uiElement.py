@@ -6,20 +6,14 @@ from mjpegThread import *
 
 import numpy as np
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import time
 import OpenGL.GL as GL
 
-import pygame
-
 from mjpeg.client import MJPEGClient
-
-import glm
-from queue import Queue
 
 from PIL import Image
 from PIL.Image import Transpose
-from io import BytesIO
 
 import ctypes
 
@@ -133,11 +127,11 @@ class GlElement:
             child.setDirty()
 
 class UiButton(GlElement):
-    def __init__(self, window, constraints, shader, dim=(0,0,0,0)):
+    def __init__(self, window, constraints, dim=(0,0,0,0)):
         super().__init__(window, constraints, dim)
         self.type = 'button'
 
-        self.shader = shader
+        self.shader = Assets.SOLID_SHADER
         self.currentColor = (1, 1, 1)
         self.defaultColor = (1, 1, 1)
         self.hoverColor = (1, 1, 1)
@@ -464,14 +458,13 @@ class UiStream(GlElement):
         return
 
     def absUpdate(self, delta):
-        self.updateImage()
+        self.updateImage(delta)
         return
     
-    def updateImage(self):
+    def updateImage(self, delta):
         stream = self.container.getStream()
-        if stream == None: return
-
-        # stream = BytesIO(buf.data)
+        if stream == None: 
+            return
         image = Image.open(stream).convert("RGBA")
         stream.close()
         self.image = image.transpose(Transpose.FLIP_TOP_BOTTOM).tobytes()
@@ -566,7 +559,7 @@ class Ui3DScene(GlElement):
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
 
-        self.modelRenderer = Renderer(Assets.OBJECT_SHADER, supportTransparency)
+        self.modelRenderer = Renderer(self.window, supportTransparency)
         self.modelRenderer.setProjectionMatrix(createProjectionMatrix(self.dim[2], self.dim[3], self.FOV, self.NEAR_PLANE, self.FAR_PLANE))
         self.modelRenderer.setViewMatrix(createViewMatrix(0, 0, 0, 0, 0, 0))
         self.type = '3d scene'
@@ -620,7 +613,7 @@ class Ui3DScene(GlElement):
     def getRenderer(self):
         return self.modelRenderer
 
-    def setColor(self, color):
+    def setBackgroundColor(self, color):
         self.color = color
         self.reshape()
         return
