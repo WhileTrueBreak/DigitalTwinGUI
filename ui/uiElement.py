@@ -458,14 +458,13 @@ class UiStream(GlElement):
         return
 
     def absUpdate(self, delta):
-        self.updateImage()
+        self.updateImage(delta)
         return
     
-    def updateImage(self):
+    def updateImage(self, delta):
         stream = self.container.getStream()
-        if stream == None: return
-
-        # stream = BytesIO(buf.data)
+        if stream == None: 
+            return
         image = Image.open(stream).convert("RGBA")
         stream.close()
         self.image = image.transpose(Transpose.FLIP_TOP_BOTTOM).tobytes()

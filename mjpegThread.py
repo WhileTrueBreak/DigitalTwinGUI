@@ -2,6 +2,9 @@ from threading import Thread
 from mjpeg.client import MJPEGClient
 from io import BytesIO
 
+def handler(signum, frame):
+    raise Exception("Time is up")
+
 class StreamContainer:
     def __init__(self):
         self.stream = None
@@ -22,18 +25,24 @@ def createMjpegThread(container, url, stop):
 def MjpegConnection(container, url, stop):
     print(f'mjpeg thread started: {url}')
     try:
-        client = MJPEGClient(url)
+        client = MJPEGClient(url, reconnect_interval=1)
         bufs = client.request_buffers(65536, 50)
         for b in bufs:
             client.enqueue_buffer(b)
         client.start()
     except:
-        pass
+        stop = lambda:True
     
     while not stop():
-        buf = client.dequeue_buffer()
-        stream = BytesIO(buf.data)
-        container.setStream(stream)
-        client.enqueue_buffer(buf)
-    client.stop()
+        try:
+            buf = client.dequeue_buffer(timeout=2)
+            stream = BytesIO(buf.data)
+            container.setStream(stream)
+            client.enqueue_buffer(buf)
+        except:
+            return
+    try:
+        client.stop()
+    except:
+        pass
     print(f'mjpeg thread stopped: {url}')

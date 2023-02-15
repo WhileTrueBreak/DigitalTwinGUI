@@ -53,9 +53,15 @@ class Opcua:
     @staticmethod
     def opcuaConnection(container, host, data, stop):
         print(f'Opcua thread started: {host}')
-        client = Opcua(host)
+        try:
+            client = Opcua(host)
+        except:
+            stop = lambda:True
         while not stop():
-            asyncio.run(Opcua.OpcuaGetData(container, data, client))
+            try:
+                asyncio.run(Opcua.OpcuaGetData(container, data, client))
+            except:
+                return
         print(f'Opcua thread stopped: {host}')
     @staticmethod
     async def OpcuaGetData(container, data, client):
