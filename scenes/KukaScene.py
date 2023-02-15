@@ -99,15 +99,15 @@ class KukaScene(Scene):
         for i in range(0,8):
             mat = Robot1_T_0_[i].copy()
             self.modelKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-            self.modelRenderer.setColor(self.modelKukaIds[-1], (0.5, i/7, 1, 1))
+            self.modelRenderer.setColor(self.modelKukaIds[-1], (0.5, i/8, 1, 0.7))
             self.modelKukaData[self.modelKukaIds[-1]] = (0, 0, 0, i)
         self.gripperId = self.modelRenderer.addModel(Assets.GRIPPER, Robot1_T_0_[7].copy())
 
-        self.modelRenderer.setColor(self.gripperId, (1, 0, 0, 1))
+        self.modelRenderer.setColor(self.gripperId, (0.5, 1, 1, 0.8))
 
         self.tubeIds = [0]*2
         self.tubeIds[0] = self.modelRenderer.addModel(Assets.TUBE_OUTSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
-        self.modelRenderer.setColor(self.tubeIds[0], (1, 1, 0, 1))
+        self.modelRenderer.setColor(self.tubeIds[0], (0.8, 0.8, 0, 1))
         self.tubeIds[1] = self.modelRenderer.addModel(Assets.TUBE_INSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
         self.modelRenderer.setColor(self.tubeIds[1], (0.6, 0.6, 0.6, 1))
 
