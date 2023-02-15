@@ -114,7 +114,7 @@ class KukaScene(Scene):
         self.tableIds = [0]*2
         self.tableIds[0] = self.modelRenderer.addModel(Assets.TABLES[2], createTransformationMatrix(0.5,1.6,-0.06625,0,0,0))
         self.modelRenderer.setColor(self.tableIds[0], (0.7, 0.7, 0.7, 1))
-        self.tableIds[1] = self.modelRenderer.addModel(Assets.KUKA_BASE, np.identity(4))
+        self.tableIds[1] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(-0.2,0,0,0,0,0))
         self.modelRenderer.setColor(self.tableIds[1], (0.7, 0.7, 0.7, 1))
 
         # self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))

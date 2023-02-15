@@ -525,7 +525,7 @@ class Ui3DScene(GlElement):
     def __init__(self, window, constraints, supportTransparency=False, dim=(0,0,0,0)):
         super().__init__(window, constraints, dim)
 
-        self.NEAR_PLANE = 0.1
+        self.NEAR_PLANE = 0.01
         self.FAR_PLANE = 1000
         self.FOV = 80
 
