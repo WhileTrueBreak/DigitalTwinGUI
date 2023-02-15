@@ -106,9 +106,9 @@ class KukaScene(Scene):
         self.modelRenderer.setColor(self.gripperId, (1, 0, 0, 1))
 
         self.tubeIds = [0]*2
-        self.tubeIds[0] = self.modelRenderer.addModel(Assets.TUBE_OUTSIDE, createTransformationMatrix(-0.134,0.8,0.0225,0,0,0))
+        self.tubeIds[0] = self.modelRenderer.addModel(Assets.TUBE_OUTSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
         self.modelRenderer.setColor(self.tubeIds[0], (1, 1, 0, 1))
-        self.tubeIds[1] = self.modelRenderer.addModel(Assets.TUBE_INSIDE, createTransformationMatrix(-0.134,0.8,0.0225,0,0,0))
+        self.tubeIds[1] = self.modelRenderer.addModel(Assets.TUBE_INSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
         self.modelRenderer.setColor(self.tubeIds[1], (0.6, 0.6, 0.6, 1))
 
         self.tableIds = [0]*2
