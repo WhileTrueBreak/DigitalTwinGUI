@@ -16,24 +16,26 @@ class Assets:
     def init():
         if Assets.INIT: return
 
-        modelQueues = {}
-        modelQueues['k14l0'] = Assets.loadModelQ('res/models/iiwa14/visual/link_0.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
-        modelQueues['k14l1'] = Assets.loadModelQ('res/models/iiwa14/visual/link_1.stl', createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0))
-        modelQueues['k14l2'] = Assets.loadModelQ('res/models/iiwa14/visual/link_2.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
-        modelQueues['k14l3'] = Assets.loadModelQ('res/models/iiwa14/visual/link_3.stl', createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0))
-        modelQueues['k14l4'] = Assets.loadModelQ('res/models/iiwa14/visual/link_4.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
-        modelQueues['k14l5'] = Assets.loadModelQ('res/models/iiwa14/visual/link_5.stl', createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180))
-        modelQueues['k14l6'] = Assets.loadModelQ('res/models/iiwa14/visual/link_6.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
-        modelQueues['k14l7'] = Assets.loadModelQ('res/models/iiwa14/visual/link_7.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.KUKA_IIWA14_MODEL = [None]*8
+        Assets.KUKA_IIWA14_MODEL[0] = Assets.loadModelFile('res/models/iiwa14/visual/link_0.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.KUKA_IIWA14_MODEL[1] = Assets.loadModelFile('res/models/iiwa14/visual/link_1.stl', createTransformationMatrix(0,0,-(0.36-0.1575), 0, 0, 0))
+        Assets.KUKA_IIWA14_MODEL[2] = Assets.loadModelFile('res/models/iiwa14/visual/link_2.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
+        Assets.KUKA_IIWA14_MODEL[3] = Assets.loadModelFile('res/models/iiwa14/visual/link_3.stl', createTransformationMatrix(0,0,0.2045-0.42, 0, 0, 0))
+        Assets.KUKA_IIWA14_MODEL[4] = Assets.loadModelFile('res/models/iiwa14/visual/link_4.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.KUKA_IIWA14_MODEL[5] = Assets.loadModelFile('res/models/iiwa14/visual/link_5.stl', createTransformationMatrix(0,0,0.1845-0.4, 0, 0, 180))
+        Assets.KUKA_IIWA14_MODEL[6] = Assets.loadModelFile('res/models/iiwa14/visual/link_6.stl', createTransformationMatrix(0, 0, 0, 0, 0, 180))
+        Assets.KUKA_IIWA14_MODEL[7] = Assets.loadModelFile('res/models/iiwa14/visual/link_7.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
 
-        modelQueues['k7l0'] = Assets.loadModelQ('res/models/iiwa7/visual/link_0.stl')
-        modelQueues['k7l1'] = Assets.loadModelQ('res/models/iiwa7/visual/link_1.stl')
-        modelQueues['k7l2'] = Assets.loadModelQ('res/models/iiwa7/visual/link_2.stl')
-        modelQueues['k7l3'] = Assets.loadModelQ('res/models/iiwa7/visual/link_3.stl')
-        modelQueues['k7l4'] = Assets.loadModelQ('res/models/iiwa7/visual/link_4.stl')
-        modelQueues['k7l5'] = Assets.loadModelQ('res/models/iiwa7/visual/link_5.stl')
-        modelQueues['k7l6'] = Assets.loadModelQ('res/models/iiwa7/visual/link_6.stl')
-        modelQueues['k7l7'] = Assets.loadModelQ('res/models/iiwa7/visual/link_7.stl')
+        Assets.GRIPPER = Assets.loadModelFile('res/models/gripper/2F140.stl', createTransformationMatrix(0, 0, 0, 0, 0, 90))
+        Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, -0.925, 0, 0, 0))
+
+        Assets.TABLES = [None]*3
+        Assets.TABLES[0] = Assets.loadModelFile('res/models/Objects/Benchtop_Custom.stl')
+        Assets.TABLES[1] = Assets.loadModelFile('res/models/Objects/Benchtop_Rectangle.STL')
+        Assets.TABLES[2] = Assets.loadModelFile('res/models/Objects/Benchtop_Square.STL')
+
+        Assets.TUBE_INSIDE = Assets.loadModelFile('res/models/tube/tube_inside.stl', createTransformationMatrix(0,0,0,0,90,0))
+        Assets.TUBE_OUTSIDE = Assets.loadModelFile('res/models/tube/tube_outside.stl', createTransformationMatrix(0,0,0,0,90,0))
 
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
         Assets.STREAM_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/streamFragment.glsl')
@@ -48,31 +50,11 @@ class Assets:
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF', 48*64)
         Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf', 48*64)
 
-        Assets.KUKA_IIWA14_MODEL = []
-        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l0'].get())
-        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l1'].get())
-        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l2'].get())
-        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l3'].get())
-        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l4'].get())
-        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l5'].get())
-        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l6'].get())
-        Assets.KUKA_IIWA14_MODEL.append(modelQueues['k14l7'].get())
-
-        Assets.KUKA_IIWA7_MODEL = []
-        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l0'].get())
-        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l1'].get())
-        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l2'].get())
-        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l3'].get())
-        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l4'].get())
-        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l5'].get())
-        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l6'].get())
-        Assets.KUKA_IIWA7_MODEL.append(modelQueues['k7l7'].get())
-
         floorVertices = [
-            [-1.5,-1.5, 0.0],[ 1.5,-1.5, 0.0],[-1.5, 1.5, 0.0],
-            [-1.5, 1.5, 0.0],[ 1.5,-1.5, 0.0],[ 1.5, 1.5, 0.0],
-            [-1.5,-1.5, 0.0],[-1.5, 1.5, 0.0],[ 1.5,-1.5, 0.0],
-            [ 1.5,-1.5, 0.0],[-1.5, 1.5, 0.0],[ 1.5, 1.5, 0.0],
+            [-15,-15, 0.0],[ 15,-15, 0.0],[-15, 15, 0.0],
+            [-15, 15, 0.0],[ 15,-15, 0.0],[ 15, 15, 0.0],
+            [-15,-15, 0.0],[-15, 15, 0.0],[ 15,-15, 0.0],
+            [ 15,-15, 0.0],[-15, 15, 0.0],[ 15, 15, 0.0],
         ]
         Assets.FLOOR = Model(vertices=floorVertices)
 
@@ -147,6 +129,7 @@ class Assets:
         q.put(Model(file=file, transform=tmat))
 
     def loadModelFile(file, tmat=np.identity(4)):
+        print(f'Loading model: {file}')
         return Model(file=file, transform=tmat)
     
     def loadModelVertices(vertices):

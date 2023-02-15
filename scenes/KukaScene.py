@@ -94,18 +94,31 @@ class KukaScene(Scene):
     
     def addModels(self):
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
-        self.modelData = {}
-        self.modelIds = []
+        self.modelKukaData = {}
+        self.modelKukaIds = []
         for i in range(0,8):
-            for x in range(0, 3):
-                for y in range(0, 3):
-                    mat = Robot1_T_0_[i].copy()
-                    self.modelIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-                    self.modelRenderer.setColor(self.modelIds[-1], (0.5, i/7, 1, 0.7))
-                    self.modelData[self.modelIds[-1]] = (x/3, y/3, 0, i)
+            mat = Robot1_T_0_[i].copy()
+            self.modelKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
+            self.modelRenderer.setColor(self.modelKukaIds[-1], (0.5, i/7, 1, 1))
+            self.modelKukaData[self.modelKukaIds[-1]] = (0, 0, 0, i)
+        self.gripperId = self.modelRenderer.addModel(Assets.GRIPPER, Robot1_T_0_[7].copy())
 
-        self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
-        self.modelRenderer.setColor(self.floorId, (0.5, 0.5, 0.5, 1))
+        self.modelRenderer.setColor(self.gripperId, (1, 0, 0, 1))
+
+        self.tubeIds = [0]*2
+        self.tubeIds[0] = self.modelRenderer.addModel(Assets.TUBE_OUTSIDE, createTransformationMatrix(-0.134,0.8,0.0225,0,0,0))
+        self.modelRenderer.setColor(self.tubeIds[0], (1, 1, 0, 1))
+        self.tubeIds[1] = self.modelRenderer.addModel(Assets.TUBE_INSIDE, createTransformationMatrix(-0.134,0.8,0.0225,0,0,0))
+        self.modelRenderer.setColor(self.tubeIds[1], (0.6, 0.6, 0.6, 1))
+
+        self.tableIds = [0]*2
+        self.tableIds[0] = self.modelRenderer.addModel(Assets.TABLES[2], createTransformationMatrix(0.5,1.6,-0.06625,0,0,0))
+        self.modelRenderer.setColor(self.tableIds[0], (0.7, 0.7, 0.7, 1))
+        self.tableIds[1] = self.modelRenderer.addModel(Assets.KUKA_BASE, np.identity(4))
+        self.modelRenderer.setColor(self.tableIds[1], (0.7, 0.7, 0.7, 1))
+
+        # self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
+        # self.modelRenderer.setColor(self.floorId, (0.5, 0.5, 0.5, 1))
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':
@@ -129,12 +142,17 @@ class KukaScene(Scene):
             self.jointsRad[5] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi6', default=0))
             self.jointsRad[6] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi7', default=0))
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(self.jointsRad)
-        for id in self.modelIds:
-            mat = Robot1_T_0_[self.modelData[id][3]].copy()
-            mat[0][3] += self.modelData[id][0]*2/2
-            mat[1][3] += self.modelData[id][1]*2/2
-            mat[2][3] += self.modelData[id][2]*2/2
+        for id in self.modelKukaIds:
+            mat = Robot1_T_0_[self.modelKukaData[id][3]].copy()
+            mat[0][3] += self.modelKukaData[id][0]*2/2
+            mat[1][3] += self.modelKukaData[id][1]*2/2
+            mat[2][3] += self.modelKukaData[id][2]*2/2
             self.modelRenderer.setTransformMatrix(id, mat)
+        mat = Robot1_T_0_[7].copy()
+        mat[0][3] += self.modelKukaData[7][0]*2/2
+        mat[1][3] += self.modelKukaData[7][1]*2/2
+        mat[2][3] += self.modelKukaData[7][2]*2/2
+        self.modelRenderer.setTransformMatrix(self.gripperId, mat)
     
     def moveCamera(self, delta):
         if self.window.getKeyState(K_j):
