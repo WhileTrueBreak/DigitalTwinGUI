@@ -28,36 +28,39 @@ def createMjpegThread(container, url, stop):
 def MjpegConnection(container, url, stop):
     print(f'mjpeg thread started: {url}')
     connectionOpen = True
-    try:
-        urlopen(url, timeout=1)
-    except:
-        connectionOpen = False
-        stop = lambda:True
+    # try:
+    #     urlopen(url, timeout=1)
+    # except:
+    #     connectionOpen = False
+    #     stop = lambda:True
     
     if connectionOpen:
         try:
-            client = MJPEGClient(url, reconnect_interval=0.1)
+            client = MJPEGClient(url)
             bufs = client.request_buffers(65536, 50)
             for b in bufs:
                 client.enqueue_buffer(b)
             client.start()
         except:
             stop = lambda:True
-    
+    # running = False
     while not stop():
-        if client.reconnects > 1:
-            stop = lambda:True
-        if client.frames == 0:
-            time.sleep(0.1)
-            continue
+        # print(client.frames)
+        # if not running:
+        #     if client.reconnects > 1:
+        #         stop = lambda:True
+        #     if client.frames == 0:
+        #         time.sleep(0.1)
+        #         continue
+        #     else:
+        #         running = True
         try:
-            buf = client.dequeue_buffer(timeout=0.1)
+            buf = client.dequeue_buffer(timeout=1)
             stream = BytesIO(buf.data)
             container.setStream(stream)
             client.enqueue_buffer(buf)
         except:
             return
-    
     if connectionOpen:
         client.stop()
     

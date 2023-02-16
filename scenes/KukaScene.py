@@ -83,7 +83,7 @@ class KukaScene(Scene):
             ABSOLUTE(T_X, padding),
             ABSOLUTE(T_Y, padding),
             RELATIVE(T_W, 0.3, P_W),
-            RELATIVE(T_H, 1, T_W),
+            RELATIVE(T_H, 3/4, T_W),
         ]
         self.armStream = UiStream(self.window, constraints, 'http://172.31.1.177:8080/?action=stream')
         self.renderWindow.addChild(self.armStream)

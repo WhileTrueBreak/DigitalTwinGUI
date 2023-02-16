@@ -1,5 +1,7 @@
 from ui.uiElement import GlElement
 
+from PIL import Image
+
 from mjpegThread import *
 from asset import *
 
@@ -68,7 +70,7 @@ class UiStream(GlElement):
             return
         image = Image.open(stream).convert("RGBA")
         stream.close()
-        self.image = image.transpose(Transpose.FLIP_TOP_BOTTOM).tobytes()
+        self.image = image.transpose(Image.FLIP_TOP_BOTTOM).tobytes()
 
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
