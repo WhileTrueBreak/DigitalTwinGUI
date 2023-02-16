@@ -1,5 +1,6 @@
 from constraintManager import *
-from ui.uiElement import *
+
+from ui.uiWrapper import *
 
 from window import *
 

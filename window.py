@@ -1,4 +1,5 @@
-from ui.uiElement import *
+from ui.uiButton import UiButton
+from ui.uiWrapper import UiWrapper
 from ui.uiHelper import *
 from constraintManager import *
 from asset import *
