@@ -28,11 +28,11 @@ def createMjpegThread(container, url, stop):
 def MjpegConnection(container, url, stop):
     print(f'mjpeg thread started: {url}')
     connectionOpen = True
-    # try:
-    #     urlopen(url, timeout=1)
-    # except:
-    #     connectionOpen = False
-    #     stop = lambda:True
+    try:
+        urlopen(url, timeout=1)
+    except:
+        connectionOpen = False
+        stop = lambda:True
     
     if connectionOpen:
         try:
@@ -43,17 +43,16 @@ def MjpegConnection(container, url, stop):
             client.start()
         except:
             stop = lambda:True
-    # running = False
+    running = False
     while not stop():
-        # print(client.frames)
-        # if not running:
-        #     if client.reconnects > 1:
-        #         stop = lambda:True
-        #     if client.frames == 0:
-        #         time.sleep(0.1)
-        #         continue
-        #     else:
-        #         running = True
+        if not running:
+            if client.reconnects > 1:
+                stop = lambda:True
+            if client.frames == 0:
+                time.sleep(0.1)
+                continue
+            else:
+                running = True
         try:
             buf = client.dequeue_buffer(timeout=1)
             stream = BytesIO(buf.data)
