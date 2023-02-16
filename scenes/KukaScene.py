@@ -1,6 +1,7 @@
 from ui.uiButton import UiButton
 from ui.ui3dScene import Ui3DScene
 from ui.uiWrapper import UiWrapper
+from ui.uiStream import UiStream
 
 from ui.uiHelper import *
 from constraintManager import *
@@ -76,6 +77,16 @@ class KukaScene(Scene):
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
         self.addModels()
+
+        padding = 10
+        constraints = [
+            ABSOLUTE(T_X, padding),
+            ABSOLUTE(T_Y, padding),
+            RELATIVE(T_W, 0.3, P_W),
+            RELATIVE(T_H, 1, T_W),
+        ]
+        self.armStream = UiStream(self.window, constraints, 'http://172.31.1.177:8080/?action=stream')
+        self.renderWindow.addChild(self.armStream)
 
         padding = 10
         constraints = [
@@ -208,10 +219,12 @@ class KukaScene(Scene):
                 'ns=24;s=R4d_Joi6', 
                 'ns=24;s=R4d_Joi7'
             ], lambda:self.threadStopFlag)
+        self.armStream.start()
         return
     
     def stop(self):
         self.threadStopFlag = True
+        self.armStream.stop()
         return
 
 
