@@ -73,7 +73,7 @@ class KukaScene(Scene):
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.renderWindow = Ui3DScene(self.window, constraints)
-        self.renderWindow.setBackgroundColor((0,0,0))
+        self.renderWindow.setBackgroundColor((1, 1, 1))
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
         self.addModels()
@@ -90,7 +90,7 @@ class KukaScene(Scene):
 
         padding = 10
         constraints = [
-            ABSOLUTE(T_X, padding),
+            COMPOUND(COMPOUND(RELATIVE(T_X, 1, P_W), RELATIVE(T_X, -1, T_W)), ABSOLUTE(T_X, -padding)),
             ABSOLUTE(T_Y, padding),
             ABSOLUTE(T_W, 30),
             RELATIVE(T_H, 1, T_W)
@@ -173,6 +173,9 @@ class KukaScene(Scene):
         self.modelRenderer.setTransformMatrix(self.gripperId, mat)
     
     def moveCamera(self, delta):
+        if self.window.selectedUi != self.renderWindow:
+            return
+
         if self.window.getKeyState(K_j):
             self.cameraTransform[5] -= 90*delta
         if self.window.getKeyState(K_l):

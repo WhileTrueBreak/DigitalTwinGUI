@@ -58,6 +58,9 @@ class Window():
         self.mouseButtons = [False]*5
         self.keyState = {}
 
+        self.uiSelectBuffer = []
+        self.selectedUi = None
+
         self.scenes = [None]
         self.sceneMap = {}
         self.currentScene = None
@@ -131,6 +134,8 @@ class Window():
                     self.windowWrapper.addChild(self.currentScene.sceneWrapper)
                     self.currentScene.start()
             if self.currentScene: self.currentScene.eventHandler(event)
+        self.selectedUi = self.uiSelectBuffer[0] if len(self.uiSelectBuffer) > 0 else self.selectedUi
+        self.uiSelectBuffer = []
         self.uiEvents = []
 
     def update(self):
