@@ -507,7 +507,6 @@ class Renderer:
         # config states
         GL.glDisable(GL.GL_DEPTH_TEST)
         GL.glDepthMask(GL.GL_TRUE)
-        GL.glDisable(GL.GL_BLEND)
         GL.glViewport(*viewport)
 
         # render to screen

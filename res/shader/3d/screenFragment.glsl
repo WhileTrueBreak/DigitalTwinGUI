@@ -10,5 +10,6 @@ layout (location = 0) out vec4 frag;
 uniform sampler2D screen;
 
 void main(){
-	frag = vec4(texture(screen, texture_coords).rgb, 1.0f);
+	// frag = vec4(1, 1, 1, 0);
+	frag = texture(screen, texture_coords);
 }

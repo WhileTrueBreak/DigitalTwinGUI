@@ -72,6 +72,7 @@ class KukaScene(Scene):
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.renderWindow = Ui3DScene(self.window, constraints)
+        self.renderWindow.setBackgroundColor((0,0,0))
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
         self.addModels()
