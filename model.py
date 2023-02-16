@@ -1,5 +1,6 @@
 from stl import mesh
 import pywavefront
+# import tinyobjloader
 import numpy as np
 import time
 import os
@@ -31,6 +32,7 @@ class Model:
             raise Exception(f'Error loading stl: {file}')
     
     def loadOBJ(self, file, transform):
+
         scene = pywavefront.Wavefront(self.file, parse=True)
         
         material = list(scene.materials.items().mapping.values())[0]
@@ -43,6 +45,7 @@ class Model:
         elif material.has_normals:
             index = [3,4,5,0,1,2,6,6]
         vertexSize = material.vertex_size
+
         vertices = np.array(material.vertices,dtype='float32')
         numVertices = int(len(vertices)/vertexSize)
 
