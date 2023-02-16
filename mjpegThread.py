@@ -50,8 +50,5 @@ def MjpegConnection(container, url, stop):
             client.enqueue_buffer(buf)
         except:
             return
-    try:
-        client.stop()
-    except:
-        pass
+    client.stop()
     print(f'mjpeg thread stopped: {url}')
