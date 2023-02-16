@@ -1,12 +1,15 @@
 from model import *
 from mathHelper import *
 
+from PIL import Image
+
 from pathlib import Path
 import OpenGL.GL as GL
 import freetype
 
 from queue import Queue
 from threading import Thread
+
 
 class Assets:
     
@@ -37,6 +40,15 @@ class Assets:
         Assets.TUBE_INSIDE = Assets.loadModelFile('res/models/tube/tube_inside.stl', createTransformationMatrix(0,0,0,0,90,0))
         Assets.TUBE_OUTSIDE = Assets.loadModelFile('res/models/tube/tube_outside.stl', createTransformationMatrix(0,0,0,0,90,0))
 
+        scaleTMAT = np.identity(4)
+        scaleTMAT[0,0] = 1/100
+        scaleTMAT[1,1] = 1/100
+        scaleTMAT[2,2] = 1/100
+        Assets.TEAPOT = Assets.loadModelFile('res/models/teapot.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
+        Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
+
+        Assets.CUBE_TEX = Assets.loadtexture('res/textures/cube.jpg')
+        
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
         Assets.STREAM_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/streamFragment.glsl')
         Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
@@ -127,13 +139,31 @@ class Assets:
     def modelLoader(q, file, tmat):
         print(f'Loading model: {file}')
         q.put(Model(file=file, transform=tmat))
-
+    @staticmethod
     def loadModelFile(file, tmat=np.identity(4)):
         print(f'Loading model: {file}')
         return Model(file=file, transform=tmat)
-    
+    @staticmethod
     def loadModelVertices(vertices):
         return Model(vertices=vertices)
+    @staticmethod
+    def loadtexture(file):
+        print(f'Loading texture: {file}')
+        img = Image.open(file)
+        imgData = np.array(list(img.getdata()), np.int8)
+
+        texture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, texture)
+        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+        GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, *img.size, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imgData)
+        return texture
 
 class CharacterSlot:
     def __init__(self, texture, glyph):

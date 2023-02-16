@@ -5,19 +5,31 @@ import numpy as np
 import ctypes
 
 class BatchRenderer:
-    MAX_TRANSFORMS = 60
+    MAX_OBJECTS = 60
     MAX_VERTICES = 2000000
+    MAX_TEXTURES = 0
     def __init__(self, isTransparent=False):
-        self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, 11), dtype='float32')
+        BatchRenderer.MAX_TEXTURES = min(GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS), 16)
+
+        self.vertexSize = 14
+
+        # vertex shape [x, y, z, nx, ny, nz, r, g, b, a, matIndex, u, v, texIndex]
+        self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, self.vertexSize), dtype='float32')
         self.indices = np.arange(BatchRenderer.MAX_VERTICES, dtype='int32')
 
         self.isTransparent = isTransparent
 
-        self.isAvaliable = [True]*BatchRenderer.MAX_TRANSFORMS
+        self.isAvaliable = [True]*BatchRenderer.MAX_OBJECTS
 
-        self.transformationMatrices = np.array([np.identity(4)]*BatchRenderer.MAX_TRANSFORMS, dtype='float32')
-        self.modelRange = np.zeros((BatchRenderer.MAX_TRANSFORMS, 2), dtype='int32')
-        self.models = [None]*BatchRenderer.MAX_TRANSFORMS
+        self.colors = [(1,1,1,1)]*BatchRenderer.MAX_OBJECTS
+
+        self.transformationMatrices = np.array([np.identity(4)]*BatchRenderer.MAX_OBJECTS, dtype='float32')
+        self.modelRange = np.zeros((BatchRenderer.MAX_OBJECTS, 2), dtype='int32')
+        self.models = [None]*BatchRenderer.MAX_OBJECTS
+
+        self.textureDict = {}
+        self.texModelMap = []
+        self.textures = []
         
         self.currentIndex = 0
 
@@ -33,14 +45,18 @@ class BatchRenderer:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_DYNAMIC_DRAW)
 
-        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 11*4, ctypes.c_void_p(0*4))
+        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, self.vertexSize*4, ctypes.c_void_p(0*4))
         GL.glEnableVertexAttribArray(0)
-        GL.glVertexAttribPointer(1, 3, GL.GL_FLOAT, GL.GL_TRUE, 11*4, ctypes.c_void_p(3*4))
+        GL.glVertexAttribPointer(1, 3, GL.GL_FLOAT, GL.GL_TRUE, self.vertexSize*4, ctypes.c_void_p(3*4))
         GL.glEnableVertexAttribArray(1)
-        GL.glVertexAttribPointer(2, 4, GL.GL_FLOAT, GL.GL_FALSE, 11*4, ctypes.c_void_p(6*4))
+        GL.glVertexAttribPointer(2, 4, GL.GL_FLOAT, GL.GL_FALSE, self.vertexSize*4, ctypes.c_void_p(6*4))
         GL.glEnableVertexAttribArray(2)
-        GL.glVertexAttribPointer(3, 1, GL.GL_FLOAT, GL.GL_FALSE, 11*4, ctypes.c_void_p(10*4))
+        GL.glVertexAttribPointer(3, 1, GL.GL_FLOAT, GL.GL_FALSE, self.vertexSize*4, ctypes.c_void_p(10*4))
         GL.glEnableVertexAttribArray(3)
+        GL.glVertexAttribPointer(4, 2, GL.GL_FLOAT, GL.GL_FALSE, self.vertexSize*4, ctypes.c_void_p(11*4))
+        GL.glEnableVertexAttribArray(4)
+        GL.glVertexAttribPointer(5, 1, GL.GL_FLOAT, GL.GL_FALSE, self.vertexSize*4, ctypes.c_void_p(13*4))
+        GL.glEnableVertexAttribArray(5)
 
         self.ebo = GL.glGenBuffers(1)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
@@ -71,9 +87,11 @@ class BatchRenderer:
         self.transformationMatrices[index] = transformationMatrix
         self.modelRange[index] = [self.currentIndex, self.currentIndex+vShape[0]]
 
-        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 0:6] = model.vertices
+        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 0:6] = model.vertices[::,0:6]
         data = np.tile([1, 1, 1, 1, index], (vShape[0], 1))
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 6:11] = data
+        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 11:13] = model.vertices[::,6:8]
+        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 13:14] = np.tile([-1], (vShape[0], 1))
 
         self.currentIndex += vShape[0]
         self.isDirty = True
@@ -127,13 +145,21 @@ class BatchRenderer:
         GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssbo)
         GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssbo)
 
+        for i in range(len(self.textures)):
+            GL.glActiveTexture(GL.GL_TEXTURE0 + i)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, self.textures[i])
+
         GL.glEnableVertexAttribArray(0)
         GL.glEnableVertexAttribArray(1)
         GL.glEnableVertexAttribArray(2)
         GL.glEnableVertexAttribArray(3)
+        GL.glEnableVertexAttribArray(4)
+        GL.glEnableVertexAttribArray(5)
 
         GL.glDrawElements(GL.GL_TRIANGLES, self.currentIndex, GL.GL_UNSIGNED_INT, None)
 
+        GL.glDisableVertexAttribArray(5)
+        GL.glDisableVertexAttribArray(4)
         GL.glDisableVertexAttribArray(3)
         GL.glDisableVertexAttribArray(2)
         GL.glDisableVertexAttribArray(1)
@@ -158,12 +184,53 @@ class BatchRenderer:
     def setColor(self, id, color):
         lower = self.modelRange[id][0]
         upper = self.modelRange[id][1]
+        self.colors[id] = color
         colorMat = np.tile(color, (upper-lower, 1))
         self.vertices[lower:upper, 6:10] = colorMat
         self.isDirty = True
 
+    def setTexture(self, id, tex):
+        lower = self.modelRange[id][0]
+        upper = self.modelRange[id][1]
+        if tex == None and id in self.textureDict:
+            index = self.texModelMap.index(self.textureDict[id])
+            del self.texModelMap[index]
+            del self.textures[index]
+            del self.textureDict[id]
+            self.vertices[lower:upper, 13:14] = np.tile([-1], (upper-lower, 1))
+            self.isDirty = True
+            return True
+        elif tex == None:
+            return True
+        
+        if len(self.textures) >= BatchRenderer.MAX_TEXTURES and not id in self.textureDict:
+            return False
+        
+        if id in self.textureDict:
+            texId = self.texModelMap.index(self.textureDict[id])
+            self.textures[texId] = tex
+        else:
+            self.textureDict[id] = self.models[id]
+            self.texModelMap.append(self.models[id])
+            self.textures.append(tex)
+            texId = len(self.textures)
+
+        self.vertices[lower:upper, 13:14] = np.tile([texId], (upper-lower, 1))
+        self.isDirty = True
+        return True
+
+    def hasTextureSpace(self):
+        if len(self.textures) >= BatchRenderer.MAX_TEXTURES:
+            return False
+        return True
+
     def getData(self, id):
-        return (self.models[id], self.transformationMatrices[id])
+        if id in self.textureDict:
+            tex = self.textures[self.texModelMap.index(self.textureDict[id])]
+        else:
+            tex = None
+        data = {'model':self.models[id], 'color':self.colors[id], 'matrix':self.transformationMatrices[id].T, 'texture':tex}
+        return data
 
 class Renderer:
     def __init__(self, window, supportTransparency=False):
@@ -319,26 +386,59 @@ class Renderer:
             return
 
         # remove from batch and added to new batch
-        model, matrix = batch.getData(objId)
+        data = batch.getData(objId)
         batch.removeModel(objId)
 
         #loop through batches
         for i in range(len(self.batches)):
             if isTransparent ^ self.batches[i].isTransparent: continue
-            objId = self.batches[i].addModel(model, matrix)
+            objId = self.batches[i].addModel(data['model'], data['matrix'])
             if objId == -1: continue
             self.batches[i].setColor(objId, color)
+            self.batches[i].setTexture(objId, data['texture'])
             self.idDict[id] = (i, objId)
             return
 
         #if didnt find suitable batch
         self.addBatch(isTransparent)
         batchId = len(self.batches)-1
-        objId = self.batches[-1].addModel(model, matrix)
+        objId = self.batches[-1].addModel(data['model'], data['matrix'])
         if objId == -1:
             print('failed to update color')
             return
         self.batches[batchId].setColor(objId, color)
+        self.batches[batchId].setTexture(objId, data['texture'])
+        self.idDict[id] = (batchId, objId)
+
+    def setTexture(self, id, tex):
+        batch = self.batches[self.idDict[id][0]]
+        objId = self.idDict[id][1]
+        if batch.setTexture(objId, tex):
+            return
+        
+        isTransparent = batch.colors[objId][3] != 1
+        data = batch.getData(objId)
+        batch.removeModel(objId)
+
+        #loop through batches
+        for i in range(len(self.batches)):
+            if not self.batches[i].hasTextureSpace(): continue
+            objId = self.batches[i].addModel(data['model'], data['matrix'])
+            if objId == -1: continue
+            self.batches[i].setColor(objId, data['color'])
+            self.batches[i].setTexture(objId, tex)
+            self.idDict[id] = (i, objId)
+            return
+
+        #if didnt find suitable batch
+        self.addBatch(isTransparent)
+        batchId = len(self.batches)-1
+        objId = self.batches[-1].addModel(data['model'], data['matrix'])
+        if objId == -1:
+            print('failed to update color')
+            return
+        self.batches[i].setColor(objId, data['color'])
+        self.batches[i].setTexture(objId, tex)
         self.idDict[id] = (batchId, objId)
 
     def render(self):
