@@ -492,7 +492,7 @@ class UiStream(GlElement):
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
     def absRender(self):
-        GL.glUseProgram(Assets.STREAM_SHADER)
+        GL.glUseProgram(Assets.IMAGE_SHADER)
 
         GL.glBindVertexArray(self.vao)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)

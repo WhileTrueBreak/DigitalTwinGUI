@@ -50,13 +50,13 @@ class Assets:
         Assets.CUBE_TEX = Assets.loadtexture('res/textures/cube.jpg')
         
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
-        Assets.STREAM_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/streamFragment.glsl')
+        Assets.IMAGE_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/imageFragment.glsl')
         Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
 
-        Assets.OPAQUE_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/opaqueFragment.glsl')
-        Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/objectVertex.glsl', 'res/shader/transparentFragment.glsl')
-        Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shader/compositeVertex.glsl', 'res/shader/compositeFragment.glsl')
-        Assets.SCREEN_SHADER = Assets.linkShaders('res/shader/screenVertex.glsl', 'res/shader/screenFragment.glsl')
+        Assets.OPAQUE_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/opaqueFragment.glsl')
+        Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/transparentFragment.glsl')
+        Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shader/3d/compositeVertex.glsl', 'res/shader/3d/compositeFragment.glsl')
+        Assets.SCREEN_SHADER = Assets.linkShaders('res/shader/3d/screenVertex.glsl', 'res/shader/3d/screenFragment.glsl')
 
         Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf', 48*64)
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF', 48*64)
