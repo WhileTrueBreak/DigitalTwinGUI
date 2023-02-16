@@ -13,7 +13,9 @@ def createProjectionMatrix(width, height, FOV, NEAR_PLANE, FAR_PLANE):
     if height != 0:
         aspectRatio = width/height
     yScale = (float) ((1/tan(radians(FOV/2)))*aspectRatio)
-    xScale = yScale/aspectRatio
+    xScale = 0
+    if aspectRatio != 0:
+        xScale = yScale/aspectRatio
     frustumLength = FAR_PLANE-NEAR_PLANE
     
     projectionMatrix = np.zeros((4,4))

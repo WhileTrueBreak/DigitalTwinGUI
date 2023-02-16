@@ -52,7 +52,7 @@ class ConstraintManager:
             if current == None: raise Exception('Constraints can not be solved')
             current.adjustTransform(transform, isSet)
             constraints.remove(current)
-        return (transform[4], transform[5], transform[6], transform[7])
+        return (max(transform[4],0), max(transform[5],0), max(transform[6],0), max(transform[7],0))
 
 class Constraint:
     def __init__(self, toChange):

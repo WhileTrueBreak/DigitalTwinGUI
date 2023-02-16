@@ -18,17 +18,19 @@ import sys
 class Window():
     TAB_HEIGHT = 40
 
-    def __init__(self, size, title, fullscreen=False):
+    def __init__(self, size, title, fullscreen=False, resizeable=False):
         pygame.init()
         display_flags = pygame.DOUBLEBUF | pygame.OPENGL
+        if resizeable:
+            display_flags = display_flags | pygame.RESIZABLE
         if fullscreen:
             self.screen = pygame.display.set_mode((0,0), display_flags, pygame.FULLSCREEN)
         else:
             self.screen = pygame.display.set_mode(size, display_flags)
         pygame.display.set_caption(title)
 
-        self.dim = self.screen.get_size()
 
+        self.dim = self.screen.get_size()
 
         # GL.glDepthFunc(GL.GL_ALWAYS)
 
@@ -120,9 +122,11 @@ class Window():
                 if self.currentScene != None:
                     self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
                     self.currentScene.stop()
-            if event.type == pygame.KEYDOWN:
+            elif event.type == VIDEORESIZE:
+                self.updateWindow()
+            elif event.type == pygame.KEYDOWN:
                 self.keyState[event.key] = True
-            if event.type == pygame.KEYUP:
+            elif event.type == pygame.KEYUP:
                 self.keyState[event.key] = False
         for event in self.uiEvents:
             if event['action'] == 'release' and event['obj'] in self.tabBtns:
@@ -137,6 +141,13 @@ class Window():
         self.selectedUi = self.uiSelectBuffer[0] if len(self.uiSelectBuffer) > 0 else self.selectedUi
         self.uiSelectBuffer = []
         self.uiEvents = []
+
+    def updateWindow(self):
+        self.dim = pygame.display.get_window_size()
+        self.windowWrapper.dim = (0,0,*self.dim)
+        self.windowWrapper.constraintManager.pos = (0,0)
+        self.windowWrapper.constraintManager.dim = self.dim
+        self.windowWrapper.setDirty()
 
     def update(self):
         self.eventHandler()

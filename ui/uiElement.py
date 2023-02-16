@@ -16,6 +16,8 @@ class GlElement:
         self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
         self.lastMouseState = self.window.mouseButtons
 
+        self.zIndex = 0
+
         self.type = 'nothing'
 
     def update(self, delta):

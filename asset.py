@@ -42,12 +42,12 @@ class Assets:
         Assets.TUBE_INSIDE = Assets.loadModelFile('res/models/tube/tube_inside.stl', createTransformationMatrix(0,0,0,0,90,0))
         Assets.TUBE_OUTSIDE = Assets.loadModelFile('res/models/tube/tube_outside.stl', createTransformationMatrix(0,0,0,0,90,0))
 
-        scaleTMAT = np.identity(4)
-        scaleTMAT[0,0] = 1/100
-        scaleTMAT[1,1] = 1/100
-        scaleTMAT[2,2] = 1/100
-        Assets.TEAPOT = Assets.loadModelFile('res/models/teapot.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
-        Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
+        # scaleTMAT = np.identity(4)
+        # scaleTMAT[0,0] = 1/100
+        # scaleTMAT[1,1] = 1/100
+        # scaleTMAT[2,2] = 1/100
+        # Assets.TEAPOT = Assets.loadModelFile('res/models/teapot.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
+        # Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
 
         Assets.CUBE_TEX = Assets.loadtexture('res/textures/cube.jpg', flipY=True)
         
