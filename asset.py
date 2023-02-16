@@ -1,4 +1,5 @@
 from model import *
+from texture import *
 from mathHelper import *
 
 from PIL import Image
@@ -47,7 +48,7 @@ class Assets:
         Assets.TEAPOT = Assets.loadModelFile('res/models/teapot.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
         Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
 
-        Assets.CUBE_TEX = Assets.loadtexture('res/textures/cube.jpg')
+        Assets.CUBE_TEX = Assets.loadtexture('res/textures/cube.jpg', flipY=True)
         
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
         Assets.IMAGE_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/imageFragment.glsl')
@@ -147,22 +148,20 @@ class Assets:
     def loadModelVertices(vertices):
         return Model(vertices=vertices)
     @staticmethod
-    def loadtexture(file):
+    def loadtexture(file, flipX=False, flipY=False, rot=0):
         print(f'Loading texture: {file}')
         img = Image.open(file)
-        imgData = np.array(list(img.getdata()), np.int8)
-
-        texture = GL.glGenTextures(1)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, texture)
-        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
-        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP)
-        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP)
-        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT)
-        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT)
-        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
-        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
-        GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, *img.size, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imgData)
+        if flipX:
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        if flipY:
+            img = img.transpose(Image.FLIP_TOP_BOTTOM)
+        if rot == 90:
+            img = img.transpose(Image.ROTATE_90)
+        elif rot == 180:
+            img = img.transpose(Image.ROTATE_180)
+        elif rot == 270:
+            img = img.transpose(Image.ROTATE_270)
+        texture = Texture(img)
         return texture
 
 class CharacterSlot:
