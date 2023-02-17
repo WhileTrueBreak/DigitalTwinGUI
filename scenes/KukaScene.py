@@ -2,6 +2,7 @@ from ui.uiButton import UiButton
 from ui.ui3dScene import Ui3DScene
 from ui.uiWrapper import UiWrapper
 from ui.uiStream import UiStream
+from ui.uiVideo import UiVideo
 
 from ui.uiHelper import *
 from constraintManager import *
@@ -212,6 +213,7 @@ class KukaScene(Scene):
     def start(self):
         self.armStream.start()
         self.threadStopFlag = False
+
         if self.dataThread.is_alive(): return
         self.dataThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
@@ -228,6 +230,7 @@ class KukaScene(Scene):
     def stop(self):
         self.armStream.stop()
         self.threadStopFlag = True
+        
         return
 
 

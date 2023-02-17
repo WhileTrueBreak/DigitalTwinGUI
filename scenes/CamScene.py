@@ -1,6 +1,6 @@
 from ui.uiButton import UiButton
 from ui.uiStream import UiStream
-from ui.uiImage import UiImage
+from ui.uiVideo import UiVideo
 
 from ui.uiHelper import *
 from constraintManager import *
@@ -57,13 +57,13 @@ class CamScene(Scene):
         constraints = [
             ABSOLUTE(T_X, btnPadding),
             COMPOUND(COMPOUND(RELATIVE(T_Y, 1, P_H), RELATIVE(T_Y, -1, T_H)), ABSOLUTE(T_Y, -btnPadding)),
-            RELATIVE(T_W, 1, T_H),
+            RELATIVE(T_W, 1280/720, T_H),
             RELATIVE(T_H, 0.3, P_H)
         ]
 
-        self.image = UiImage(self.window, constraints)
-        self.image.setImage(Assets.CUBE_TEX)
-        self.sceneWrapper.addChild(self.image)
+        self.video = UiVideo(self.window, constraints)
+        self.video.setVideo(Assets.BAD_APPLE_VID)
+        self.sceneWrapper.addChild(self.video)
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':

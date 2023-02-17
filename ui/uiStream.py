@@ -63,7 +63,7 @@ class UiStream(GlElement):
     def absUpdate(self, delta):
         self.updateImage(delta)
         return
-    
+
     def updateImage(self, delta):
         stream = self.container.getStream()
         if stream == None: 

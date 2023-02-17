@@ -2,6 +2,7 @@ from model import *
 from texture import *
 from mathHelper import *
 
+import cv2
 from PIL import Image
 
 from pathlib import Path
@@ -48,6 +49,8 @@ class Assets:
         # scaleTMAT[2,2] = 1/100
         # Assets.TEAPOT = Assets.loadModelFile('res/models/teapot.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
         # Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
+
+        Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')
 
         Assets.CUBE_TEX = Assets.loadtexture('res/textures/cube.jpg', flipY=True)
         
@@ -164,6 +167,12 @@ class Assets:
             img = img.transpose(Image.ROTATE_270)
         texture = Texture(img)
         return texture
+    @staticmethod
+    def loadVideo(file):
+        print(f'Loading video: {file}')
+        capture = cv2.VideoCapture(file)
+        return capture
+
 
 class CharacterSlot:
     def __init__(self, texture, glyph):
