@@ -52,7 +52,7 @@ class Assets:
 
         Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')
 
-        Assets.CUBE_TEX = Assets.loadtexture('res/textures/cube.jpg', flipY=True)
+        Assets.CUBE_IMG = Assets.loadImage('res/textures/cube.jpg', flipY=True)
         
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
         Assets.IMAGE_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/imageFragment.glsl')
@@ -152,7 +152,22 @@ class Assets:
     def loadModelVertices(vertices):
         return Model(vertices=vertices)
     @staticmethod
-    def loadtexture(file, flipX=False, flipY=False, rot=0):
+    def loadImage(file, flipX=False, flipY=False, rot=0):
+        print(f'Loading texture: {file}')
+        img = Image.open(file)
+        if flipX:
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        if flipY:
+            img = img.transpose(Image.FLIP_TOP_BOTTOM)
+        if rot == 90:
+            img = img.transpose(Image.ROTATE_90)
+        elif rot == 180:
+            img = img.transpose(Image.ROTATE_180)
+        elif rot == 270:
+            img = img.transpose(Image.ROTATE_270)
+        return img
+    @staticmethod
+    def loadTexture(file, flipX=False, flipY=False, rot=0):
         print(f'Loading texture: {file}')
         img = Image.open(file)
         if flipX:

@@ -71,8 +71,7 @@ class UiStream(GlElement):
         image = Image.open(stream).convert("RGBA")
         stream.close()
         self.image = image.transpose(Image.FLIP_TOP_BOTTOM).tobytes()
-
-        self.texture = GL.glGenTextures(1)
+        
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
 
         #texture options
