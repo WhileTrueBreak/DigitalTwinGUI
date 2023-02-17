@@ -122,3 +122,6 @@ class UiVideo(GlElement):
         self.frameTimer = 0
         self.spf = 1/video.get(cv2.CAP_PROP_FPS)
         self.video = video
+
+    def restartVideo(self):
+        cv2.cvSetCaptureProperty(self.video, cv2.CV_CAP_PROP_POS_MSEC, 0)
