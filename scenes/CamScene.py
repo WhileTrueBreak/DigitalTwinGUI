@@ -54,17 +54,6 @@ class CamScene(Scene):
         self.streams.append(UiStream(self.window, constraints, 'http://172.31.1.226:8080/?action=streams'))
         self.sceneWrapper.addChildren(*self.camBtns)
 
-        constraints = [
-            ABSOLUTE(T_X, btnPadding),
-            COMPOUND(COMPOUND(RELATIVE(T_Y, 1, P_H), RELATIVE(T_Y, -1, T_H)), ABSOLUTE(T_Y, -btnPadding)),
-            RELATIVE(T_W, 1280/720, T_H),
-            RELATIVE(T_H, 0.3, P_H)
-        ]
-
-        self.video = UiVideo(self.window, constraints)
-        self.video.setVideo(Assets.BAD_APPLE_VID)
-        self.sceneWrapper.addChild(self.video)
-
     def handleUiEvents(self, event):
         if event['action'] == 'release':
             for i in range(len(self.streams)):

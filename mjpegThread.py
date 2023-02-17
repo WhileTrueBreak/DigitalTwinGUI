@@ -37,7 +37,7 @@ def MjpegConnection(container, url, stop):
     if connectionOpen:
         try:
             client = MJPEGClient(url)
-            bufs = client.request_buffers(65536, 50)
+            bufs = client.request_buffers(1048576, 50)
             for b in bufs:
                 client.enqueue_buffer(b)
             client.start()
@@ -58,8 +58,8 @@ def MjpegConnection(container, url, stop):
             stream = BytesIO(buf.data)
             container.setStream(stream)
             client.enqueue_buffer(buf)
-        except:
-            return
+        except Exception as e:
+            stop = lambda:True
     if connectionOpen:
         client.stop()
     

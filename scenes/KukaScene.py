@@ -146,6 +146,7 @@ class KukaScene(Scene):
         return
     
     def absUpdate(self, delta):
+        self.armStream.start()
         self.moveCamera(delta)
         self.updateJoints()
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.cameraTransform))

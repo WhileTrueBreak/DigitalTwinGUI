@@ -179,5 +179,6 @@ class Window():
                 print(f'frame time: {1000000/self.frames:.0f}us | FPS: {self.frames}')
                 self.timeCounter -= 1
                 self.frames = 0
+        self.currentScene.stop()
         pygame.quit()
         sys.exit()
