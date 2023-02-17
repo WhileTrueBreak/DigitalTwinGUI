@@ -210,6 +210,7 @@ class KukaScene(Scene):
         self.cameraTransform[2] += -deltaPos[2]*sin(radPitch)#+deltaPos[1]*cos(radPitch)
 
     def start(self):
+        self.armStream.start()
         self.threadStopFlag = False
         if self.dataThread.is_alive(): return
         self.dataThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
@@ -222,12 +223,11 @@ class KukaScene(Scene):
                 'ns=24;s=R4d_Joi6', 
                 'ns=24;s=R4d_Joi7'
             ], lambda:self.threadStopFlag)
-        self.armStream.start()
         return
     
     def stop(self):
-        self.threadStopFlag = True
         self.armStream.stop()
+        self.threadStopFlag = True
         return
 
 
