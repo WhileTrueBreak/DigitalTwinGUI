@@ -37,7 +37,7 @@ def MjpegConnection(container, url, stop):
     if connectionOpen:
         try:
             client = MJPEGClient(url)
-            bufs = client.request_buffers(1048576, 50)
+            bufs = client.request_buffers(1048576, 2)
             for b in bufs:
                 client.enqueue_buffer(b)
             client.start()
