@@ -48,6 +48,7 @@ class Window():
     def initialize(self):
         self.timeCounter = 0
         self.frames = 0
+        self.resized = False
 
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);  
         GL.glEnable(GL.GL_BLEND)
@@ -92,7 +93,7 @@ class Window():
             btn, text = centeredTextButton(self, constraints)
             text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
             text.setFontSize(24)
-            text.setTextSpacing(15)
+            text.setTextSpacing(7)
             text.setTextColor((0,0,0))
             btn.setDefaultColor([1.0,0.8,0.8])
             btn.setHoverColor([1.0,0.7,0.7])
@@ -114,6 +115,7 @@ class Window():
         return self.keyState[key]
 
     def eventHandler(self):
+        cResized = False
         self.mousePos = pygame.mouse.get_pos()
         self.mouseButtons = pygame.mouse.get_pressed(num_buttons=5)
         for event in pygame.event.get():
@@ -123,11 +125,16 @@ class Window():
                     self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
                     self.currentScene.stop()
             elif event.type == VIDEORESIZE:
-                self.updateWindow()
+                cResized = True
             elif event.type == pygame.KEYDOWN:
                 self.keyState[event.key] = True
             elif event.type == pygame.KEYUP:
                 self.keyState[event.key] = False
+        if not cResized and self.resized:
+            self.updateWindow()
+            self.resized = False
+        elif cResized:
+            self.resized = True
         for event in self.uiEvents:
             if event['action'] == 'release' and event['obj'] in self.tabBtns:
                 if self.currentScene != None:

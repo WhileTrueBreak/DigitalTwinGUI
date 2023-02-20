@@ -14,7 +14,7 @@ class UiText(GlElement):
         self.font = Assets.FIRACODE_FONT
         self.text = 'default'
         self.fontSize = 48
-        self.textSpacing = 5
+        self.textSpacing = 10
         self.textColor = (1,1,1)
 
         self.maxDescender = 0
@@ -55,10 +55,9 @@ class UiText(GlElement):
             return
         scale = self.fontSize/48
         
-        maxdes = 0
-        maxasc = 0
-        x = self.dim[0]
-        xStart = x
+        maxdes = 1
+        maxasc = 1
+        x = 0
         y = self.dim[1]
         for c in self.text:
             ch = self.font[c]
@@ -68,7 +67,7 @@ class UiText(GlElement):
 
             x += w*scale + self.textSpacing*scale
         x -= self.textSpacing*scale
-        widthAspect = (x-xStart)/(maxasc+maxdes)
+        widthAspect = x/(maxasc+maxdes)
         
         self.maxAscender = maxasc
         self.maxDescender = maxdes
@@ -117,8 +116,8 @@ class UiText(GlElement):
 
             #render glyph texture over quad
             GL.glBindTexture(GL.GL_TEXTURE_2D, ch.texture)
+
             #update content of VBO memory
-            
             GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.textVbo)
             GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, vertices.nbytes, vertices)
             GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
@@ -131,7 +130,7 @@ class UiText(GlElement):
             GL.glDrawElements(GL.GL_TRIANGLES, len(self.textIndices), GL.GL_UNSIGNED_INT, None)
             GL.glDisableVertexAttribArray(0)
             #now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-            x += w*scale + self.textSpacing*scale
+            x += w + self.textSpacing*scale
 
         GL.glBindVertexArray(0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)

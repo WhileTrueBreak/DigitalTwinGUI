@@ -99,7 +99,7 @@ class KukaScene(Scene):
         self.recenterBtn, self.recenterText = centeredTextButton(self.window, constraints)
         self.recenterText.setText('RE')
         self.recenterText.setFontSize(20)
-        self.recenterText.setTextSpacing(20)
+        self.recenterText.setTextSpacing(7)
         self.recenterText.setTextColor((1, 1, 1))
         self.recenterBtn.setDefaultColor((0, 0, 0))
         self.recenterBtn.setHoverColor((0.1, 0.1, 0.1))
@@ -146,7 +146,6 @@ class KukaScene(Scene):
         return
     
     def absUpdate(self, delta):
-        self.armStream.start()
         self.moveCamera(delta)
         self.updateJoints()
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.cameraTransform))

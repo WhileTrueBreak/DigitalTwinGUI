@@ -1,6 +1,7 @@
 from ui.uiButton import UiButton
 from ui.uiStream import UiStream
 from ui.uiVideo import UiVideo
+from ui.uiTextInput import UiTextInput
 
 from ui.uiHelper import *
 from constraintManager import *
@@ -26,7 +27,7 @@ class CamScene(Scene):
         btn.setDefaultColor((1,1,1))
         text.setText('stream 1')
         text.setFontSize(24)
-        text.setTextSpacing(15)
+        text.setTextSpacing(7)
         text.setTextColor((0,0,0))
         self.camBtns.append(btn)
 
@@ -40,7 +41,7 @@ class CamScene(Scene):
         btn.setDefaultColor((1,1,1))
         text.setText('stream 2')
         text.setFontSize(24)
-        text.setTextSpacing(15)
+        text.setTextSpacing(7)
         text.setTextColor((0,0,0))
         self.camBtns.append(btn)
 
@@ -53,6 +54,19 @@ class CamScene(Scene):
         self.streams.append(UiStream(self.window, constraints, 'http://172.31.1.225:8080/?action=streams'))
         self.streams.append(UiStream(self.window, constraints, 'http://172.31.1.226:8080/?action=streams'))
         self.sceneWrapper.addChildren(*self.camBtns)
+
+        constraints = [
+            ABSOLUTE(T_X, 5),
+            COMPOUND(COMPOUND(RELATIVE(T_Y, 1, P_H), RELATIVE(T_Y, -1, T_H)), ABSOLUTE(T_Y, -5)),
+            RELATIVE(T_W, 0.3, P_W),
+            ABSOLUTE(T_H, 24),
+        ]
+
+        self.textBox = UiTextInput(self.window, constraints)
+        self.textBox.setFontSize(18)
+        self.textBox.setTextSpacing(6)
+        self.textBox.setBorderWeight(2)
+        self.sceneWrapper.addChild(self.textBox)
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':
