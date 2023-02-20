@@ -167,7 +167,6 @@ class UiTextInput(GlElement):
             [points[0],points[3],*self.borderColor],
             [points[0]+borderW,points[3]-borderH,*self.borderColor],
         ], dtype='float32')
-        print(borderW, borderH)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.boxVbo)
         GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.boxVertices.nbytes, self.boxVertices)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
