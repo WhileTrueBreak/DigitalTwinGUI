@@ -76,14 +76,22 @@ class Model:
         return vertices, indices
 
     def createVertexData(self, vertices):
-        vertices = np.array(vertices)
-        self.vertices = np.zeros((len(vertices), 6))
+        vertices = np.array(vertices,dtype='float32')
+        has_uvs = False
+        if len(vertices[0]) == 5:
+            has_uvs = True
+            uvs = np.array(vertices[::,3:5])
+
+        vertices = np.array(vertices[::,0:3])
+        self.vertices = np.zeros((len(vertices), 8))
         self.vertices[::, 0:3] = vertices
 
         normals = np.cross(vertices[1::3] - vertices[0::3], vertices[2::3] - vertices[0::3])
         normals /= np.sqrt((normals ** 2).sum(-1))[..., np.newaxis]
         normals = np.repeat(normals, 3, axis=0)
         self.vertices[::,3:6] = normals
+        if has_uvs:
+            self.vertices[::,6:8] = uvs
 
     def createVertices(self, transformationMatrix):
         start = time.time_ns()

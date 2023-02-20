@@ -411,7 +411,6 @@ class Renderer:
         self.idDict[id] = (batchId, objId)
 
     def setTexture(self, id, tex):
-        tex = tex.texture
         batch = self.batches[self.idDict[id][0]]
         objId = self.idDict[id][1]
         if batch.setTexture(objId, tex):

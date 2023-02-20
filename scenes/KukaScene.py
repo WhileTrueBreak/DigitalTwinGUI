@@ -77,7 +77,6 @@ class KukaScene(Scene):
         self.renderWindow.setBackgroundColor((1, 1, 1))
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
-        self.addModels()
 
         padding = 10
         constraints = [
@@ -105,6 +104,8 @@ class KukaScene(Scene):
         self.recenterBtn.setHoverColor((0.1, 0.1, 0.1))
         self.recenterBtn.setPressColor((1, 0, 0))
         self.renderWindow.addChild(self.recenterBtn)
+
+        self.addModels()
         return
     
     def addModels(self):
@@ -136,8 +137,9 @@ class KukaScene(Scene):
         # self.modelRenderer.setColor(self.dragonId, (1,0.8,0.8,0.9))
         # self.modelRenderer.setTexture(self.dragonId, Assets.CUBE_TEX)
 
-        # self.floorId = self.modelRenderer.addModel(Assets.FLOOR, np.identity(4))
-        # self.modelRenderer.setColor(self.floorId, (0.5, 0.5, 0.5, 1))
+        self.screenId = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(2, 0, 0, 0, -90, 0))
+        self.modelRenderer.setTexture(self.screenId, self.armStream.texture)
+        self.modelRenderer.setColor(self.screenId, (1,1,1,1))
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':

@@ -74,6 +74,11 @@ class Assets:
             [ 15,-15, 0.0],[-15, 15, 0.0],[ 15, 15, 0.0],
         ]
         Assets.FLOOR = Model(vertices=floorVertices)
+        screenVertices = [
+            [0, 0, 0.0, 1, 0],[ 2*3/4, 0, 0.0, 1, 1],[ 0, 2, 0.0, 0, 0],
+            [0, 2, 0.0, 0, 0],[ 2*3/4, 0, 0.0, 1, 1],[ 2*3/4, 2, 0.0, 0, 1],
+        ]
+        Assets.SCREEN = Model(vertices=screenVertices)
 
         Assets.INIT = True
     @staticmethod
