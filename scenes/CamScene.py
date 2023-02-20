@@ -51,6 +51,7 @@ class CamScene(Scene):
         ]
 
         self.textBox = UiTextInput(self.window, constraints)
+        self.textBox.setRegex(r'^.{,20}$')
         self.textBox.setFontSize(18)
         self.textBox.setTextSpacing(6)
         self.textBox.setBorderWeight(2)

@@ -4,6 +4,7 @@ from constraintManager import *
 import OpenGL.GL as GL
 import ctypes
 import pygame
+import re
 
 from asset import *
 
@@ -83,7 +84,11 @@ class UiTextInput(GlElement):
             COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H))
         ]
         self.textElement = UiText(self.window, constraints)
+        self.textElement.setText(self.text)
         self.addChild(self.textElement)
+
+        self.charset = ' abcdefghijklmnopqrstuvwxyz0123456789-=,./[]\;\'`)!@#$%^&*(_+<>?{}|:"~'
+        self.re = r'^.*$'
 
         self.letters = ' abcdefghijklmnopqrstuvwxyz'
         self.lowerSymb = '0123456789-=,./[]\;\'`'
@@ -202,17 +207,20 @@ class UiTextInput(GlElement):
                 self.lastState[letter] = True
                 self.holdTimer[letter] = time.time_ns()
                 if caps: letter = letter.upper()
+                if not letter in self.charset: continue
                 buffer += letter
                 continue
             if time.time_ns() >= self.holdTimer[letter]+self.holdDelay and not self.holdFlag[letter]:
                 self.holdFlag[letter] = True
                 self.repeatTimer[letter] = time.time_ns()
                 if caps: letter = letter.upper()
+                if not letter in self.charset: continue
                 buffer += letter
                 continue
             if time.time_ns() >= self.repeatTimer[letter]+self.repeatDelay and self.holdFlag[letter]:
                 self.repeatTimer[letter] = time.time_ns()
                 if caps: letter = letter.upper()
+                if not letter in self.charset: continue
                 buffer += letter
                 continue
         
@@ -227,6 +235,7 @@ class UiTextInput(GlElement):
                 self.holdTimer[self.lowerSymb[i]] = time.time_ns()
                 letter = self.lowerSymb[i]
                 if shift: letter = self.upperSymb[i]
+                if not letter in self.charset: continue
                 buffer += letter
                 continue
             if time.time_ns() >= self.holdTimer[self.lowerSymb[i]]+self.holdDelay and not self.holdFlag[self.lowerSymb[i]]:
@@ -234,20 +243,24 @@ class UiTextInput(GlElement):
                 self.repeatTimer[self.lowerSymb[i]] = time.time_ns()
                 letter = self.lowerSymb[i]
                 if shift: letter = self.upperSymb[i]
+                if not letter in self.charset: continue
                 buffer += letter
                 continue
             if time.time_ns() >= self.repeatTimer[self.lowerSymb[i]]+self.repeatDelay and self.holdFlag[self.lowerSymb[i]]:
                 self.repeatTimer[self.lowerSymb[i]] = time.time_ns()
                 letter = self.lowerSymb[i]
                 if shift: letter = self.upperSymb[i]
+                if not letter in self.charset: continue
                 buffer += letter
                 continue
-
-        if buffer != '':
-            self.text += buffer
-            self.textElement.setText(self.text)
         
+        if buffer != '':
+            a = re.findall(self.re, self.text+buffer)
+            if len(a) != 0:
+                self.text += buffer
+                self.textElement.setText(self.text)
         keyState = self.window.getKeyState(pygame.K_BACKSPACE)
+        
         if not keyState:
             self.lastState['back'] = False
             self.holdFlag['back'] = False
@@ -310,3 +323,12 @@ class UiTextInput(GlElement):
     def setBorderWeight(self, weight):
         self.boxBorderWidth = weight
         self.isDirty = True
+    
+    def setCharSet(self, charset):
+        self.charset = charset
+
+    def setRegex(self, re):
+        self.re = re
+
+
+
