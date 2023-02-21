@@ -52,7 +52,7 @@ class KukaScene(Scene):
         self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
 
         self.jointsRad = [0,0,0,0,0,0,0]
-        self.forceVector = [0,0,0]
+        self.forceVector = np.array([0,0,0], dtype='float32')
 
         self.threadStopFlag = True
         self.opcuaContainer = OpcuaContainer()
@@ -205,20 +205,10 @@ class KukaScene(Scene):
         if forceMag < 2:
             self.modelRenderer.setColor(self.forceVectorId, (1,1,1,0))
             return
-        z0 = self.forceVector/forceMag
-        x0 = normalize(np.cross(z0,[0,0,1]))
-        rot = np.identity(3)
-        if np.linalg.norm(x0) != 0:
-            y0 = normalize(np.cross(z0,x0))
-            rot = np.column_stack((x0,y0,z0))
-        rotMat = np.identity(4)
-        rotMat[:3,:3] = rot
-        rotMat[:3,3] = transform[:3,3]
-
-        scaleTMAT = np.identity(4)
-        scaleTMAT[2,2] = min(forceMag, 50) * 2
+        
+        forceTransform = vectorTransform(transform[:3,3], transform[:3,3]+2*self.forceVector, 1, upperLimit=100)
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
-        self.modelRenderer.setTransformMatrix(self.forceVectorId, rotMat.dot(scaleTMAT))
+        self.modelRenderer.setTransformMatrix(self.forceVectorId, forceTransform)
 
     def moveCamera(self, delta):
         if self.window.selectedUi != self.renderWindow:
@@ -280,7 +270,6 @@ class KukaScene(Scene):
     def stop(self):
         self.armStream.stop()
         self.threadStopFlag = True
-        
         return
 
 

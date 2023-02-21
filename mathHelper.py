@@ -72,4 +72,22 @@ def angleBetween(v1, v2):
     v2_u = unitVector(v2)
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
+def vectorTransform(p1, p2, thickness, upperLimit=10000000):
+    vector = p2-p1
+    mag = np.linalg.norm(vector)
+    rotMat = np.identity(4)
+    if mag != 0:
+        z0 = vector/mag
+        x0 = normalize(np.cross(z0,[0,0,1]))
+        rot = np.identity(3)
+        if np.linalg.norm(x0) != 0:
+            y0 = normalize(np.cross(z0,x0))
+            rot = np.column_stack((x0,y0,z0))
+        rotMat[:3,:3] = rot
+        rotMat[:3,3] = p1
 
+    scaleTMAT = np.identity(4)
+    scaleTMAT[0,0] = thickness
+    scaleTMAT[1,1] = thickness
+    scaleTMAT[2,2] = min(mag,upperLimit)
+    return rotMat.dot(scaleTMAT)
