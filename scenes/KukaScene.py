@@ -10,8 +10,7 @@ from scenes.scene import *
 from mathHelper import *
 from opcua import *
 
-from scipy.spatial.transform import Rotation
-
+import pygame
 from math import *
 
 def DH(DH_table):
@@ -52,7 +51,7 @@ class KukaScene(Scene):
         self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
 
         self.jointsRad = [0,0,0,0,0,0,0]
-        self.forceVector = [0,0,0]
+        self.forceVector = np.array([0,0,0], dtype='float32')
 
         self.threadStopFlag = True
         self.opcuaContainer = OpcuaContainer()
@@ -202,49 +201,39 @@ class KukaScene(Scene):
     
     def updateForceVector(self, transform):
         forceMag = np.linalg.norm(self.forceVector)
-        if forceMag < 6:
+        if forceMag < 2:
             self.modelRenderer.setColor(self.forceVectorId, (1,1,1,0))
             return
-        z0 = self.forceVector/forceMag
-        x0 = normalize(np.cross(z0,[0,0,1]))
-        rot = np.identity(3)
-        if np.linalg.norm(x0) != 0:
-            y0 = normalize(np.cross(z0,x0))
-            rot = np.column_stack((x0,y0,z0))
-        rotMat = np.identity(4)
-        rotMat[:3,:3] = rot
-        rotMat[:3,3] = transform[:3,3]
-
-        scaleTMAT = np.identity(4)
-        scaleTMAT[2,2] = max(forceMag * 3, 100)
+        
+        forceTransform = vectorTransform(transform[:3,3], transform[:3,3]+2*self.forceVector, 1, upperLimit=100)
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
-        self.modelRenderer.setTransformMatrix(self.forceVectorId, rotMat.dot(scaleTMAT))
+        self.modelRenderer.setTransformMatrix(self.forceVectorId, forceTransform)
 
     def moveCamera(self, delta):
         if self.window.selectedUi != self.renderWindow:
             return
 
-        if self.window.getKeyState(K_j):
+        if self.window.getKeyState(pygame.K_j):
             self.cameraTransform[5] -= 90*delta
-        if self.window.getKeyState(K_l):
+        if self.window.getKeyState(pygame.K_l):
             self.cameraTransform[5] += 90*delta
-        if self.window.getKeyState(K_i):
+        if self.window.getKeyState(pygame.K_i):
             self.cameraTransform[3] += 90*delta
-        if self.window.getKeyState(K_k):
+        if self.window.getKeyState(pygame.K_k):
             self.cameraTransform[3] -= 90*delta
         
         deltaPos = [0,0,0]
-        if self.window.getKeyState(K_a): #left
+        if self.window.getKeyState(pygame.K_a): #left
             deltaPos[0] -= 1
-        if self.window.getKeyState(K_d): #right
+        if self.window.getKeyState(pygame.K_d): #right
             deltaPos[0] += 1
-        if self.window.getKeyState(K_w): #forward
+        if self.window.getKeyState(pygame.K_w): #forward
             deltaPos[1] -= 1
-        if self.window.getKeyState(K_s): #back
+        if self.window.getKeyState(pygame.K_s): #back
             deltaPos[1] += 1
-        if self.window.getKeyState(K_LALT): #down
+        if self.window.getKeyState(pygame.K_LALT): #down
             deltaPos[2] -= 1
-        if self.window.getKeyState(K_SPACE): #up
+        if self.window.getKeyState(pygame.K_SPACE): #up
             deltaPos[2] += 1
         deltaPos = [x*delta for x in normalize(deltaPos)]
         radPitch = radians(self.cameraTransform[3])
@@ -280,7 +269,6 @@ class KukaScene(Scene):
     def stop(self):
         self.armStream.stop()
         self.threadStopFlag = True
-        
         return
 
 

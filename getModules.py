@@ -13,4 +13,4 @@ os.system('pip install asyncio')
 os.system('pip install nest-asyncio')
 os.system('pip install pywavefront')
 os.system('pip install opencv-python')
-os.system('pip install scipy')
+

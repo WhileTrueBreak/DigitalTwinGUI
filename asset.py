@@ -1,7 +1,3 @@
-from model import *
-from texture import *
-from mathHelper import *
-
 import cv2
 from PIL import Image
 
@@ -13,6 +9,10 @@ from queue import Queue
 from threading import Thread
 
 import time
+
+from model import *
+from texture import *
+from mathHelper import *
 
 class Assets:
     

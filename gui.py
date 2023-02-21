@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
+import nest_asyncio
 
 from window import *
 from scenes.CamScene import *
 from scenes.KukaScene import *
 from scenes.BadApple import *
-
-import nest_asyncio
 from asset import *
 
 nest_asyncio.apply()
 
-window = Window((800, 800), 'hello world', fullscreen=False, resizeable=True)
+window = Window((800, 800), 'Digital Twin GUI', fullscreen=False, resizeable=True, vsync=True)
 
-scene3 = CamScene(window, 'Cam1')
+scene3 = CamScene(window, '3D Printers')
 scene3.createUi()
-scene4 = KukaScene(window, '3d model')
+scene4 = KukaScene(window, 'Digital Twin')
 scene4.createUi()
 # scene5 = BadApple(window, 'bad apple')
 # scene5.createUi()

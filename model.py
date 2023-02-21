@@ -1,9 +1,9 @@
-from stl import mesh
-import pywavefront
-# import tinyobjloader
-import numpy as np
 import time
 import os
+
+from stl import mesh
+import pywavefront
+import numpy as np
 
 
 class Model:

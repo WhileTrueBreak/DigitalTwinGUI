@@ -1,32 +1,29 @@
-from ui.uiButton import UiButton
+import pygame
+
+import time
+from OpenGL import GL
+from vectors import *
+from math import *
+import sys
+
 from ui.uiWrapper import UiWrapper
 from ui.uiHelper import *
 from constraintManager import *
 from asset import *
 
-import pygame
-
-import time
-from pygame.locals import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from vectors import *
-from math import *
-import sys
-
-
 class Window():
+    
     TAB_HEIGHT = 40
 
-    def __init__(self, size, title, fullscreen=False, resizeable=False):
+    def __init__(self, size, title, fullscreen=False, resizeable=False, vsync=True):
         pygame.init()
         display_flags = pygame.DOUBLEBUF | pygame.OPENGL
         if resizeable:
             display_flags = display_flags | pygame.RESIZABLE
         if fullscreen:
-            self.screen = pygame.display.set_mode((0,0), display_flags, pygame.FULLSCREEN)
-        else:
-            self.screen = pygame.display.set_mode(size, display_flags)
+            display_flags = display_flags | pygame.FULLSCREEN
+            size = (0,0)
+        self.screen = pygame.display.set_mode(size, display_flags, vsync=1 if vsync else 0)
         pygame.display.set_caption(title)
 
 
@@ -124,7 +121,7 @@ class Window():
                 if self.currentScene != None:
                     self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
                     self.currentScene.stop()
-            elif event.type == VIDEORESIZE:
+            elif event.type == pygame.VIDEORESIZE:
                 cResized = True
             elif event.type == pygame.KEYDOWN:
                 self.keyState[event.key] = True

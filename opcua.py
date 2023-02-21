@@ -1,4 +1,4 @@
-from asyncua import Client, ua
+from asyncua import Client
 import asyncio
 
 from threading import Thread
