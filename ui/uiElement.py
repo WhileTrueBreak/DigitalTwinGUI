@@ -61,9 +61,9 @@ class GlElement:
             self.isDefault = False
             if self.window.mouseButtons[0] and not self.lastMouseState[0]:
                 self.onPress()
+                self.window.uiSelectBuffer.append(self)
             elif not self.window.mouseButtons[0] and self.lastMouseState[0]:
                 self.onRelease()
-                self.window.uiSelectBuffer.append(self)
             elif not self.window.mouseButtons[0] and not self.lastMouseState[0]:
                 self.onHover()
             else:

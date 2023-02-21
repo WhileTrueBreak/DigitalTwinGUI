@@ -9,7 +9,7 @@ from asset import *
 
 nest_asyncio.apply()
 
-window = Window((800, 800), 'hello world', fullscreen=False, resizeable=True)
+window = Window((800, 800), 'hello world', fullscreen=False, resizeable=True, vsync=True)
 
 scene3 = CamScene(window, 'Cam1')
 scene3.createUi()
