@@ -13,6 +13,9 @@ uniform sampler2D screen;
 
 void main(){
 
+	frag = texture2D(screen, texture_coords);
+	return;
+
 	float step_u = 0.5 / texture_dim[0];
 	float step_v = 0.5 / texture_dim[1];
 
