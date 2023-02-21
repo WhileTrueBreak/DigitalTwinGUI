@@ -35,7 +35,9 @@ class CamScene(Scene):
                 ABSOLUTE(T_H, 30)
             ]
             btn, text = centeredTextButton(self.window, constraints)
-            btn.setDefaultColor((1,1,1))
+            btn.setDefaultColor((0.9,0.9,0.9))
+            btn.setHoverColor((1,1,1))
+            btn.setPressColor((0.9,1,1))
             text.setText(f'stream {i+1}')
             text.setFontSize(24)
             text.setTextSpacing(7)

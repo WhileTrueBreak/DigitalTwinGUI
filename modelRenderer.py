@@ -364,7 +364,7 @@ class Renderer:
             batch.setProjectionMatrix(self.opaqueShader, matrix)
         for batch in self.transparentBatch:
             batch.setProjectionMatrix(self.transparentShader, matrix)
-        
+    
     def setViewMatrix(self, matrix):
         self.viewMatrix = matrix
         for batch in self.solidBatch:
@@ -496,10 +496,10 @@ class Renderer:
 
         GL.glActiveTexture(GL.GL_TEXTURE0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.accumTexture)
-        GL.glUniform1i(GL.glGetUniformLocation(Assets.COMPOSITE_SHADER, "accum"), 0)
+        GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "accum"), 0)
         GL.glActiveTexture(GL.GL_TEXTURE1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
-        GL.glUniform1i(GL.glGetUniformLocation(Assets.COMPOSITE_SHADER, "reveal"), 1)
+        GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "reveal"), 1)
         GL.glBindVertexArray(self.quadVAO)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
@@ -511,6 +511,7 @@ class Renderer:
         # render to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         GL.glUseProgram(self.screenShader)
+        GL.glUniform2f(GL.glGetUniformLocation(self.screenShader, "texture_dim"), *self.window.dim)
 
         GL.glActiveTexture(GL.GL_TEXTURE0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
