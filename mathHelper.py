@@ -91,3 +91,12 @@ def vectorTransform(p1, p2, thickness, upperLimit=10000000):
     scaleTMAT[1,1] = thickness
     scaleTMAT[2,2] = min(mag,upperLimit)
     return rotMat.dot(scaleTMAT)
+
+
+
+
+
+
+
+
+
