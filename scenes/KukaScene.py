@@ -153,7 +153,7 @@ class KukaScene(Scene):
 
         self.screenId = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(2, 0, 0, 0, -90, 0))
         # self.modelRenderer.setTexture(self.screenId, self.armStream.texture)
-        self.modelRenderer.setColor(self.screenId, (1.5,1.5,1.5,1))
+        self.modelRenderer.setColor(self.screenId, (1,1,1,1))
 
         self.forceVectorId = self.modelRenderer.addModel(Assets.POLE, np.identity(4))
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.8))
