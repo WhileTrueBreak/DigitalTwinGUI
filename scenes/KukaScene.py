@@ -202,7 +202,7 @@ class KukaScene(Scene):
     
     def updateForceVector(self, transform):
         forceMag = np.linalg.norm(self.forceVector)
-        if forceMag < 6:
+        if forceMag < 2:
             self.modelRenderer.setColor(self.forceVectorId, (1,1,1,0))
             return
         z0 = self.forceVector/forceMag
@@ -216,7 +216,7 @@ class KukaScene(Scene):
         rotMat[:3,3] = transform[:3,3]
 
         scaleTMAT = np.identity(4)
-        scaleTMAT[2,2] = max(forceMag * 3, 100)
+        scaleTMAT[2,2] = min(forceMag, 50) * 2
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
         self.modelRenderer.setTransformMatrix(self.forceVectorId, rotMat.dot(scaleTMAT))
 
