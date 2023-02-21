@@ -1,6 +1,8 @@
 from asyncua import Client
 import asyncio
 
+import time
+
 from threading import Thread
 
 class OpcuaContainer:
@@ -58,6 +60,7 @@ class Opcua:
         except:
             stop = lambda:True
         while not stop():
+            time.sleep(0.01)
             try:
                 asyncio.run(Opcua.OpcuaGetData(container, data, client))
             except:

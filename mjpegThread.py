@@ -45,6 +45,7 @@ def MjpegConnection(container, url, stop):
         except:
             stop = lambda:True
     running = False
+    start = time.time_ns()
     while not stop():
         if not running:
             if client.reconnects > 1:
@@ -55,6 +56,7 @@ def MjpegConnection(container, url, stop):
             else:
                 running = True
         try:
+            time.sleep(0.01)
             buf = client.dequeue_buffer(timeout=1)
             stream = BytesIO(buf.data)
             container.setStream(stream)
