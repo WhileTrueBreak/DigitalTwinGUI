@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
+import nest_asyncio
 
 from window import *
 from scenes.CamScene import *
 from scenes.KukaScene import *
 from scenes.BadApple import *
-
-import nest_asyncio
 from asset import *
 
 nest_asyncio.apply()

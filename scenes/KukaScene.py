@@ -10,8 +10,7 @@ from scenes.scene import *
 from mathHelper import *
 from opcua import *
 
-from scipy.spatial.transform import Rotation
-
+import pygame
 from math import *
 
 def DH(DH_table):
@@ -214,27 +213,27 @@ class KukaScene(Scene):
         if self.window.selectedUi != self.renderWindow:
             return
 
-        if self.window.getKeyState(K_j):
+        if self.window.getKeyState(pygame.K_j):
             self.cameraTransform[5] -= 90*delta
-        if self.window.getKeyState(K_l):
+        if self.window.getKeyState(pygame.K_l):
             self.cameraTransform[5] += 90*delta
-        if self.window.getKeyState(K_i):
+        if self.window.getKeyState(pygame.K_i):
             self.cameraTransform[3] += 90*delta
-        if self.window.getKeyState(K_k):
+        if self.window.getKeyState(pygame.K_k):
             self.cameraTransform[3] -= 90*delta
         
         deltaPos = [0,0,0]
-        if self.window.getKeyState(K_a): #left
+        if self.window.getKeyState(pygame.K_a): #left
             deltaPos[0] -= 1
-        if self.window.getKeyState(K_d): #right
+        if self.window.getKeyState(pygame.K_d): #right
             deltaPos[0] += 1
-        if self.window.getKeyState(K_w): #forward
+        if self.window.getKeyState(pygame.K_w): #forward
             deltaPos[1] -= 1
-        if self.window.getKeyState(K_s): #back
+        if self.window.getKeyState(pygame.K_s): #back
             deltaPos[1] += 1
-        if self.window.getKeyState(K_LALT): #down
+        if self.window.getKeyState(pygame.K_LALT): #down
             deltaPos[2] -= 1
-        if self.window.getKeyState(K_SPACE): #up
+        if self.window.getKeyState(pygame.K_SPACE): #up
             deltaPos[2] += 1
         deltaPos = [x*delta for x in normalize(deltaPos)]
         radPitch = radians(self.cameraTransform[3])

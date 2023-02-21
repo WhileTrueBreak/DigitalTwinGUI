@@ -1,5 +1,5 @@
 import numpy as np
-import OpenGL.GL as GL
+from OpenGL import GL
 
 class Texture:
     def __init__(self, img):

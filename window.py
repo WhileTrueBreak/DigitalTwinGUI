@@ -1,19 +1,15 @@
-from ui.uiButton import UiButton
-from ui.uiWrapper import UiWrapper
-from ui.uiHelper import *
-from constraintManager import *
-from asset import *
-
 import pygame
 
 import time
-from pygame.locals import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from OpenGL import GL
 from vectors import *
 from math import *
 import sys
 
+from ui.uiWrapper import UiWrapper
+from ui.uiHelper import *
+from constraintManager import *
+from asset import *
 
 class Window():
     TAB_HEIGHT = 40
@@ -124,7 +120,7 @@ class Window():
                 if self.currentScene != None:
                     self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
                     self.currentScene.stop()
-            elif event.type == VIDEORESIZE:
+            elif event.type == pygame.VIDEORESIZE:
                 cResized = True
             elif event.type == pygame.KEYDOWN:
                 self.keyState[event.key] = True

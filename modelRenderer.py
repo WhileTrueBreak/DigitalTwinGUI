@@ -1,8 +1,8 @@
-from asset import *
-
 import OpenGL.GL as GL
 import numpy as np
 import ctypes
+
+from asset import *
 
 class BatchRenderer:
     MAX_OBJECTS = 60
