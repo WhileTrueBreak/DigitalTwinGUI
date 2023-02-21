@@ -29,9 +29,10 @@ def MjpegConnection(container, url, stop):
     print(f'mjpeg thread started: {url}')
     connectionOpen = True
     try:
-        urlopen(url, timeout=1)
+        urlopen(url, timeout=3)
     except:
         connectionOpen = False
+        print('url timeout')
         stop = lambda:True
     
     if connectionOpen:
@@ -59,6 +60,7 @@ def MjpegConnection(container, url, stop):
             container.setStream(stream)
             client.enqueue_buffer(buf)
         except Exception as e:
+            print('buffer error')
             stop = lambda:True
     if connectionOpen:
         client.stop()

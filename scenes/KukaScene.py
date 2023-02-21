@@ -10,6 +10,8 @@ from scenes.scene import *
 from mathHelper import *
 from opcua import *
 
+from scipy.spatial.transform import Rotation
+
 from math import *
 
 def DH(DH_table):
@@ -50,6 +52,7 @@ class KukaScene(Scene):
         self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
 
         self.jointsRad = [0,0,0,0,0,0,0]
+        self.forceVector = [0,0,0]
 
         self.threadStopFlag = True
         self.opcuaContainer = OpcuaContainer()
@@ -61,7 +64,10 @@ class KukaScene(Scene):
                 'ns=24;s=R4d_Joi4', 
                 'ns=24;s=R4d_Joi5', 
                 'ns=24;s=R4d_Joi6', 
-                'ns=24;s=R4d_Joi7' 
+                'ns=24;s=R4d_Joi7', 
+                'ns=24;s=R1d_ForX', 
+                'ns=24;s=R1d_ForY', 
+                'ns=24;s=R1d_ForZ' 
             ], lambda:self.threadStopFlag)
         return
 
@@ -126,6 +132,16 @@ class KukaScene(Scene):
         self.modelRenderer.setColor(self.tubeIds[0], (0.8, 0.8, 0, 1))
         self.tubeIds[1] = self.modelRenderer.addModel(Assets.TUBE_INSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
         self.modelRenderer.setColor(self.tubeIds[1], (0.6, 0.6, 0.6, 1))
+        
+        self.tubeholderIds = [0]*4
+        self.tubeholderIds[0] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.114,0.735,-0.06625,0,0,90))
+        self.modelRenderer.setColor(self.tubeholderIds[0], (0.3, 0.3, 0.3, 1))
+        self.tubeholderIds[1] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.004,0.735,-0.06625,0,0,90))
+        self.modelRenderer.setColor(self.tubeholderIds[1], (0.3, 0.3, 0.3, 1))
+        self.tubeholderIds[2] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.114,0.875,-0.06625,0,0,-90))
+        self.modelRenderer.setColor(self.tubeholderIds[2], (0.3, 0.3, 0.3, 1))
+        self.tubeholderIds[3] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.004,0.875,-0.06625,0,0,-90))
+        self.modelRenderer.setColor(self.tubeholderIds[3], (0.3, 0.3, 0.3, 1))
 
         self.tableIds = [0]*2
         self.tableIds[0] = self.modelRenderer.addModel(Assets.TABLES[2], createTransformationMatrix(0.5,1.6,-0.06625,0,0,0))
@@ -133,13 +149,15 @@ class KukaScene(Scene):
         self.tableIds[1] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(-0.2,0,0,0,0,0))
         self.modelRenderer.setColor(self.tableIds[1], (0.7, 0.7, 0.7, 1))
 
-        # self.dragonId = self.modelRenderer.addModel(Assets.DRAGON, createTransformationMatrix(-0.4,0,0,0,0,0))
-        # self.modelRenderer.setColor(self.dragonId, (1,0.8,0.8,0.9))
-        # self.modelRenderer.setTexture(self.dragonId, Assets.CUBE_TEX)
+        self.dragonId = self.modelRenderer.addModel(Assets.DRAGON, createTransformationMatrix(-0.4,0,0,0,0,0))
+        self.modelRenderer.setColor(self.dragonId, (1,0.8,0.8,0.9))
 
         self.screenId = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(2, 0, 0, 0, -90, 0))
-        self.modelRenderer.setTexture(self.screenId, self.armStream.texture)
+        # self.modelRenderer.setTexture(self.screenId, self.armStream.texture)
         self.modelRenderer.setColor(self.screenId, (1,1,1,1))
+
+        self.forceVectorId = self.modelRenderer.addModel(Assets.POLE, np.identity(4))
+        self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.8))
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':
@@ -162,6 +180,9 @@ class KukaScene(Scene):
             self.jointsRad[4] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi5', default=0))
             self.jointsRad[5] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi6', default=0))
             self.jointsRad[6] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi7', default=0))
+            self.forceVector[0] = self.opcuaContainer.getValue('ns=24;s=R4d_ForX', default=0)
+            self.forceVector[1] = self.opcuaContainer.getValue('ns=24;s=R4d_ForY', default=0)
+            self.forceVector[2] = self.opcuaContainer.getValue('ns=24;s=R4d_ForZ', default=0)
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(self.jointsRad)
         for id in self.modelKukaIds:
             mat = Robot1_T_0_[self.modelKukaData[id][3]].copy()
@@ -169,12 +190,36 @@ class KukaScene(Scene):
             mat[1][3] += self.modelKukaData[id][1]*2/2
             mat[2][3] += self.modelKukaData[id][2]*2/2
             self.modelRenderer.setTransformMatrix(id, mat)
+        
+        
         mat = Robot1_T_0_[7].copy()
         mat[0][3] += self.modelKukaData[7][0]*2/2
         mat[1][3] += self.modelKukaData[7][1]*2/2
         mat[2][3] += self.modelKukaData[7][2]*2/2
         self.modelRenderer.setTransformMatrix(self.gripperId, mat)
+
+        self.updateForceVector(mat)
     
+    def updateForceVector(self, transform):
+        forceMag = np.linalg.norm(self.forceVector)
+        if forceMag < 6:
+            self.modelRenderer.setColor(self.forceVectorId, (1,1,1,0))
+            return
+        z0 = self.forceVector/forceMag
+        x0 = normalize(np.cross(z0,[0,0,1]))
+        rot = np.identity(3)
+        if np.linalg.norm(x0) != 0:
+            y0 = normalize(np.cross(z0,x0))
+            rot = np.column_stack((x0,y0,z0))
+        rotMat = np.identity(4)
+        rotMat[:3,:3] = rot
+        rotMat[:3,3] = transform[:3,3]
+
+        scaleTMAT = np.identity(4)
+        scaleTMAT[2,2] = max(forceMag * 3, 100)
+        self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
+        self.modelRenderer.setTransformMatrix(self.forceVectorId, rotMat.dot(scaleTMAT))
+
     def moveCamera(self, delta):
         if self.window.selectedUi != self.renderWindow:
             return
@@ -225,7 +270,10 @@ class KukaScene(Scene):
                 'ns=24;s=R4d_Joi4', 
                 'ns=24;s=R4d_Joi5', 
                 'ns=24;s=R4d_Joi6', 
-                'ns=24;s=R4d_Joi7'
+                'ns=24;s=R4d_Joi7',
+                'ns=24;s=R4d_ForX', 
+                'ns=24;s=R4d_ForY', 
+                'ns=24;s=R4d_ForZ' 
             ], lambda:self.threadStopFlag)
         return
     
