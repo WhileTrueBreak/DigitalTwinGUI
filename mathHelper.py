@@ -64,14 +64,6 @@ def createViewMatrix(x, y, z, rotx, roty, rotz):
     rot = createTransformationMatrix(0, 0, 0, rotx, roty, rotz)
     return rot.dot(trans)
 
-def unitVector(vector):
-    return vector / np.linalg.norm(vector)
-
-def angleBetween(v1, v2):
-    v1_u = unitVector(v1)
-    v2_u = unitVector(v2)
-    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
-
 def vectorTransform(p1, p2, thickness, upperLimit=10000000):
     vector = p2-p1
     mag = np.linalg.norm(vector)
