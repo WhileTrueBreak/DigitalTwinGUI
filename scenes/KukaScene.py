@@ -61,8 +61,9 @@ class KukaScene(Scene):
         self.forceVector = np.array([0,0,0], dtype='float32')
 
         self.threadStopFlag = True
-        self.opcuaContainer = OpcuaContainer()
-        self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+        self.opcuaReceiverContainer = OpcuaContainer()
+        
+        self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
                 'ns=24;s=R4d_Joi1', 
                 'ns=24;s=R4d_Joi2', 
@@ -72,14 +73,13 @@ class KukaScene(Scene):
                 'ns=24;s=R4d_Joi6', 
                 'ns=24;s=R4d_Joi7'
             ], lambda:self.threadStopFlag)
-        self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+        self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
                 'ns=24;s=R4d_ForX', 
                 'ns=24;s=R4d_ForY', 
                 'ns=24;s=R4d_ForZ' 
             ], lambda:self.threadStopFlag)
-        
-        self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+        self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
                 'ns=24;s=R4c_ProgID', 
                 'ns=24;s=R4c_Start',    
@@ -310,7 +310,7 @@ class KukaScene(Scene):
             self.sendBtn.lock()
             self.unlinkBtn.lock()
             self.sendBtnText.setText('Executing')
-            if self.opcuaContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] == 0:
+            if self.opcuaReceiverContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] == 0:
                 self.doneFlag = True
                 self.executingFlag = False
         if self.doneFlag:
@@ -333,14 +333,14 @@ class KukaScene(Scene):
 
     def updateJoints(self):
         for i in range(7):
-            if not self.opcuaContainer.hasUpdated(f'ns=24;s=R4d_Joi{i+1}'): continue
-            self.jointsRad[i] = radians(self.opcuaContainer.getValue(f'ns=24;s=R4d_Joi{i+1}', default=0)[0])
-        if not self.opcuaContainer.hasUpdated('ns=24;s=R4d_ForX'):
-            self.forceVector[0] = self.opcuaContainer.getValue('ns=24;s=R4d_ForX', default=0)[0]
-        if not self.opcuaContainer.hasUpdated('ns=24;s=R4d_ForY'):
-            self.forceVector[1] = self.opcuaContainer.getValue('ns=24;s=R4d_ForY', default=0)[0]
-        if not self.opcuaContainer.hasUpdated('ns=24;s=R4d_ForZ'):
-            self.forceVector[2] = self.opcuaContainer.getValue('ns=24;s=R4d_ForZ', default=0)[0]
+            if not self.opcuaReceiverContainer.hasUpdated(f'ns=24;s=R4d_Joi{i+1}'): continue
+            self.jointsRad[i] = radians(self.opcuaReceiverContainer.getValue(f'ns=24;s=R4d_Joi{i+1}', default=0)[0])
+        if not self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForX'):
+            self.forceVector[0] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForX', default=0)[0]
+        if not self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForY'):
+            self.forceVector[1] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForY', default=0)[0]
+        if not self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForZ'):
+            self.forceVector[2] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForZ', default=0)[0]
         if self.matchLive:
             self.twinJoints = self.jointsRad.copy()
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(self.jointsRad)
@@ -426,7 +426,7 @@ class KukaScene(Scene):
         self.threadStopFlag = False
 
         if not self.dataThread.is_alive():
-            self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
                 [
                     'ns=24;s=R4d_Joi1', 
                     'ns=24;s=R4d_Joi2', 
@@ -437,14 +437,14 @@ class KukaScene(Scene):
                     'ns=24;s=R4d_Joi7'
                 ], lambda:self.threadStopFlag)
         if not self.forceThread.is_alive():
-            self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
                 [
                     'ns=24;s=R4d_ForX', 
                     'ns=24;s=R4d_ForY', 
                     'ns=24;s=R4d_ForZ' 
                 ], lambda:self.threadStopFlag)
         if not self.progControlThread.is_alive():
-            self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
                 'ns=24;s=R4c_ProgID', 
                 'ns=24;s=R4c_Start',    
@@ -466,9 +466,9 @@ class KukaScene(Scene):
                 return False
         if self.opcuaTransmitterContainer.hasUpdated(f'ns=24;s=R4c_ProgID'):
             return False
-        if self.opcuaContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] != 4:
+        if self.opcuaReceiverContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] != 4:
             return False
-        if not self.opcuaContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
+        if not self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
             return False
         return True
 

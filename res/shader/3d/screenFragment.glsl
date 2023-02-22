@@ -36,10 +36,10 @@ void main(){
 	float _dFdXn = length(leftPixel - centerPixel) / step_u;
 	float _dFdYn = length(topPixel - centerPixel) / step_v;
 	float d = max(max(_dFdXp, _dFdYp), max(_dFdXn, _dFdYn));
-
 	if(d > 70){
 		frag = centerPixel;
-		// frag = vec4(0,0,0,1);
+	}else{
+		frag = vec4(0,0,0,1);
 	}
 
 }
