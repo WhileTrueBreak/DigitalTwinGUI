@@ -347,7 +347,6 @@ class Renderer:
         self.idDict.pop(id)
     
     def addBatch(self, transparent=False):
-        print('creating new batch')
         self.batches.append(BatchRenderer(transparent))
         shader = self.opaqueShader
         if transparent:

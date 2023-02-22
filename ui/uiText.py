@@ -149,6 +149,7 @@ class UiText(GlElement):
         ], np.float32)
     
     def setText(self, text):
+        if self.text == text: return
         self.text = text
         self.dirtyText = True
     

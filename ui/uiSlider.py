@@ -88,6 +88,10 @@ class UiSlider(GlElement):
         diff = self.upperMap - self.lowerMap
         return self.currentLoc * diff + self.lowerMap
 
+    def setValue(self, value):
+        diff = self.upperMap - self.lowerMap
+        self.currentLoc = (value - self.lowerMap)/diff
+
     def onHeld(self, callback=None):
         start = self.window.mousePos[0] - self.dim[0]
         self.currentLoc = start/self.dim[2]

@@ -14,6 +14,7 @@ from scenes.scene import *
 from mathHelper import *
 from opcua import *
 
+from asyncua import ua
 import pygame
 from math import *
 
@@ -56,11 +57,12 @@ class KukaScene(Scene):
 
         self.jointsRad = [0,0,0,0,0,0,0]
         self.twinJoints = [0,0,0,0,0,0,0]
+        self.matchLive = True
         self.forceVector = np.array([0,0,0], dtype='float32')
 
         self.threadStopFlag = True
         self.opcuaContainer = OpcuaContainer()
-        self.dataThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+        self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
                 'ns=24;s=R4d_Joi1', 
                 'ns=24;s=R4d_Joi2', 
@@ -70,12 +72,26 @@ class KukaScene(Scene):
                 'ns=24;s=R4d_Joi6', 
                 'ns=24;s=R4d_Joi7'
             ], lambda:self.threadStopFlag)
-        self.forceThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+        self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
                 'ns=24;s=R4d_ForX', 
                 'ns=24;s=R4d_ForY', 
                 'ns=24;s=R4d_ForZ' 
             ], lambda:self.threadStopFlag)
+        
+        self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            [
+                'ns=24;s=R4c_ProgID', 
+                'ns=24;s=R4c_Start',    
+                'ns=24;s=R4f_Ready', 
+                'ns=24;s=R4f_End',  
+            ], lambda:self.threadStopFlag)
+
+        self.progStartFlag = False
+        self.executingFlag = False
+
+        self.opcuaTransmitterContainer = OpcuaContainer()
+        self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/', lambda:self.threadStopFlag)
         return
 
     def createUi(self):
@@ -164,17 +180,36 @@ class KukaScene(Scene):
             self.angleSlider[i].setRange(-pi, pi)
             self.angleSlider[i].setColor((0,0,0))
             self.selecterWrappers[i].addChild(self.angleSlider[i])
-            # self.angleInput[i] = UiTextInput(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 0.7, 0.5))
-            # self.angleInput[i].setFontSize(18)
-            # self.angleInput[i].setTextSpacing(7)
-            # self.angleInput[i].setText(f'{self.twinJoints[i]}')
-            # self.angleInput[i].setRegex(r'^(?!(?:.*?[.]){2,})[-]{0,1}[0-9.]{0,7}$')
-            # self.selecterWrappers[i].addChild(self.angleInput[i])
-            # self.angleSubmitButton[i] = UiButton(self.window, Constraints.ALIGN_PERCENTAGE(0.7, 0.5, 0.3, 0.5))
-            # self.angleSubmitButton[i].setDefaultColor((0,0,0))
-            # self.angleSubmitButton[i].setHoverColor((0.1,0.1,0.1))
-            # self.angleSubmitButton[i].setPressColor((0.2,0.2,0.2))
-            # self.selecterWrappers[i].addChild(self.angleSubmitButton[i])
+        
+        constraints = [
+            ABSOLUTE(T_X, padding),
+            COMPOUND(RELATIVE(T_Y, 0.8, P_H), ABSOLUTE(T_Y, padding)),
+            COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
+            COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
+        ]
+        self.sendBtn, self.sendBtnText = centeredTextButton(self.window, constraints)
+        self.sendBtnText.setText('Execute')
+        self.sendBtnText.setFontSize(20)
+        self.sendBtnText.setTextSpacing(8)
+        self.sendBtn.setDefaultColor((0,0,0))
+        self.sendBtn.setHoverColor((0.1,0.1,0.1))
+        self.sendBtn.setPressColor((0.2,0.2,0.2))
+        self.panelWrapper.addChild(self.sendBtn)
+        
+        constraints = [
+            ABSOLUTE(T_X, padding),
+            COMPOUND(RELATIVE(T_Y, 0.9, P_H), ABSOLUTE(T_Y, padding)),
+            COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
+            COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
+        ]
+        self.unlinkBtn, self.unlinkBtnText = centeredTextButton(self.window, constraints)
+        self.unlinkBtnText.setText('Unlink')
+        self.unlinkBtnText.setFontSize(20)
+        self.unlinkBtnText.setTextSpacing(8)
+        self.unlinkBtn.setDefaultColor((0,0,0))
+        self.unlinkBtn.setHoverColor((0.1,0.1,0.1))
+        self.unlinkBtn.setPressColor((0.2,0.2,0.2))
+        self.panelWrapper.addChild(self.unlinkBtn)
 
         self.addModels()
         return
@@ -237,38 +272,67 @@ class KukaScene(Scene):
         if event['action'] == 'release':
             if event['obj'] == self.recenterBtn:
                 self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
-            if event['obj'] in self.angleSubmitButton:
-                index = self.angleSubmitButton.index(event['obj'])
-                print(self.angleInput[index].getText())
-                self.twinJoints[index] = float(self.angleInput[index].getText())*pi/180
+            if event['obj'] == self.sendBtn:
+                self.sendBtn.lock
+                for i in range(len(self.twinJoints)):
+                    self.opcuaTransmitterContainer.setValue(f'ns=24;s=R4c_Joi{i+1}', self.twinJoints[i]*180/pi, ua.VariantType.Double)
+                self.opcuaTransmitterContainer.setValue(f'ns=24;s=R4c_ProgID', 4, ua.VariantType.Int32)
+                self.progStartFlag = True
+            if event['obj'] == self.unlinkBtn:
+                self.matchLive = not self.matchLive
+                self.unlinkBtnText.setText('unlink' if self.matchLive else 'link')
         return
     
     def absUpdate(self, delta):
         self.moveCamera(delta)
         self.updateJoints()
         self.updateGuiText()
+        self.updateProgram()
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.cameraTransform))
         return
     
+    def updateProgram(self):
+        if self.progStartFlag:
+            self.sendBtn.lock()
+            self.unlinkBtn.lock()
+            self.sendBtnText.setText('Waiting')
+            if self.isTransmitClear():
+                self.executingFlag = True
+                self.progStartFlag = False
+                self.opcuaTransmitterContainer.setValue('ns=24;s=R4c_Start', True, ua.VariantType.Boolean)
+        elif self.executingFlag:
+            self.sendBtn.lock()
+            self.unlinkBtn.lock()
+            self.sendBtnText.setText('Executing')
+            if self.opcuaContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] == 0:
+                self.executingFlag = False
+        if not self.progStartFlag and not self.executingFlag:
+            self.sendBtn.unlock()
+            self.unlinkBtn.unlock()
+            self.sendBtnText.setText('Execute')
+
     def updateGuiText(self):
         for i in range(len(self.selecterWrappers)):
             self.liveAngleText[i].setText(f'Live: {int(self.jointsRad[i]*180/pi)}')
-            twinText = self.angleSlider[i].getValue()
-            self.twinJoints[i] = float(twinText)
-            self.twinAngleText[i].setText(f'Twin: {int(twinText*180/pi)}')
+            if not self.matchLive:
+                twinText = self.angleSlider[i].getValue()
+                self.twinJoints[i] = float(twinText)
+            else:
+                self.angleSlider[i].setValue(self.twinJoints[i])
+            self.twinAngleText[i].setText(f'Twin: {int(self.twinJoints[i]*180/pi)}')
 
     def updateJoints(self):
-        if self.opcuaContainer.hasUpdated():
-            self.jointsRad[0] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi1', default=0))
-            self.jointsRad[1] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi2', default=0))
-            self.jointsRad[2] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi3', default=0))
-            self.jointsRad[3] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi4', default=0))
-            self.jointsRad[4] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi5', default=0))
-            self.jointsRad[5] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi6', default=0))
-            self.jointsRad[6] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi7', default=0))
-            self.forceVector[0] = self.opcuaContainer.getValue('ns=24;s=R4d_ForX', default=0)
-            self.forceVector[1] = self.opcuaContainer.getValue('ns=24;s=R4d_ForY', default=0)
-            self.forceVector[2] = self.opcuaContainer.getValue('ns=24;s=R4d_ForZ', default=0)
+        for i in range(7):
+            if not self.opcuaContainer.hasUpdated(f'ns=24;s=R4d_Joi{i+1}'): continue
+            self.jointsRad[i] = radians(self.opcuaContainer.getValue(f'ns=24;s=R4d_Joi{i+1}', default=0)[0])
+        if not self.opcuaContainer.hasUpdated('ns=24;s=R4d_ForX'):
+            self.forceVector[0] = self.opcuaContainer.getValue('ns=24;s=R4d_ForX', default=0)[0]
+        if not self.opcuaContainer.hasUpdated('ns=24;s=R4d_ForY'):
+            self.forceVector[1] = self.opcuaContainer.getValue('ns=24;s=R4d_ForY', default=0)[0]
+        if not self.opcuaContainer.hasUpdated('ns=24;s=R4d_ForZ'):
+            self.forceVector[2] = self.opcuaContainer.getValue('ns=24;s=R4d_ForZ', default=0)[0]
+        if self.matchLive:
+            self.twinJoints = self.jointsRad.copy()
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(self.jointsRad)
         for id in self.modelKukaIds:
             mat = Robot1_T_0_[self.modelKukaData[id][3]].copy()
@@ -346,7 +410,7 @@ class KukaScene(Scene):
         self.threadStopFlag = False
 
         if not self.dataThread.is_alive():
-            self.dataThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
                 [
                     'ns=24;s=R4d_Joi1', 
                     'ns=24;s=R4d_Joi2', 
@@ -357,12 +421,22 @@ class KukaScene(Scene):
                     'ns=24;s=R4d_Joi7'
                 ], lambda:self.threadStopFlag)
         if not self.forceThread.is_alive():
-            self.forceThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
                 [
                     'ns=24;s=R4d_ForX', 
                     'ns=24;s=R4d_ForY', 
                     'ns=24;s=R4d_ForZ' 
                 ], lambda:self.threadStopFlag)
+        if not self.progControlThread.is_alive():
+            self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            [
+                'ns=24;s=R4c_ProgID', 
+                'ns=24;s=R4c_Start',    
+                'ns=24;s=R4f_Ready', 
+                'ns=24;s=R4f_End',  
+            ], lambda:self.threadStopFlag)
+        if not self.transmitter.is_alive():
+            self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/', lambda:self.threadStopFlag)
         return
     
     def stop(self):
@@ -370,5 +444,15 @@ class KukaScene(Scene):
         self.threadStopFlag = True
         return
 
-
+    def isTransmitClear(self):
+        for i in range(len(self.twinJoints)):
+            if self.opcuaTransmitterContainer.hasUpdated(f'ns=24;s=R4c_Joi{i+1}'):
+                return False
+        if self.opcuaTransmitterContainer.hasUpdated(f'ns=24;s=R4c_ProgID'):
+            return False
+        if self.opcuaContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] != 4:
+            return False
+        if not self.opcuaContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
+            return False
+        return True
 

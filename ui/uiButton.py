@@ -15,6 +15,8 @@ class UiButton(GlElement):
         self.hoverColor = (1, 1, 1)
         self.pressColor = (1, 1, 1)
 
+        self.lockFlag = False
+
         self.vertices = np.array([
             [self.openGLDim[0], self.openGLDim[1], *self.currentColor],
             [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], *self.currentColor],
@@ -88,16 +90,29 @@ class UiButton(GlElement):
         self.pressColor = color
 
     def onDefault(self, callback=None):
+        if self.lockFlag: return
         self.setColor(self.defaultColor)
     
     def onHover(self, callback=None):
+        if self.lockFlag: return
         self.setColor(self.hoverColor)
     
     def onHeld(self, callback=None):
+        if self.lockFlag: return
         self.setColor(self.pressColor)
 
     def onPress(self, callback=None):
+        if self.lockFlag: return
         self.window.uiEvents.append({'obj':self, 'action':'press', 'type':self.type, 'time':time.time_ns()})
     
     def onRelease(self, callback=None):
+        if self.lockFlag: return
         self.window.uiEvents.append({'obj':self, 'action':'release', 'type':self.type, 'time':time.time_ns()})
+
+    def lock(self):
+        self.lockFlag = True
+        self.setColor(self.defaultColor)
+        
+    def unlock(self):
+        self.lockFlag = False
+        
