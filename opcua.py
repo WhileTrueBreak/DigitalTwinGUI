@@ -22,6 +22,9 @@ class OpcuaContainer:
         return self.updated
 
 class Opcua:
+
+    POLLING_RATE = 48
+
     def __init__(self, host):
         self.OpcUaHost = host #'oct.tpc://172.31.1.236:4840/server/'
         self.opcuaClient = Client(self.OpcUaHost)
@@ -59,12 +62,24 @@ class Opcua:
             client = Opcua(host)
         except:
             stop = lambda:True
+        start = time.time_ns()
+        rate = 0
+        accum = 0
         while not stop():
-            time.sleep(0.01)
             try:
                 asyncio.run(Opcua.OpcuaGetData(container, data, client))
             except:
                 return
+            time_past = time.time_ns() - start
+            start = time.time_ns()
+            rate += 1
+            accum += time_past
+            delay = 1/Opcua.POLLING_RATE*1000000000
+            time.sleep(max(0.01, (delay-time_past)/1000000000))
+            if accum >= 10000000000:
+                print(f'Opcua Polling Rate: {int(rate/10)}/s')
+                accum -= 10000000000
+                rate = 0
         print(f'Opcua thread stopped: {host}')
     @staticmethod
     async def OpcuaGetData(container, data, client):

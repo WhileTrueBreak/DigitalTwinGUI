@@ -5,6 +5,8 @@ from io import BytesIO
 
 import time
 
+POLLING_RATE = 48
+
 def handler(signum, frame):
     raise Exception("Time is up")
 
@@ -46,6 +48,8 @@ def MjpegConnection(container, url, stop):
             stop = lambda:True
     running = False
     start = time.time_ns()
+    rate = 0
+    accum = 0
     while not stop():
         if not running:
             if client.reconnects > 1:
@@ -56,7 +60,6 @@ def MjpegConnection(container, url, stop):
             else:
                 running = True
         try:
-            time.sleep(0.01)
             buf = client.dequeue_buffer(timeout=1)
             stream = BytesIO(buf.data)
             container.setStream(stream)
@@ -64,6 +67,16 @@ def MjpegConnection(container, url, stop):
         except Exception as e:
             print('buffer error')
             stop = lambda:True
+        time_past = time.time_ns() - start
+        start = time.time_ns()
+        rate += 1
+        accum += time_past
+        delay = 1/POLLING_RATE*1000000000
+        time.sleep(max(0.01, (delay-time_past)/1000000000))
+        if accum >= 10000000000:
+            print(f'MJPEG Polling Rate: {int(rate/10)}/s')
+            accum -= 10000000000
+            rate = 0
     if connectionOpen:
         client.stop()
     

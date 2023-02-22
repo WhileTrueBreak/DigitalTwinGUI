@@ -63,10 +63,13 @@ class KukaScene(Scene):
                 'ns=24;s=R4d_Joi4', 
                 'ns=24;s=R4d_Joi5', 
                 'ns=24;s=R4d_Joi6', 
-                'ns=24;s=R4d_Joi7', 
-                'ns=24;s=R1d_ForX', 
-                'ns=24;s=R1d_ForY', 
-                'ns=24;s=R1d_ForZ' 
+                'ns=24;s=R4d_Joi7'
+            ], lambda:self.threadStopFlag)
+        self.forceThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            [
+                'ns=24;s=R4d_ForX', 
+                'ns=24;s=R4d_ForY', 
+                'ns=24;s=R4d_ForZ' 
             ], lambda:self.threadStopFlag)
         return
 
@@ -250,20 +253,24 @@ class KukaScene(Scene):
         self.armStream.start()
         self.threadStopFlag = False
 
-        if self.dataThread.is_alive(): return
-        self.dataThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
-            [
-                'ns=24;s=R4d_Joi1', 
-                'ns=24;s=R4d_Joi2', 
-                'ns=24;s=R4d_Joi3', 
-                'ns=24;s=R4d_Joi4', 
-                'ns=24;s=R4d_Joi5', 
-                'ns=24;s=R4d_Joi6', 
-                'ns=24;s=R4d_Joi7',
-                'ns=24;s=R4d_ForX', 
-                'ns=24;s=R4d_ForY', 
-                'ns=24;s=R4d_ForZ' 
-            ], lambda:self.threadStopFlag)
+        if not self.dataThread.is_alive():
+            self.dataThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+                [
+                    'ns=24;s=R4d_Joi1', 
+                    'ns=24;s=R4d_Joi2', 
+                    'ns=24;s=R4d_Joi3', 
+                    'ns=24;s=R4d_Joi4', 
+                    'ns=24;s=R4d_Joi5', 
+                    'ns=24;s=R4d_Joi6', 
+                    'ns=24;s=R4d_Joi7'
+                ], lambda:self.threadStopFlag)
+        if not self.forceThread.is_alive():
+            self.forceThread = Opcua.createOpcuaThread(self.opcuaContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+                [
+                    'ns=24;s=R4d_ForX', 
+                    'ns=24;s=R4d_ForY', 
+                    'ns=24;s=R4d_ForZ' 
+                ], lambda:self.threadStopFlag)
         return
     
     def stop(self):
