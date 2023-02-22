@@ -227,12 +227,14 @@ class KukaScene(Scene):
 
             mat = TRobot1_T_0_[i].copy()
             self.twinKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-            self.modelRenderer.setColor(self.twinKukaIds[-1], (1, i/8, 0.5, 0))
+            self.modelRenderer.setColor(self.twinKukaIds[-1], (1, 0.5, i/8, 0))
             self.twinKukaData[self.twinKukaIds[-1]] = (0, 0, 0, i)
 
         self.gripperId = self.modelRenderer.addModel(Assets.GRIPPER, Robot1_T_0_[7].copy())
-
         self.modelRenderer.setColor(self.gripperId, (0.5, 1, 1, 0.8))
+
+        self.TgripperId = self.modelRenderer.addModel(Assets.GRIPPER, TRobot1_T_0_[7].copy())
+        self.modelRenderer.setColor(self.TgripperId, (1, 0.5, 1, 0))
 
         self.tubeIds = [0]*2
         self.tubeIds[0] = self.modelRenderer.addModel(Assets.TUBE_OUTSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
@@ -282,6 +284,8 @@ class KukaScene(Scene):
                 for id in self.twinKukaIds:
                     color = self.modelRenderer.getData(id)['color']
                     self.modelRenderer.setColor(id, (*color[0:3], 0 if self.matchLive else 0.7))
+                color = self.modelRenderer.getData(self.TgripperId)['color']
+                self.modelRenderer.setColor(self.TgripperId, (*color[0:3], 0 if self.matchLive else 0.8))
         return
     
     def absUpdate(self, delta):
@@ -356,6 +360,12 @@ class KukaScene(Scene):
         mat[1][3] += self.modelKukaData[self.modelKukaIds[7]][1]*2/2
         mat[2][3] += self.modelKukaData[self.modelKukaIds[7]][2]*2/2
         self.modelRenderer.setTransformMatrix(self.gripperId, mat)
+        
+        mat = TRobot1_T_0_[7].copy()
+        mat[0][3] += self.twinKukaData[self.twinKukaIds[7]][0]*2/2
+        mat[1][3] += self.twinKukaData[self.twinKukaIds[7]][1]*2/2
+        mat[2][3] += self.twinKukaData[self.twinKukaIds[7]][2]*2/2
+        self.modelRenderer.setTransformMatrix(self.TgripperId, mat)
 
         self.updateForceVector(mat)
     
@@ -407,7 +417,7 @@ class KukaScene(Scene):
         self.cameraTransform[2] += -deltaPos[2]*sin(radPitch)#+deltaPos[1]*cos(radPitch)
 
     def start(self):
-        # self.armStream.start()
+        self.armStream.start()
         self.threadStopFlag = False
 
         if not self.dataThread.is_alive():
@@ -441,7 +451,7 @@ class KukaScene(Scene):
         return
     
     def stop(self):
-        # self.armStream.stop()
+        self.armStream.stop()
         self.threadStopFlag = True
         return
 
