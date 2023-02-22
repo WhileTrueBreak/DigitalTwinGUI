@@ -229,7 +229,7 @@ class KukaScene(Scene):
 
             mat = TRobot1_T_0_[i].copy()
             self.twinKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
-            self.modelRenderer.setColor(self.twinKukaIds[-1], (1, i/8, 0.5, 0.7))
+            self.modelRenderer.setColor(self.twinKukaIds[-1], (1, i/8, 0.5, 0))
             self.twinKukaData[self.twinKukaIds[-1]] = (0, 0, 0, i)
 
         self.gripperId = self.modelRenderer.addModel(Assets.GRIPPER, Robot1_T_0_[7].copy())
@@ -281,6 +281,9 @@ class KukaScene(Scene):
             if event['obj'] == self.unlinkBtn:
                 self.matchLive = not self.matchLive
                 self.unlinkBtnText.setText('unlink' if self.matchLive else 'link')
+                for id in self.twinKukaIds:
+                    color = self.modelRenderer.getData(id)['color']
+                    self.modelRenderer.setColor(id, (*color[0:3], 0 if self.matchLive else 0.7))
         return
     
     def absUpdate(self, delta):

@@ -528,3 +528,8 @@ class Renderer:
         GL.glClearColor(*clearColor)
         return
 
+    def getData(self, id):
+        batch = self.batches[self.idDict[id][0]]
+        objId = self.idDict[id][1]
+        return batch.getData(objId)
+
