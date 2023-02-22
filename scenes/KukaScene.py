@@ -6,6 +6,7 @@ from ui.uiVideo import UiVideo
 from ui.uiWrapper import UiWrapper
 from ui.uiTextInput import UiTextInput
 from ui.uiText import UiText
+from ui.uiSlider import UiSlider
 
 from ui.uiHelper import *
 from constraintManager import *
@@ -143,8 +144,9 @@ class KukaScene(Scene):
         self.twinTextWrapper = [None]*len(self.selecterWrappers)
         self.twinAngleText = [None]*len(self.selecterWrappers)
 
-        self.angleSubmitButton = [None]*len(self.selecterWrappers)
-        self.angleInput = [None]*len(self.selecterWrappers)
+        # self.angleSubmitButton = [None]*len(self.selecterWrappers)
+        # self.angleInput = [None]*len(self.selecterWrappers)
+        self.angleSlider = [None]*len(self.selecterWrappers)
         for i in range(len(self.selecterWrappers)):
             self.liveTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0.5, 0.5))
             self.twinTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0.5, 0, 0.5, 0.5))
@@ -158,17 +160,21 @@ class KukaScene(Scene):
             self.twinAngleText[i].setTextSpacing(7)
             self.liveTextWrapper[i].addChild(self.liveAngleText[i])
             self.twinTextWrapper[i].addChild(self.twinAngleText[i])
-            self.angleInput[i] = UiTextInput(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 0.7, 0.5))
-            self.angleInput[i].setFontSize(18)
-            self.angleInput[i].setTextSpacing(7)
-            self.angleInput[i].setText(f'{self.twinJoints[i]}')
-            self.angleInput[i].setRegex(r'^(?!(?:.*?[.]){2,})[-]{0,1}[0-9.]{0,7}$')
-            self.selecterWrappers[i].addChild(self.angleInput[i])
-            self.angleSubmitButton[i] = UiButton(self.window, Constraints.ALIGN_PERCENTAGE(0.7, 0.5, 0.3, 0.5))
-            self.angleSubmitButton[i].setDefaultColor((0,0,0))
-            self.angleSubmitButton[i].setHoverColor((0.1,0.1,0.1))
-            self.angleSubmitButton[i].setPressColor((0.2,0.2,0.2))
-            self.selecterWrappers[i].addChild(self.angleSubmitButton[i])
+            self.angleSlider[i] = UiSlider(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 1, 0.5))
+            self.angleSlider[i].setRange(-pi, pi)
+            self.angleSlider[i].setColor((0,0,0))
+            self.selecterWrappers[i].addChild(self.angleSlider[i])
+            # self.angleInput[i] = UiTextInput(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 0.7, 0.5))
+            # self.angleInput[i].setFontSize(18)
+            # self.angleInput[i].setTextSpacing(7)
+            # self.angleInput[i].setText(f'{self.twinJoints[i]}')
+            # self.angleInput[i].setRegex(r'^(?!(?:.*?[.]){2,})[-]{0,1}[0-9.]{0,7}$')
+            # self.selecterWrappers[i].addChild(self.angleInput[i])
+            # self.angleSubmitButton[i] = UiButton(self.window, Constraints.ALIGN_PERCENTAGE(0.7, 0.5, 0.3, 0.5))
+            # self.angleSubmitButton[i].setDefaultColor((0,0,0))
+            # self.angleSubmitButton[i].setHoverColor((0.1,0.1,0.1))
+            # self.angleSubmitButton[i].setPressColor((0.2,0.2,0.2))
+            # self.selecterWrappers[i].addChild(self.angleSubmitButton[i])
 
         self.addModels()
         return
@@ -247,7 +253,9 @@ class KukaScene(Scene):
     def updateGuiText(self):
         for i in range(len(self.selecterWrappers)):
             self.liveAngleText[i].setText(f'Live: {int(self.jointsRad[i]*180/pi)}')
-            self.twinAngleText[i].setText(f'Twin: {int(self.twinJoints[i]*180/pi)}')
+            twinText = self.angleSlider[i].getValue()
+            self.twinJoints[i] = float(twinText)
+            self.twinAngleText[i].setText(f'Twin: {int(twinText*180/pi)}')
 
     def updateJoints(self):
         if self.opcuaContainer.hasUpdated():
