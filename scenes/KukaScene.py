@@ -89,6 +89,7 @@ class KukaScene(Scene):
 
         self.progStartFlag = False
         self.executingFlag = False
+        self.doneFlag = False
 
         self.opcuaTransmitterContainer = OpcuaContainer()
         self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/', lambda:self.threadStopFlag)
@@ -238,7 +239,7 @@ class KukaScene(Scene):
 
         self.tubeIds = [0]*2
         self.tubeIds[0] = self.modelRenderer.addModel(Assets.TUBE_OUTSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
-        self.modelRenderer.setColor(self.tubeIds[0], (0.8, 0.8, 0, 1))
+        self.modelRenderer.setColor(self.tubeIds[0], (1, 1, 0, 1))
         self.tubeIds[1] = self.modelRenderer.addModel(Assets.TUBE_INSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
         self.modelRenderer.setColor(self.tubeIds[1], (0.6, 0.6, 0.6, 1))
         
@@ -310,10 +311,14 @@ class KukaScene(Scene):
             self.unlinkBtn.lock()
             self.sendBtnText.setText('Executing')
             if self.opcuaContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] == 0:
+                self.doneFlag = True
                 self.executingFlag = False
-        if not self.progStartFlag and not self.executingFlag:
+        if self.doneFlag:
+            self.doneFlag = False
             self.sendBtn.unlock()
             self.unlinkBtn.unlock()
+            self.matchLive = True
+            self.unlinkBtnText.setText('Unlink')
             self.sendBtnText.setText('Execute')
 
     def updateGuiText(self):
