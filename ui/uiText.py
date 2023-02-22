@@ -5,6 +5,7 @@ from asset import *
 
 class UiText(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):
+        constraints = constraints.copy()
         constraints.append(ABSOLUTE(T_W, 0))
         constraints.append(ABSOLUTE(T_H, 0))
         super().__init__(window, constraints, dim)

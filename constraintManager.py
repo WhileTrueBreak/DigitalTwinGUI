@@ -107,3 +107,16 @@ class CompoundConstraint(Constraint):
 
     def validTransform(self, isSet):
         return self.constraint1.validTransform(isSet) and self.constraint2.validTransform(isSet);
+
+class Constraints:
+    ALIGN_TEXT_CENTER = [COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5, P_W)),
+                        COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H))]
+    def ALIGN_PERCENTAGE(x, y, w, h):
+        return [RELATIVE(T_X, x, P_W),
+                RELATIVE(T_Y, y, P_H),
+                RELATIVE(T_W, w, P_W),
+                RELATIVE(T_H, h, P_H)]
+    
+    def ALIGN_TEXT_PERCENTAGE(xp, yp):
+        return [COMPOUND(RELATIVE(T_X, -xp, T_W), RELATIVE(T_X, xp, P_W)),
+                COMPOUND(RELATIVE(T_Y, -yp, T_H), RELATIVE(T_Y, yp, P_H))]

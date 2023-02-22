@@ -303,6 +303,10 @@ class UiTextInput(GlElement):
     def getText(self):
         return self.text
 
+    def setText(self, text):
+        self.text = text
+        self.textElement.setText(self.text)
+
     def setFont(self, font):
         self.textElement.setFont(font)
     

@@ -13,8 +13,8 @@ uniform sampler2D screen;
 
 void main(){
 
-	// frag = texture2D(screen, texture_coords);
-	// return;
+	frag = texture2D(screen, texture_coords);
+	return;
 
 	frag = vec4(0,0,0,1);
 

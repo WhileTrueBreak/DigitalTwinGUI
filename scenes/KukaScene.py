@@ -3,6 +3,9 @@ from ui.ui3dScene import Ui3DScene
 from ui.uiWrapper import UiWrapper
 from ui.uiStream import UiStream
 from ui.uiVideo import UiVideo
+from ui.uiWrapper import UiWrapper
+from ui.uiTextInput import UiTextInput
+from ui.uiText import UiText
 
 from ui.uiHelper import *
 from constraintManager import *
@@ -51,6 +54,7 @@ class KukaScene(Scene):
         self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
 
         self.jointsRad = [0,0,0,0,0,0,0]
+        self.twinJoints = [0,0,0,0,0,0,0]
         self.forceVector = np.array([0,0,0], dtype='float32')
 
         self.threadStopFlag = True
@@ -74,11 +78,11 @@ class KukaScene(Scene):
         return
 
     def createUi(self):
-        padding = 20
+        padding = 10
         constraints = [
             ABSOLUTE(T_X, padding),
             ABSOLUTE(T_Y, padding),
-            COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
+            COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*padding)),
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.renderWindow = Ui3DScene(self.window, constraints)
@@ -86,15 +90,15 @@ class KukaScene(Scene):
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
 
-        padding = 10
-        constraints = [
-            ABSOLUTE(T_X, padding),
-            ABSOLUTE(T_Y, padding),
-            RELATIVE(T_W, 0.3, P_W),
-            RELATIVE(T_H, 3/4, T_W),
-        ]
-        self.armStream = UiStream(self.window, constraints, 'http://172.31.1.177:8080/?action=stream')
-        self.renderWindow.addChild(self.armStream)
+        # padding = 10
+        # constraints = [
+        #     ABSOLUTE(T_X, padding),
+        #     ABSOLUTE(T_Y, padding),
+        #     RELATIVE(T_W, 0.3, P_W),
+        #     RELATIVE(T_H, 3/4, T_W),
+        # ]
+        # self.armStream = UiStream(self.window, constraints, 'http://172.31.1.177:8080/?action=stream')
+        # self.renderWindow.addChild(self.armStream)
 
         padding = 10
         constraints = [
@@ -113,18 +117,80 @@ class KukaScene(Scene):
         self.recenterBtn.setPressColor((1, 0, 0))
         self.renderWindow.addChild(self.recenterBtn)
 
+        constraints = [
+            COMPOUND(RELATIVE(T_X, 0.7, P_W), ABSOLUTE(T_X, padding)),
+            ABSOLUTE(T_Y, padding),
+            COMPOUND(RELATIVE(T_W, 0.3, P_W), ABSOLUTE(T_W, -2*padding)),
+            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
+        ]
+
+        self.panelWrapper = UiWrapper(self.window, constraints)
+        self.sceneWrapper.addChild(self.panelWrapper)
+        self.selecterWrappers = [None]*7
+        padding = 5
+        for i in range(len(self.selecterWrappers)):
+            constraints = [
+                ABSOLUTE(T_X, padding),
+                COMPOUND(RELATIVE(T_Y, 0.1*i, P_H), ABSOLUTE(T_Y, padding)),
+                COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
+                COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
+            ]
+            self.selecterWrappers[i] = UiWrapper(self.window, constraints)
+        self.panelWrapper.addChildren(*self.selecterWrappers)
+
+        self.liveTextWrapper = [None]*len(self.selecterWrappers)
+        self.liveAngleText = [None]*len(self.selecterWrappers)
+        self.twinTextWrapper = [None]*len(self.selecterWrappers)
+        self.twinAngleText = [None]*len(self.selecterWrappers)
+
+        self.angleSubmitButton = [None]*len(self.selecterWrappers)
+        self.angleInput = [None]*len(self.selecterWrappers)
+        for i in range(len(self.selecterWrappers)):
+            self.liveTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0.5, 0.5))
+            self.twinTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0.5, 0, 0.5, 0.5))
+            self.selecterWrappers[i].addChild(self.liveTextWrapper[i])
+            self.selecterWrappers[i].addChild(self.twinTextWrapper[i])
+            self.liveAngleText[i] = UiText(self.window, Constraints.ALIGN_TEXT_PERCENTAGE(0, 0.5))
+            self.liveAngleText[i].setFontSize(18)
+            self.liveAngleText[i].setTextSpacing(7)
+            self.twinAngleText[i] = UiText(self.window, Constraints.ALIGN_TEXT_PERCENTAGE(0, 0.5))
+            self.twinAngleText[i].setFontSize(18)
+            self.twinAngleText[i].setTextSpacing(7)
+            self.liveTextWrapper[i].addChild(self.liveAngleText[i])
+            self.twinTextWrapper[i].addChild(self.twinAngleText[i])
+            self.angleInput[i] = UiTextInput(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 0.7, 0.5))
+            self.angleInput[i].setFontSize(18)
+            self.angleInput[i].setTextSpacing(7)
+            self.angleInput[i].setText(f'{self.twinJoints[i]}')
+            self.angleInput[i].setRegex(r'^(?!(?:.*?[.]){2,})[-]{0,1}[0-9.]{0,7}$')
+            self.selecterWrappers[i].addChild(self.angleInput[i])
+            self.angleSubmitButton[i] = UiButton(self.window, Constraints.ALIGN_PERCENTAGE(0.7, 0.5, 0.3, 0.5))
+            self.angleSubmitButton[i].setDefaultColor((0,0,0))
+            self.angleSubmitButton[i].setHoverColor((0.1,0.1,0.1))
+            self.angleSubmitButton[i].setPressColor((0.2,0.2,0.2))
+            self.selecterWrappers[i].addChild(self.angleSubmitButton[i])
+
         self.addModels()
         return
-    
+
     def addModels(self):
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
         self.modelKukaData = {}
         self.modelKukaIds = []
+        TRobot1_T_0_ , TRobot1_T_i_ = T_KUKAiiwa14(self.twinJoints)
+        self.twinKukaData = {}
+        self.twinKukaIds = []
         for i in range(0,8):
             mat = Robot1_T_0_[i].copy()
             self.modelKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
             self.modelRenderer.setColor(self.modelKukaIds[-1], (0.5, i/8, 1, 0.7))
             self.modelKukaData[self.modelKukaIds[-1]] = (0, 0, 0, i)
+
+            mat = TRobot1_T_0_[i].copy()
+            self.twinKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
+            self.modelRenderer.setColor(self.twinKukaIds[-1], (1, i/8, 0.5, 0.7))
+            self.twinKukaData[self.twinKukaIds[-1]] = (0, 0, 0, i)
+
         self.gripperId = self.modelRenderer.addModel(Assets.GRIPPER, Robot1_T_0_[7].copy())
 
         self.modelRenderer.setColor(self.gripperId, (0.5, 1, 1, 0.8))
@@ -163,16 +229,26 @@ class KukaScene(Scene):
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':
-            if event['obj'] != self.recenterBtn: return
-            self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
+            if event['obj'] == self.recenterBtn:
+                self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
+            if event['obj'] in self.angleSubmitButton:
+                index = self.angleSubmitButton.index(event['obj'])
+                print(self.angleInput[index].getText())
+                self.twinJoints[index] = float(self.angleInput[index].getText())*pi/180
         return
     
     def absUpdate(self, delta):
         self.moveCamera(delta)
         self.updateJoints()
+        self.updateGuiText()
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.cameraTransform))
         return
     
+    def updateGuiText(self):
+        for i in range(len(self.selecterWrappers)):
+            self.liveAngleText[i].setText(f'Live: {int(self.jointsRad[i]*180/pi)}')
+            self.twinAngleText[i].setText(f'Twin: {int(self.twinJoints[i]*180/pi)}')
+
     def updateJoints(self):
         if self.opcuaContainer.hasUpdated():
             self.jointsRad[0] = radians(self.opcuaContainer.getValue('ns=24;s=R4d_Joi1', default=0))
@@ -193,11 +269,19 @@ class KukaScene(Scene):
             mat[2][3] += self.modelKukaData[id][2]*2/2
             self.modelRenderer.setTransformMatrix(id, mat)
         
+        TRobot1_T_0_ , TRobot1_T_i_ = T_KUKAiiwa14(self.twinJoints)
+        for id in self.twinKukaIds:
+            mat = TRobot1_T_0_[self.twinKukaData[id][3]].copy()
+            mat[0][3] += self.twinKukaData[id][0]*2/2
+            mat[1][3] += self.twinKukaData[id][1]*2/2
+            mat[2][3] += self.twinKukaData[id][2]*2/2
+            self.modelRenderer.setTransformMatrix(id, mat)
+        
         
         mat = Robot1_T_0_[7].copy()
-        mat[0][3] += self.modelKukaData[7][0]*2/2
-        mat[1][3] += self.modelKukaData[7][1]*2/2
-        mat[2][3] += self.modelKukaData[7][2]*2/2
+        mat[0][3] += self.modelKukaData[self.modelKukaIds[7]][0]*2/2
+        mat[1][3] += self.modelKukaData[self.modelKukaIds[7]][1]*2/2
+        mat[2][3] += self.modelKukaData[self.modelKukaIds[7]][2]*2/2
         self.modelRenderer.setTransformMatrix(self.gripperId, mat)
 
         self.updateForceVector(mat)
@@ -250,7 +334,7 @@ class KukaScene(Scene):
         self.cameraTransform[2] += -deltaPos[2]*sin(radPitch)#+deltaPos[1]*cos(radPitch)
 
     def start(self):
-        self.armStream.start()
+        # self.armStream.start()
         self.threadStopFlag = False
 
         if not self.dataThread.is_alive():
@@ -274,7 +358,7 @@ class KukaScene(Scene):
         return
     
     def stop(self):
-        self.armStream.stop()
+        # self.armStream.stop()
         self.threadStopFlag = True
         return
 
