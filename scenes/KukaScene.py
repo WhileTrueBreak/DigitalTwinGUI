@@ -107,15 +107,15 @@ class KukaScene(Scene):
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
 
-        # padding = 10
-        # constraints = [
-        #     ABSOLUTE(T_X, padding),
-        #     ABSOLUTE(T_Y, padding),
-        #     RELATIVE(T_W, 0.3, P_W),
-        #     RELATIVE(T_H, 3/4, T_W),
-        # ]
-        # self.armStream = UiStream(self.window, constraints, 'http://172.31.1.177:8080/?action=stream')
-        # self.renderWindow.addChild(self.armStream)
+        padding = 10
+        constraints = [
+            COMPOUND(RELATIVE(T_X, 0.7, P_W), ABSOLUTE(T_X, padding)),
+            COMPOUND(RELATIVE(T_Y, 0.8, P_H), ABSOLUTE(T_Y, padding)),
+            RELATIVE(T_W, 4/3, T_H),
+            COMPOUND(RELATIVE(T_H, 0.2, P_H), ABSOLUTE(T_H, -2*padding)),
+        ]
+        self.armStream = UiStream(self.window, constraints, 'http://172.31.1.177:8080/?action=stream')
+        self.sceneWrapper.addChild(self.armStream)
 
         padding = 10
         constraints = [
@@ -138,7 +138,7 @@ class KukaScene(Scene):
             COMPOUND(RELATIVE(T_X, 0.7, P_W), ABSOLUTE(T_X, padding)),
             ABSOLUTE(T_Y, padding),
             COMPOUND(RELATIVE(T_W, 0.3, P_W), ABSOLUTE(T_W, -2*padding)),
-            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
+            COMPOUND(RELATIVE(T_H, 0.8, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
 
         self.panelWrapper = UiWrapper(self.window, constraints)
@@ -160,8 +160,6 @@ class KukaScene(Scene):
         self.twinTextWrapper = [None]*len(self.selecterWrappers)
         self.twinAngleText = [None]*len(self.selecterWrappers)
 
-        # self.angleSubmitButton = [None]*len(self.selecterWrappers)
-        # self.angleInput = [None]*len(self.selecterWrappers)
         self.angleSlider = [None]*len(self.selecterWrappers)
         for i in range(len(self.selecterWrappers)):
             self.liveTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0.5, 0.5))
