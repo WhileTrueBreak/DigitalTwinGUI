@@ -9,7 +9,7 @@ class BatchRenderer:
     MAX_VERTICES = 2000000
     MAX_TEXTURES = 0
     def __init__(self, isTransparent=False):
-        BatchRenderer.MAX_TEXTURES = min(GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS), 16)
+        BatchRenderer.MAX_TEXTURES = min(GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS), 32)
 
         self.vertexSize = 14
 
@@ -148,6 +148,10 @@ class BatchRenderer:
         for i in range(len(self.textures)):
             GL.glActiveTexture(GL.GL_TEXTURE0 + i)
             GL.glBindTexture(GL.GL_TEXTURE_2D, self.textures[i])
+        # for r in self.modelRange:
+        #     v = self.vertices[r[0]:r[1],-1]
+        #     if len(v) != 0:
+        #         print(v[0])
 
         GL.glEnableVertexAttribArray(0)
         GL.glEnableVertexAttribArray(1)
@@ -164,6 +168,10 @@ class BatchRenderer:
         GL.glDisableVertexAttribArray(2)
         GL.glDisableVertexAttribArray(1)
         GL.glDisableVertexAttribArray(0)
+
+        for i in range(len(self.textures)):
+            GL.glActiveTexture(GL.GL_TEXTURE0 + i)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
     def setProjectionMatrix(self, shader, matrix):
         GL.glUseProgram(shader)
@@ -213,8 +221,10 @@ class BatchRenderer:
             self.textureDict[id] = self.models[id]
             self.texModelMap.append(self.models[id])
             self.textures.append(tex)
-            texId = len(self.textures)
-
+            texId = len(self.textures)-1
+        # GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
+        # pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D,0,GL.GL_RGBA,GL.GL_UNSIGNED_BYTE)
+        # print(f'pixel length: {len(pixels)}')
         self.vertices[lower:upper, 13:14] = np.tile([texId], (upper-lower, 1))
         self.isDirty = True
         return True
@@ -241,6 +251,12 @@ class Renderer:
         self.transparentShader = Assets.TRANSPARENT_SHADER
         self.compositeShader = Assets.COMPOSITE_SHADER
         self.screenShader = Assets.SCREEN_SHADER
+
+        textures = np.arange(0, 32, dtype='int32')
+        GL.glUseProgram(self.opaqueShader)
+        GL.glUniform1iv(GL.glGetUniformLocation(self.opaqueShader, "uTextures"), 32, textures)
+        GL.glUseProgram(self.transparentShader)
+        GL.glUniform1iv(GL.glGetUniformLocation(self.transparentShader, "uTextures"), 32, textures)
 
         self.idDict = {}
         self.nextId = 0

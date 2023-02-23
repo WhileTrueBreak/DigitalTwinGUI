@@ -8,6 +8,7 @@ from ui.uiTextInput import UiTextInput
 from ui.uiText import UiText
 from ui.uiSlider import UiSlider
 
+from mjpegStream import MJPEGStream
 from ui.uiHelper import *
 from constraintManager import *
 from scenes.scene import *
@@ -213,11 +214,21 @@ class KukaScene(Scene):
         self.unlinkBtn.setPressColor((0.2,0.2,0.2))
         self.panelWrapper.addChild(self.unlinkBtn)
 
+        self.__createStreams()
+
         self.__createRoom()
         self.__addFurniture()
         self.__addRobot()
         self.__addPrinters()
         return
+
+    def __createStreams(self):
+        self.printerStreams = [None]*5
+        self.printerStreams[0] = MJPEGStream('http://172.31.1.229:8080/?action=streams')
+        self.printerStreams[1] = MJPEGStream('http://172.31.1.228:8080/?action=streams')
+        self.printerStreams[2] = MJPEGStream('http://172.31.1.227:8080/?action=streams')
+        self.printerStreams[3] = MJPEGStream('http://172.31.1.226:8080/?action=streams')
+        self.printerStreams[4] = MJPEGStream('http://172.31.1.225:8080/?action=streams')
 
     def __createRoom(self):
         roomDim = (7, 15.5)
@@ -303,17 +314,41 @@ class KukaScene(Scene):
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.8))
 
     def __addPrinters(self):
+        printerLoc = [
+            [7-0.4, 0.3, 0.85],
+            [7-0.4, 1.1, 0.85],
+            [7-0.4, 1.6, 0.85],
+            [7-0.4, 2.1, 0.85],
+            [7-0.4, 2.7, 0.85],
+        ]
+        
         self.printers = [0]*5
-        self.printers[0] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 0.3, 0.85, 0, 0, 0))
+        self.printers[0] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(*printerLoc[0], 0, 0, 0))
         self.modelRenderer.setColor(self.printers[0], (0,1,0.0,1))
-        self.printers[1] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 1.1, 0.85, 0, 0, 0))
+        self.printers[1] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(*printerLoc[1], 0, 0, 0))
         self.modelRenderer.setColor(self.printers[1], (0,1,0.2,1))
-        self.printers[2] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 1.6, 0.85, 0, 0, 0))
+        self.printers[2] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(*printerLoc[2], 0, 0, 0))
         self.modelRenderer.setColor(self.printers[2], (0,1,0.4,1))
-        self.printers[3] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 2.1, 0.85, 0, 0, 0))
+        self.printers[3] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(*printerLoc[3], 0, 0, 0))
         self.modelRenderer.setColor(self.printers[3], (0,1,0.6,1))
-        self.printers[4] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 2.7, 0.85, 0, 0, 0))
+        self.printers[4] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(*printerLoc[4], 0, 0, 0))
         self.modelRenderer.setColor(self.printers[4], (0,1,0.8,1))
+
+        self.printerScreen = [0]*5
+        self.printerScreen[0] = self.modelRenderer.addModel(Assets.SCREEN, 
+            createTransformationMatrix(printerLoc[0][0]+0.2, printerLoc[0][1]-0.15, printerLoc[0][2]+0.47, 0, -90, 0).dot(createScaleMatrix(0.15, 0.15, 0.15)))
+        self.printerScreen[1] = self.modelRenderer.addModel(Assets.SCREEN, 
+            createTransformationMatrix(printerLoc[1][0]+0.2, printerLoc[1][1]-0.15, printerLoc[1][2]+0.47, 0, -90, 0).dot(createScaleMatrix(0.15, 0.15, 0.15)))
+        self.printerScreen[2] = self.modelRenderer.addModel(Assets.SCREEN, 
+            createTransformationMatrix(printerLoc[1][0]+0.2, printerLoc[2][1]-0.15, printerLoc[2][2]+0.47, 0, -90, 0).dot(createScaleMatrix(0.15, 0.15, 0.15)))
+        self.printerScreen[3] = self.modelRenderer.addModel(Assets.SCREEN, 
+            createTransformationMatrix(printerLoc[1][0]+0.2, printerLoc[3][1]-0.15, printerLoc[3][2]+0.47, 0, -90, 0).dot(createScaleMatrix(0.15, 0.15, 0.15)))
+        self.printerScreen[4] = self.modelRenderer.addModel(Assets.SCREEN, 
+            createTransformationMatrix(printerLoc[1][0]+0.2, printerLoc[4][1]-0.15, printerLoc[4][2]+0.47, 0, -90, 0).dot(createScaleMatrix(0.15, 0.15, 0.15)))
+
+        for i in range(len(self.printerScreen)):
+            self.modelRenderer.setColor(self.printerScreen[i], (1.5,1.5,1.5,1))
+            self.modelRenderer.setTexture(self.printerScreen[i], self.printerStreams[i].texture)
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':
@@ -337,6 +372,8 @@ class KukaScene(Scene):
         self.__updateGuiText()
         self.__updateProgram()
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.cameraTransform))
+        for stream in self.printerStreams:
+            stream.updateImage(delta)
         return
     
     def __updateProgram(self):
@@ -466,6 +503,8 @@ class KukaScene(Scene):
 
     def start(self):
         self.armStream.start()
+        for stream in self.printerStreams:
+            stream.start()
         self.threadStopFlag = False
 
         if not self.dataThread.is_alive():
@@ -500,6 +539,8 @@ class KukaScene(Scene):
     
     def stop(self):
         self.armStream.stop()
+        for stream in self.printerStreams:
+            stream.stop()
         self.threadStopFlag = True
         return
 

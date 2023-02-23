@@ -26,7 +26,6 @@ float map(float value, float min1, float max1, float min2, float max2) {
 
 void main() {
   int matIndex = int(tmatIndex);
-  int tIndex = int(texIndex);
 
   texId = texIndex;
   texCoord = uv;

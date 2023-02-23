@@ -3,7 +3,7 @@
 // shader outputs
 layout (location = 0) out vec4 frag;
 
-uniform sampler2D uTextures[16];
+uniform sampler2D uTextures[32];
 
 in float shade;
 in float texId;

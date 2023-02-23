@@ -4,7 +4,7 @@
 layout (location = 0) out vec4 accum;
 layout (location = 1) out float reveal;
 
-uniform sampler2D uTextures[16];
+uniform sampler2D uTextures[32];
 
 in float shade;
 in float texId;

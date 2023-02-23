@@ -9,7 +9,7 @@ from asset import *
 
 nest_asyncio.apply()
 
-window = Window((1200, 800), 'Digital Twin GUI', fullscreen=False, resizeable=True, vsync=False)
+window = Window((1200, 800), 'Digital Twin GUI', fullscreen=False, resizeable=True, vsync=True)
 
 scene3 = CamScene(window, '3D Printers')
 scene3.createUi()
