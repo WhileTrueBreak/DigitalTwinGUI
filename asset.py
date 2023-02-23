@@ -44,18 +44,11 @@ class Assets:
         Assets.TUBE_OUTSIDE = Assets.loadModelFile('res/models/tube/tube_outside.stl', createTransformationMatrix(0,0,0,0,90,0))
         Assets.TUBE_HOLDER = Assets.loadModelFile('res/models/tube/tube_holder.stl')
 
-        scaleTMAT = np.identity(4)
-        scaleTMAT[0,0] = 1/100
-        scaleTMAT[1,1] = 1/100
-        scaleTMAT[2,2] = 1/100
-        # Assets.TEAPOT = Assets.loadModelFile('res/models/teapot.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
-        Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', scaleTMAT.dot(createTransformationMatrix(0,0,0,90,0,0)))
+        Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', createScaleMatrix(0.01, 0.01, 0.01).dot(createTransformationMatrix(0,0,0,90,0,0)))
+        Assets.POLE = Assets.loadModelFile('res/models/pole.stl', createScaleMatrix(10, 10, 10))
 
-        scaleTMAT = np.identity(4)
-        scaleTMAT[0,0] = 10
-        scaleTMAT[1,1] = 10
-        scaleTMAT[2,2] = 10
-        Assets.POLE = Assets.loadModelFile('res/models/pole.stl', scaleTMAT)
+        Assets.ENDER3_3D_PRINTER = Assets.loadModelFile('res/models/Objects/Ender3-V2.STL')
+        Assets.SHELF = Assets.loadModelFile('res/models/Objects/Shelving1.stl', createTransformationMatrix(0, 0, 0, 90, 0, 0))
 
         Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')
 

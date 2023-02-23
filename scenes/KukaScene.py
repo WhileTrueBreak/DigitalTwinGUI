@@ -216,6 +216,7 @@ class KukaScene(Scene):
         self.__createRoom()
         self.__addFurniture()
         self.__addRobot()
+        self.__addPrinters()
         return
 
     def __createRoom(self):
@@ -236,11 +237,12 @@ class KukaScene(Scene):
         # 180
         # 80
         # 210
-        self.benches = [0]*4
+        self.benches = [0]*5
         self.benches[0] = self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(7-0.4, 0.8+1.05, 0.85, 0, 0, 0))
         self.benches[1] = self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(7-1.05, 0.4, 0.85, 0, 0, 90))
         self.benches[2] = self.modelRenderer.addModel(Assets.TABLES[2], createTransformationMatrix(7-0.9, 0.8+2.1+0.9, 0.85, 0, 0, 0))
         self.benches[3] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(7-0.9-0.7, 0.8+2.1+0.9-1.6, 0.85+0.06625, 0, 0, 0))
+        self.benches[3] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(7-1, 0.8+2.1+1.8+0.6, 0.85+0.06625, 0, 0, 0))
 
         x, y, z = 7-0.9-0.7+0.2, 0.8+2.1+0.9-1.6, 0.85+0.06625
 
@@ -263,6 +265,14 @@ class KukaScene(Scene):
         self.screenId = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(6.99, 0.8+2.1+0.9-1, 0.9, 0, -90, 0))
         self.modelRenderer.setTexture(self.screenId, self.armStream.texture)
         self.modelRenderer.setColor(self.screenId, (1,1,1,1))
+
+        # 250
+        # 60
+
+        self.shelves = [0]*3
+        self.shelves[0] = self.modelRenderer.addModel(Assets.SHELF, createTransformationMatrix(7-2.5, 0.8+2.1+1.8+1.3, 0, 0, 0, 0))
+        self.shelves[1] = self.modelRenderer.addModel(Assets.SHELF, createTransformationMatrix(7-2.1-2.5,0,0,0,0,0))
+        self.shelves[2] = self.modelRenderer.addModel(Assets.SHELF, createTransformationMatrix(1.2,3.9,0,0,0,90))
 
     def __addRobot(self):
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
@@ -291,6 +301,19 @@ class KukaScene(Scene):
 
         self.forceVectorId = self.modelRenderer.addModel(Assets.POLE, np.identity(4))
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.8))
+
+    def __addPrinters(self):
+        self.printers = [0]*5
+        self.printers[0] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 0.3, 0.85, 0, 0, 0))
+        self.modelRenderer.setColor(self.printers[0], (0,1,0.0,1))
+        self.printers[1] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 1.1, 0.85, 0, 0, 0))
+        self.modelRenderer.setColor(self.printers[1], (0,1,0.2,1))
+        self.printers[2] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 1.6, 0.85, 0, 0, 0))
+        self.modelRenderer.setColor(self.printers[2], (0,1,0.4,1))
+        self.printers[3] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 2.1, 0.85, 0, 0, 0))
+        self.modelRenderer.setColor(self.printers[3], (0,1,0.6,1))
+        self.printers[4] = self.modelRenderer.addModel(Assets.ENDER3_3D_PRINTER, createTransformationMatrix(7-0.4, 2.7, 0.85, 0, 0, 0))
+        self.modelRenderer.setColor(self.printers[4], (0,1,0.8,1))
 
     def handleUiEvents(self, event):
         if event['action'] == 'release':
