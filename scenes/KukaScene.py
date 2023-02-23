@@ -54,6 +54,9 @@ class KukaScene(Scene):
     def __init__(self, window, name):
         super().__init__(window, name)
         self.cameraTransform = [-0.7+5, -0.57+2, 1.5, -70.25, 0, 45]
+        self.camSpeed = 2
+
+        self.progid = 2
 
         self.jointsRad = [0,0,0,0,0,0,0]
         self.twinJoints = [0,0,0,0,0,0,0]
@@ -297,16 +300,12 @@ class KukaScene(Scene):
                 self.sendBtn.lock
                 for i in range(len(self.twinJoints)):
                     self.opcuaTransmitterContainer.setValue(f'ns=24;s=R4c_Joi{i+1}', self.twinJoints[i]*180/pi, ua.VariantType.Double)
-                self.opcuaTransmitterContainer.setValue(f'ns=24;s=R4c_ProgID', 4, ua.VariantType.Int32)
+                self.opcuaTransmitterContainer.setValue(f'ns=24;s=R4c_ProgID', self.progid, ua.VariantType.Int32)
                 self.progStartFlag = True
             if event['obj'] == self.unlinkBtn:
                 self.matchLive = not self.matchLive
                 self.unlinkBtnText.setText('unlink' if self.matchLive else 'link')
-                for id in self.twinKukaIds:
-                    color = self.modelRenderer.getData(id)['color']
-                    self.modelRenderer.setColor(id, (*color[0:3], 0 if self.matchLive else 0.7))
-                color = self.modelRenderer.getData(self.TgripperId)['color']
-                self.modelRenderer.setColor(self.TgripperId, (*color[0:3], 0 if self.matchLive else 0.8))
+                self.updateTwinColor()
         return
     
     def absUpdate(self, delta):
@@ -330,7 +329,7 @@ class KukaScene(Scene):
             self.sendBtn.lock()
             self.unlinkBtn.lock()
             self.sendBtnText.setText('Executing')
-            if self.opcuaReceiverContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] == 0:
+            if self.opcuaReceiverContainer.getValue('ns=24;s=R4c_ProgID', default=self.progid)[0] == 0:
                 self.doneFlag = True
                 self.executingFlag = False
         if self.doneFlag:
@@ -340,6 +339,7 @@ class KukaScene(Scene):
             self.matchLive = True
             self.unlinkBtnText.setText('Unlink')
             self.sendBtnText.setText('Execute')
+            self.updateTwinColor()
 
     def updateGuiText(self):
         for i in range(len(self.selecterWrappers)):
@@ -430,7 +430,7 @@ class KukaScene(Scene):
             deltaPos[2] -= 1
         if self.window.getKeyState(pygame.K_SPACE): #up
             deltaPos[2] += 1
-        deltaPos = [x*delta for x in normalize(deltaPos)]
+        deltaPos = [x*delta*self.camSpeed for x in normalize(deltaPos)]
         radPitch = radians(self.cameraTransform[3])
         radYaw = radians(self.cameraTransform[5])
 
@@ -486,9 +486,16 @@ class KukaScene(Scene):
                 return False
         if self.opcuaTransmitterContainer.hasUpdated(f'ns=24;s=R4c_ProgID'):
             return False
-        if self.opcuaReceiverContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] != 4:
+        if self.opcuaReceiverContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] != self.progid:
             return False
         if not self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
             return False
         return True
+
+    def updateTwinColor(self):
+        for id in self.twinKukaIds:
+            color = self.modelRenderer.getData(id)['color']
+            self.modelRenderer.setColor(id, (*color[0:3], 0 if self.matchLive else 0.7))
+        color = self.modelRenderer.getData(self.TgripperId)['color']
+        self.modelRenderer.setColor(self.TgripperId, (*color[0:3], 0 if self.matchLive else 0.8))
 
