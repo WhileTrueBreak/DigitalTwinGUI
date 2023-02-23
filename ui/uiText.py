@@ -48,10 +48,10 @@ class UiText(GlElement):
         return
 
     def absUpdate(self, delta):
-        self.updateTextBound()
+        self.__updateTextBound()
         return
     
-    def updateTextBound(self):
+    def __updateTextBound(self):
         if not self.dirtyText:
             return
         scale = self.fontSize/48
@@ -90,10 +90,10 @@ class UiText(GlElement):
         self.dirtyText = False
 
     def absRender(self):
-        self.renderText(self.text, Assets.FIRACODE_FONT, self.fontSize/48)
+        self.__renderText(self.text, Assets.FIRACODE_FONT, self.fontSize/48)
         return
     
-    def renderText(self, text, font, scale):
+    def __renderText(self, text, font, scale):
         GL.glUseProgram(Assets.TEXT_SHADER)
 
         GL.glBindVertexArray(self.textVao)
@@ -113,7 +113,7 @@ class UiText(GlElement):
             h = h*scale
             des = ch.descender*scale
 
-            vertices = self.getVertexData(x, y + des + self.maxAscender, w, h)
+            vertices = self.__getVertexData(x, y + des + self.maxAscender, w, h)
 
             #render glyph texture over quad
             GL.glBindTexture(GL.GL_TEXTURE_2D, ch.texture)
@@ -136,7 +136,7 @@ class UiText(GlElement):
         GL.glBindVertexArray(0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
-    def getVertexData(self, xpos, ypos, w, h):
+    def __getVertexData(self, xpos, ypos, w, h):
         xpos = (2*xpos)/self.window.dim[0] - 1
         ypos = (2*(self.window.dim[1]-ypos))/self.window.dim[1] - 1
         w = (2*w)/self.window.dim[0]

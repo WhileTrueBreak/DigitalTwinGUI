@@ -77,7 +77,7 @@ class UiTextInput(GlElement):
         self.maxDescender = 0
         self.maxAscender = 0
 
-        self.initBoxContext()
+        self.__initBoxContext()
 
         constraints = [
             COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5, P_W)),
@@ -112,7 +112,7 @@ class UiTextInput(GlElement):
             self.holdTimer[key] = time.time_ns()
             self.repeatTimer[key] = time.time_ns()
     
-    def initBoxContext(self):
+    def __initBoxContext(self):
         self.boxIndices = np.array([1,0,3,3,0,2,3,2,5,5,2,4,5,4,7,7,4,6,7,6,1,1,6,0], dtype='int32')
         self.boxVertices = np.array([
             [0,0,0,0,0],
@@ -283,10 +283,10 @@ class UiTextInput(GlElement):
             return
 
     def absRender(self):
-        self.renderTextBox()
+        self.__renderTextBox()
         return
     
-    def renderTextBox(self):
+    def __renderTextBox(self):
         GL.glUseProgram(Assets.SOLID_SHADER)
         GL.glBindVertexArray(self.boxVao)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.boxVbo)

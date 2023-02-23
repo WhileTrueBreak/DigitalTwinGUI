@@ -67,10 +67,10 @@ class UiVideo(GlElement):
         self.frameTimer += delta
         if self.frameTimer >= self.spf:
             self.frameTimer -= self.spf
-            self.setNextFrame()
+            self.__setNextFrame()
         return
 
-    def setNextFrame(self):
+    def __setNextFrame(self):
         if self.video == None:
             return
         success, frame = self.video.read()
