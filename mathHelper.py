@@ -84,7 +84,12 @@ def vectorTransform(p1, p2, thickness, upperLimit=10000000):
     scaleTMAT[2,2] = min(mag,upperLimit)
     return rotMat.dot(scaleTMAT)
 
-
+def createScaleMatrix(x, y, z):
+    mat = np.identity(4)
+    mat[0,0] = x
+    mat[1,1] = y
+    mat[2,2] = z
+    return mat
 
 
 

@@ -53,7 +53,7 @@ class KukaScene(Scene):
     
     def __init__(self, window, name):
         super().__init__(window, name)
-        self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
+        self.cameraTransform = [-0.7+5, -0.57+2, 1.5, -70.25, 0, 45]
 
         self.jointsRad = [0,0,0,0,0,0,0]
         self.twinJoints = [0,0,0,0,0,0,0]
@@ -181,9 +181,9 @@ class KukaScene(Scene):
             self.selecterWrappers[i].addChild(self.angleSlider[i])
         
         constraints = [
-            ABSOLUTE(T_X, padding),
+            COMPOUND(RELATIVE(T_X, 0.5, P_W), ABSOLUTE(T_X, padding)),
             COMPOUND(RELATIVE(T_Y, 0.8, P_H), ABSOLUTE(T_Y, padding)),
-            COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
+            COMPOUND(RELATIVE(T_W, 0.5, P_W), ABSOLUTE(T_W, -2*padding)),
             COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.sendBtn, self.sendBtnText = centeredTextButton(self.window, constraints)
@@ -196,9 +196,9 @@ class KukaScene(Scene):
         self.panelWrapper.addChild(self.sendBtn)
         
         constraints = [
-            ABSOLUTE(T_X, padding),
-            COMPOUND(RELATIVE(T_Y, 0.9, P_H), ABSOLUTE(T_Y, padding)),
-            COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
+            COMPOUND(RELATIVE(T_X, 0, P_W), ABSOLUTE(T_X, padding)),
+            COMPOUND(RELATIVE(T_Y, 0.8, P_H), ABSOLUTE(T_Y, padding)),
+            COMPOUND(RELATIVE(T_W, 0.5, P_W), ABSOLUTE(T_W, -2*padding)),
             COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.unlinkBtn, self.unlinkBtnText = centeredTextButton(self.window, constraints)
@@ -210,10 +210,58 @@ class KukaScene(Scene):
         self.unlinkBtn.setPressColor((0.2,0.2,0.2))
         self.panelWrapper.addChild(self.unlinkBtn)
 
-        self.addModels()
+        self.createRoom()
+        self.addFurniture()
+        self.addRobot()
         return
 
-    def addModels(self):
+    def createRoom(self):
+        roomDim = (7, 15.5)
+        roomHeight = 2.7
+        self.floor = self.modelRenderer.addModel(Assets.UNIT_WALL, createScaleMatrix(roomDim[0], roomDim[1], 1))
+        self.walls = [0]*4
+        self.walls[0] = self.modelRenderer.addModel(Assets.UNIT_WALL, 
+            createTransformationMatrix(0, 0, roomHeight, 0, 90, 0).dot(createScaleMatrix(roomHeight, roomDim[1], 1)))
+        self.walls[1] = self.modelRenderer.addModel(Assets.UNIT_WALL, 
+            createTransformationMatrix(roomDim[0], 0, 0, 0, -90, 0).dot(createScaleMatrix(roomHeight, roomDim[1], 1)))
+        self.walls[2] = self.modelRenderer.addModel(Assets.UNIT_WALL, 
+            createTransformationMatrix(0, roomDim[1], 0, 90, 0, 0).dot(createScaleMatrix(roomDim[0], roomHeight, 1)))
+        self.walls[3] = self.modelRenderer.addModel(Assets.UNIT_WALL, 
+            createTransformationMatrix(0, 0, roomHeight, -90, 0, 0).dot(createScaleMatrix(roomDim[0], roomHeight, 1)))
+
+    def addFurniture(self):
+        # 180
+        # 80
+        # 210
+        self.benches = [0]*4
+        self.benches[0] = self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(7-0.4, 0.8+1.05, 0.85, 0, 0, 0))
+        self.benches[1] = self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(7-1.05, 0.4, 0.85, 0, 0, 90))
+        self.benches[2] = self.modelRenderer.addModel(Assets.TABLES[2], createTransformationMatrix(7-0.9, 0.8+2.1+0.9, 0.85, 0, 0, 0))
+        self.benches[3] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(7-0.9-0.7, 0.8+2.1+0.9-1.6, 0.85+0.06625, 0, 0, 0))
+
+        x, y, z = 7-0.9-0.7+0.2, 0.8+2.1+0.9-1.6, 0.85+0.06625
+
+        self.tubeIds = [0]*2
+        self.tubeIds[0] = self.modelRenderer.addModel(Assets.TUBE_OUTSIDE, createTransformationMatrix(-0.134+x,0.805+y,0.0225+z,0,0,0))
+        self.modelRenderer.setColor(self.tubeIds[0], (1, 1, 0, 1))
+        self.tubeIds[1] = self.modelRenderer.addModel(Assets.TUBE_INSIDE, createTransformationMatrix(-0.134+x,0.805+y,0.0225+z,0,0,0))
+        self.modelRenderer.setColor(self.tubeIds[1], (0.6, 0.6, 0.6, 1))
+        
+        self.tubeholderIds = [0]*4
+        self.tubeholderIds[0] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.114+x,0.735+y,-0.06625+z,0,0,90))
+        self.modelRenderer.setColor(self.tubeholderIds[0], (0.3, 0.3, 0.3, 1))
+        self.tubeholderIds[1] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.004+x,0.735+y,-0.06625+z,0,0,90))
+        self.modelRenderer.setColor(self.tubeholderIds[1], (0.3, 0.3, 0.3, 1))
+        self.tubeholderIds[2] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.114+x,0.875+y,-0.06625+z,0,0,-90))
+        self.modelRenderer.setColor(self.tubeholderIds[2], (0.3, 0.3, 0.3, 1))
+        self.tubeholderIds[3] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.004+x,0.875+y,-0.06625+z,0,0,-90))
+        self.modelRenderer.setColor(self.tubeholderIds[3], (0.3, 0.3, 0.3, 1))
+
+        self.screenId = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(6.99, 0.8+2.1+0.9-1, 0.9, 0, -90, 0))
+        self.modelRenderer.setTexture(self.screenId, self.armStream.texture)
+        self.modelRenderer.setColor(self.screenId, (1,1,1,1))
+
+    def addRobot(self):
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
         self.modelKukaData = {}
         self.modelKukaIds = []
@@ -222,49 +270,21 @@ class KukaScene(Scene):
         self.twinKukaIds = []
         for i in range(0,8):
             mat = Robot1_T_0_[i].copy()
+            x, y, z = 7-0.9-0.7, 0.8+2.1+0.9-1.6, 0.85+0.06625
             self.modelKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
             self.modelRenderer.setColor(self.modelKukaIds[-1], (0.5, i/8, 1, 0.7))
-            self.modelKukaData[self.modelKukaIds[-1]] = (0, 0, 0, i)
+            self.modelKukaData[self.modelKukaIds[-1]] = (x+0.2, y, z, i)
 
             mat = TRobot1_T_0_[i].copy()
             self.twinKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
             self.modelRenderer.setColor(self.twinKukaIds[-1], (1, 0.5, i/8, 0))
-            self.twinKukaData[self.twinKukaIds[-1]] = (0, 0, 0, i)
-
+            self.twinKukaData[self.twinKukaIds[-1]] = (x+0.2, y, z, i)
+        
         self.gripperId = self.modelRenderer.addModel(Assets.GRIPPER, Robot1_T_0_[7].copy())
         self.modelRenderer.setColor(self.gripperId, (0.5, 1, 1, 0.8))
 
         self.TgripperId = self.modelRenderer.addModel(Assets.GRIPPER, TRobot1_T_0_[7].copy())
         self.modelRenderer.setColor(self.TgripperId, (1, 0.5, 1, 0))
-
-        self.tubeIds = [0]*2
-        self.tubeIds[0] = self.modelRenderer.addModel(Assets.TUBE_OUTSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
-        self.modelRenderer.setColor(self.tubeIds[0], (1, 1, 0, 1))
-        self.tubeIds[1] = self.modelRenderer.addModel(Assets.TUBE_INSIDE, createTransformationMatrix(-0.134,0.805,0.0225,0,0,0))
-        self.modelRenderer.setColor(self.tubeIds[1], (0.6, 0.6, 0.6, 1))
-        
-        self.tubeholderIds = [0]*4
-        self.tubeholderIds[0] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.114,0.735,-0.06625,0,0,90))
-        self.modelRenderer.setColor(self.tubeholderIds[0], (0.3, 0.3, 0.3, 1))
-        self.tubeholderIds[1] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.004,0.735,-0.06625,0,0,90))
-        self.modelRenderer.setColor(self.tubeholderIds[1], (0.3, 0.3, 0.3, 1))
-        self.tubeholderIds[2] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.114,0.875,-0.06625,0,0,-90))
-        self.modelRenderer.setColor(self.tubeholderIds[2], (0.3, 0.3, 0.3, 1))
-        self.tubeholderIds[3] = self.modelRenderer.addModel(Assets.TUBE_HOLDER, createTransformationMatrix(-0.004,0.875,-0.06625,0,0,-90))
-        self.modelRenderer.setColor(self.tubeholderIds[3], (0.3, 0.3, 0.3, 1))
-
-        self.tableIds = [0]*2
-        self.tableIds[0] = self.modelRenderer.addModel(Assets.TABLES[2], createTransformationMatrix(0.5,1.6,-0.06625,0,0,0))
-        self.modelRenderer.setColor(self.tableIds[0], (0.7, 0.7, 0.7, 1))
-        self.tableIds[1] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(-0.2,0,0,0,0,0))
-        self.modelRenderer.setColor(self.tableIds[1], (0.7, 0.7, 0.7, 1))
-
-        # self.dragonId = self.modelRenderer.addModel(Assets.DRAGON, createTransformationMatrix(-0.4,0,0,0,0,0))
-        # self.modelRenderer.setColor(self.dragonId, (1,0.8,0.8,0.9))
-
-        self.screenId = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(2, 0, 0, 0, -90, 0))
-        # self.modelRenderer.setTexture(self.screenId, self.armStream.texture)
-        self.modelRenderer.setColor(self.screenId, (1,1,1,1))
 
         self.forceVectorId = self.modelRenderer.addModel(Assets.POLE, np.identity(4))
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.8))
@@ -272,7 +292,7 @@ class KukaScene(Scene):
     def handleUiEvents(self, event):
         if event['action'] == 'release':
             if event['obj'] == self.recenterBtn:
-                self.cameraTransform = [-0.7, -0.57, 1.0, -70.25, 0, 45]
+                self.cameraTransform = [-0.7+5, -0.57+2, 1.5, -70.25, 0, 45]
             if event['obj'] == self.sendBtn:
                 self.sendBtn.lock
                 for i in range(len(self.twinJoints)):
