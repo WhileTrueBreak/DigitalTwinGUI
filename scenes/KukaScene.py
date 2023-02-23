@@ -213,12 +213,12 @@ class KukaScene(Scene):
         self.unlinkBtn.setPressColor((0.2,0.2,0.2))
         self.panelWrapper.addChild(self.unlinkBtn)
 
-        self.createRoom()
-        self.addFurniture()
-        self.addRobot()
+        self.__createRoom()
+        self.__addFurniture()
+        self.__addRobot()
         return
 
-    def createRoom(self):
+    def __createRoom(self):
         roomDim = (7, 15.5)
         roomHeight = 2.7
         self.floor = self.modelRenderer.addModel(Assets.UNIT_WALL, createScaleMatrix(roomDim[0], roomDim[1], 1))
@@ -232,7 +232,7 @@ class KukaScene(Scene):
         self.walls[3] = self.modelRenderer.addModel(Assets.UNIT_WALL, 
             createTransformationMatrix(0, 0, roomHeight, -90, 0, 0).dot(createScaleMatrix(roomDim[0], roomHeight, 1)))
 
-    def addFurniture(self):
+    def __addFurniture(self):
         # 180
         # 80
         # 210
@@ -264,7 +264,7 @@ class KukaScene(Scene):
         self.modelRenderer.setTexture(self.screenId, self.armStream.texture)
         self.modelRenderer.setColor(self.screenId, (1,1,1,1))
 
-    def addRobot(self):
+    def __addRobot(self):
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
         self.modelKukaData = {}
         self.modelKukaIds = []
@@ -305,23 +305,23 @@ class KukaScene(Scene):
             if event['obj'] == self.unlinkBtn:
                 self.matchLive = not self.matchLive
                 self.unlinkBtnText.setText('unlink' if self.matchLive else 'link')
-                self.updateTwinColor()
+                self.__updateTwinColor()
         return
     
     def absUpdate(self, delta):
-        self.moveCamera(delta)
-        self.updateJoints()
-        self.updateGuiText()
-        self.updateProgram()
+        self.__moveCamera(delta)
+        self.__updateJoints()
+        self.__updateGuiText()
+        self.__updateProgram()
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.cameraTransform))
         return
     
-    def updateProgram(self):
+    def __updateProgram(self):
         if self.progStartFlag:
             self.sendBtn.lock()
             self.unlinkBtn.lock()
             self.sendBtnText.setText('Waiting')
-            if self.isTransmitClear():
+            if self.__isTransmitClear():
                 self.executingFlag = True
                 self.progStartFlag = False
                 self.opcuaTransmitterContainer.setValue('ns=24;s=R4c_Start', True, ua.VariantType.Boolean)
@@ -339,9 +339,9 @@ class KukaScene(Scene):
             self.matchLive = True
             self.unlinkBtnText.setText('Unlink')
             self.sendBtnText.setText('Execute')
-            self.updateTwinColor()
+            self._updateTwinColor()
 
-    def updateGuiText(self):
+    def __updateGuiText(self):
         for i in range(len(self.selecterWrappers)):
             self.liveAngleText[i].setText(f'Live: {int(self.jointsRad[i]*180/pi)}')
             if not self.matchLive:
@@ -351,7 +351,7 @@ class KukaScene(Scene):
                 self.angleSlider[i].setValue(self.twinJoints[i])
             self.twinAngleText[i].setText(f'Twin: {int(self.twinJoints[i]*180/pi)}')
 
-    def updateJoints(self):
+    def __updateJoints(self):
         for i in range(7):
             if not self.opcuaReceiverContainer.hasUpdated(f'ns=24;s=R4d_Joi{i+1}'): continue
             self.jointsRad[i] = radians(self.opcuaReceiverContainer.getValue(f'ns=24;s=R4d_Joi{i+1}', default=0)[0])
@@ -392,9 +392,9 @@ class KukaScene(Scene):
         mat[2][3] += self.twinKukaData[self.twinKukaIds[7]][2]*2/2
         self.modelRenderer.setTransformMatrix(self.TgripperId, mat)
 
-        self.updateForceVector(mat)
+        self.__updateForceVector(mat)
     
-    def updateForceVector(self, transform):
+    def __updateForceVector(self, transform):
         forceMag = np.linalg.norm(self.forceVector)
         if forceMag < 2:
             self.modelRenderer.setColor(self.forceVectorId, (1,1,1,0))
@@ -404,7 +404,7 @@ class KukaScene(Scene):
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
         self.modelRenderer.setTransformMatrix(self.forceVectorId, forceTransform)
 
-    def moveCamera(self, delta):
+    def __moveCamera(self, delta):
         if self.window.selectedUi != self.renderWindow:
             return
 
@@ -480,7 +480,7 @@ class KukaScene(Scene):
         self.threadStopFlag = True
         return
 
-    def isTransmitClear(self):
+    def __isTransmitClear(self):
         for i in range(len(self.twinJoints)):
             if self.opcuaTransmitterContainer.hasUpdated(f'ns=24;s=R4c_Joi{i+1}'):
                 return False
@@ -492,7 +492,7 @@ class KukaScene(Scene):
             return False
         return True
 
-    def updateTwinColor(self):
+    def __updateTwinColor(self):
         for id in self.twinKukaIds:
             color = self.modelRenderer.getData(id)['color']
             self.modelRenderer.setColor(id, (*color[0:3], 0 if self.matchLive else 0.7))
