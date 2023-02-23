@@ -75,7 +75,7 @@ class UiButton(GlElement):
         GL.glDisableVertexAttribArray(0)
         return
 
-    def setColor(self, color):
+    def __setColor(self, color):
         self.currentColor = color
         self.reshape()
         return
@@ -91,15 +91,15 @@ class UiButton(GlElement):
 
     def onDefault(self, callback=None):
         if self.lockFlag: return
-        self.setColor(self.defaultColor)
+        self.__setColor(self.defaultColor)
     
     def onHover(self, callback=None):
         if self.lockFlag: return
-        self.setColor(self.hoverColor)
+        self.__setColor(self.hoverColor)
     
     def onHeld(self, callback=None):
         if self.lockFlag: return
-        self.setColor(self.pressColor)
+        self.__setColor(self.pressColor)
 
     def onPress(self, callback=None):
         if self.lockFlag: return
@@ -111,7 +111,7 @@ class UiButton(GlElement):
 
     def lock(self):
         self.lockFlag = True
-        self.setColor(self.defaultColor)
+        self.__setColor(self.defaultColor)
         
     def unlock(self):
         self.lockFlag = False

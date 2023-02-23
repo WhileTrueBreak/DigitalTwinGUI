@@ -36,7 +36,7 @@ class GlElement:
             self.isDirty = False
         for child in self.children:
             child.update(delta)
-        self.actions()
+        self.__actions()
         self.absUpdate(delta)
         return
     @abstractmethod
@@ -54,7 +54,7 @@ class GlElement:
     def absRender(self):
         ...
     
-    def actions(self):
+    def __actions(self):
         mousePos = self.window.mousePos
         self.isDefault = False
         if mousePos[0] > self.dim[0] and mousePos[0] < self.dim[0] + self.dim[2] and mousePos[1] > self.dim[1] and mousePos[1] < self.dim[1] + self.dim[3]:
