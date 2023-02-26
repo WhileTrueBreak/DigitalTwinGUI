@@ -415,11 +415,11 @@ class KukaScene(Scene):
         for i in range(7):
             if not self.opcuaReceiverContainer.hasUpdated(f'ns=24;s=R4d_Joi{i+1}'): continue
             self.jointsRad[i] = radians(self.opcuaReceiverContainer.getValue(f'ns=24;s=R4d_Joi{i+1}', default=0)[0])
-        if not self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForX'):
+        if self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForX'):
             self.forceVector[0] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForX', default=0)[0]
-        if not self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForY'):
+        if self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForY'):
             self.forceVector[1] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForY', default=0)[0]
-        if not self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForZ'):
+        if self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForZ'):
             self.forceVector[2] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForZ', default=0)[0]
         if self.matchLive:
             self.twinJoints = self.jointsRad.copy()
