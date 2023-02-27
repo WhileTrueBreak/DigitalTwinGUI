@@ -456,7 +456,7 @@ class KukaScene(Scene):
     
     def __updateForceVector(self, transform):
         forceMag = np.linalg.norm(self.forceVector)
-        if forceMag < 2:
+        if forceMag < 3.5:
             self.modelRenderer.setColor(self.forceVectorId, (1,1,1,0))
             return
         
