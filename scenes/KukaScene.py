@@ -399,7 +399,7 @@ class KukaScene(Scene):
             self.matchLive = True
             self.unlinkBtnText.setText('Unlink')
             self.sendBtnText.setText('Execute')
-            self._updateTwinColor()
+            self.__updateTwinColor()
 
     def __updateGuiText(self):
         for i in range(len(self.selecterWrappers)):
