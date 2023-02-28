@@ -377,6 +377,8 @@ class KukaScene(Scene):
         return
     
     def __updateProgram(self):
+        if not self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
+            self.sendBtn.lock()
         if self.progStartFlag:
             self.sendBtn.lock()
             self.unlinkBtn.lock()
@@ -392,7 +394,7 @@ class KukaScene(Scene):
             if self.opcuaReceiverContainer.getValue('ns=24;s=R4c_ProgID', default=self.progid)[0] == 0:
                 self.doneFlag = True
                 self.executingFlag = False
-        if self.doneFlag:
+        elif self.doneFlag:
             self.doneFlag = False
             self.sendBtn.unlock()
             self.unlinkBtn.unlock()
@@ -400,6 +402,8 @@ class KukaScene(Scene):
             self.unlinkBtnText.setText('Unlink')
             self.sendBtnText.setText('Execute')
             self.__updateTwinColor()
+        elif self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
+            self.sendBtn.unlock()
 
     def __updateGuiText(self):
         for i in range(len(self.selecterWrappers)):
