@@ -23,7 +23,7 @@ class Window():
         if fullscreen:
             display_flags = display_flags | pygame.FULLSCREEN
             size = (0,0)
-        self.screen = pygame.display.set_mode(size, display_flags, vsync=1 if vsync else 0)
+        self.screen = pygame.display.set_mode(size, display_flags, vsync=(1 if vsync else 0))
         pygame.display.set_caption(title)
 
 

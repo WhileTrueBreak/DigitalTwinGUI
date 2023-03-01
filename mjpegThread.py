@@ -48,9 +48,12 @@ def MjpegConnection(container, url, stop):
             stop = lambda:True
     running = False
     start = time.time_ns()
+    delay = 1/POLLING_RATE*1000000000
     rate = 0
     accum = 0
     while not stop():
+        time_past = time.time_ns() - start
+        start = time.time_ns()
         if not running:
             if client.reconnects > 1:
                 stop = lambda:True
@@ -66,11 +69,8 @@ def MjpegConnection(container, url, stop):
             client.enqueue_buffer(buf)
         except Exception as e:
             stop = lambda:True
-        time_past = time.time_ns() - start
-        start = time.time_ns()
         rate += 1
         accum += time_past
-        delay = 1/POLLING_RATE*1000000000
         time.sleep(max(0.01, (delay-time_past)/1000000000))
         if accum >= 10000000000:
             print(f'MJPEG Polling Rate: {int(rate/10)}/s')

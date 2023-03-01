@@ -60,11 +60,12 @@ class Opcua:
     @staticmethod
     def opcuaConnection(container, host, data, stop):
         print(f'Opcua receiver thread started: {host}')
+        start = time.time_ns()
+        delay = 1/Opcua.POLLING_RATE*1000000000
         try:
             client = Opcua(host)
         except:
             stop = lambda:True
-        start = time.time_ns()
         rate = 0
         accum = 0
         while not stop():
@@ -76,7 +77,6 @@ class Opcua:
             start = time.time_ns()
             rate += 1
             accum += time_past
-            delay = 1/Opcua.POLLING_RATE*1000000000
             time.sleep(max(0.01, (delay-time_past)/1000000000))
             if accum >= 10000000000:
                 print(f'Opcua receiver polling rate: {int(rate/10)}/s')
@@ -100,9 +100,12 @@ class Opcua:
         except:
             stop = lambda:True
         start = time.time_ns()
+        delay = 1/Opcua.POLLING_RATE*1000000000
         rate = 0
         accum = 0
         while not stop():
+            time_past = time.time_ns() - start
+            start = time.time_ns()
             try:
                 for key in container.opcuaDict:
                     if not container.hasUpdated(key): continue
@@ -110,11 +113,8 @@ class Opcua:
                     asyncio.run(client.setValue(key, v, t))
             except:
                 return
-            time_past = time.time_ns() - start
-            start = time.time_ns()
             rate += 1
             accum += time_past
-            delay = 1/Opcua.POLLING_RATE*1000000000
             time.sleep(max(0.01, (delay-time_past)/1000000000))
             if accum >= 10000000000:
                 print(f'Opcua transmitter polling rate: {int(rate/10)}/s')

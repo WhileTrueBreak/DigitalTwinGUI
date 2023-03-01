@@ -114,16 +114,6 @@ class KukaScene(Scene):
 
         padding = 10
         constraints = [
-            COMPOUND(RELATIVE(T_X, 0.7, P_W), ABSOLUTE(T_X, padding)),
-            COMPOUND(RELATIVE(T_Y, 0.8, P_H), ABSOLUTE(T_Y, padding)),
-            RELATIVE(T_W, 4/3, T_H),
-            COMPOUND(RELATIVE(T_H, 0.2, P_H), ABSOLUTE(T_H, -2*padding)),
-        ]
-        self.armStream = UiStream(self.window, constraints, 'http://172.31.1.177:8080/?action=stream')
-        self.sceneWrapper.addChild(self.armStream)
-
-        padding = 10
-        constraints = [
             COMPOUND(COMPOUND(RELATIVE(T_X, 1, P_W), RELATIVE(T_X, -1, T_W)), ABSOLUTE(T_X, -padding)),
             ABSOLUTE(T_Y, padding),
             ABSOLUTE(T_W, 30),
@@ -181,7 +171,8 @@ class KukaScene(Scene):
             self.twinTextWrapper[i].addChild(self.twinAngleText[i])
             self.angleSlider[i] = UiSlider(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 1, 0.5))
             self.angleSlider[i].setRange(-pi, pi)
-            self.angleSlider[i].setColor((0,0,0))
+            self.angleSlider[i].setBaseColor((0,0,0))
+            self.angleSlider[i].setSliderColor((0.8,0.8,0.8))
             self.selecterWrappers[i].addChild(self.angleSlider[i])
         
         constraints = [
@@ -229,6 +220,7 @@ class KukaScene(Scene):
         self.printerStreams[2] = MJPEGStream('http://172.31.1.227:8080/?action=streams')
         self.printerStreams[3] = MJPEGStream('http://172.31.1.226:8080/?action=streams')
         self.printerStreams[4] = MJPEGStream('http://172.31.1.225:8080/?action=streams')
+        self.armStream = MJPEGStream('http://172.31.1.177:8080/?action=streams')
 
     def __createRoom(self):
         roomDim = (7, 15.5)
@@ -368,13 +360,17 @@ class KukaScene(Scene):
     
     def absUpdate(self, delta):
         self.__moveCamera(delta)
+        self.__updateStreams(delta)
         self.__updateJoints()
         self.__updateGuiText()
         self.__updateProgram()
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.cameraTransform))
+        return
+
+    def __updateStreams(self, delta):
         for stream in self.printerStreams:
             stream.updateImage(delta)
-        return
+        self.armStream.updateImage(delta)
     
     def __updateProgram(self):
         if not self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
