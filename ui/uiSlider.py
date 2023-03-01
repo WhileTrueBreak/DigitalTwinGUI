@@ -77,6 +77,9 @@ class UiSlider(GlElement):
         self.reshape()
         return
     
+    def setSliderPercentage(self, width):
+        self.sliderWidth = width
+
     def setRange(self, lower, upper):
         self.lowerMap = lower
         self.upperMap = upper

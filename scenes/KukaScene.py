@@ -173,6 +173,7 @@ class KukaScene(Scene):
             self.angleSlider[i].setRange(-pi, pi)
             self.angleSlider[i].setBaseColor((0,0,0))
             self.angleSlider[i].setSliderColor((0.8,0.8,0.8))
+            self.angleSlider[i].setSliderPercentage(0.05)
             self.selecterWrappers[i].addChild(self.angleSlider[i])
         
         constraints = [
