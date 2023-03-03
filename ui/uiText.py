@@ -6,8 +6,8 @@ from asset import *
 class UiText(GlElement):
     def __init__(self, window, constraints, dim=(0,0,0,0)):
         constraints = constraints.copy()
-        constraints.append(ABSOLUTE(T_W, 0))
-        constraints.append(ABSOLUTE(T_H, 0))
+        constraints.append(RELATIVE(T_W, 1, P_W))
+        constraints.append(RELATIVE(T_H, 1, P_H))
         super().__init__(window, constraints, dim)
         self.type = 'text'
         
@@ -16,6 +16,11 @@ class UiText(GlElement):
         self.text = 'default'
         self.fontSize = 48
         self.textSpacing = 10
+        self.scaledFontSize = self.fontSize
+        self.scaledTextSpacing = self.textSpacing
+
+        self.prevWindowScale = (0,0)
+
         self.textColor = (1,1,1)
 
         self.maxDescender = 0
@@ -45,16 +50,25 @@ class UiText(GlElement):
         GL.glBindVertexArray(0)
     
     def reshape(self):
+        self.__updateTextScale()
         return
 
     def absUpdate(self, delta):
+        self.__updateTextScale()
         self.__updateTextBound()
         return
     
+    def __updateTextScale(self):
+        self.currScale = self.window.getWindowScale()
+        if self.prevWindowScale[1] == self.currScale[1]: return
+        self.scaledFontSize = self.fontSize*self.currScale[1]
+        self.scaledTextSpacing = self.textSpacing*self.currScale[1]
+        self.dirtyText = True
+
     def __updateTextBound(self):
         if not self.dirtyText:
             return
-        scale = self.fontSize/48
+        scale = self.scaledFontSize/48
         
         maxdes = 1
         maxasc = 1
@@ -67,7 +81,7 @@ class UiText(GlElement):
             maxasc = max(maxasc, ch.ascender*scale)
 
             x += w*scale + self.textSpacing*scale
-        x -= self.textSpacing*scale
+        x -= self.scaledTextSpacing*scale
         widthAspect = x/(maxasc+maxdes)
         
         self.maxAscender = maxasc
@@ -90,7 +104,7 @@ class UiText(GlElement):
         self.dirtyText = False
 
     def absRender(self):
-        self.__renderText(self.text, Assets.FIRACODE_FONT, self.fontSize/48)
+        self.__renderText(self.text, Assets.FIRACODE_FONT, self.scaledFontSize/48)
         return
     
     def __renderText(self, text, font, scale):
@@ -131,7 +145,7 @@ class UiText(GlElement):
             GL.glDrawElements(GL.GL_TRIANGLES, len(self.textIndices), GL.GL_UNSIGNED_INT, None)
             GL.glDisableVertexAttribArray(0)
             #now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-            x += w + self.textSpacing*scale
+            x += w + self.scaledTextSpacing*scale
 
         GL.glBindVertexArray(0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
@@ -159,10 +173,12 @@ class UiText(GlElement):
     
     def setFontSize(self, size):
         self.fontSize = size
+        self.__updateTextScale()
         self.dirtyText = True
     
     def setTextSpacing(self, spacing):
         self.textSpacing = spacing
+        self.__updateTextScale()
         self.dirtyText = True
 
     def setTextColor(self, color):

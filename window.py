@@ -28,6 +28,7 @@ class Window():
 
 
         self.dim = self.screen.get_size()
+        self.ogdim = self.dim
 
         # GL.glDepthFunc(GL.GL_ALWAYS)
 
@@ -186,3 +187,6 @@ class Window():
         self.currentScene.stop()
         pygame.quit()
         sys.exit()
+
+    def getWindowScale(self):
+        return (self.dim[0]/self.ogdim[0],self.dim[1]/self.ogdim[1])
