@@ -1,12 +1,13 @@
 import OpenGL.GL as GL
 import numpy as np
 import ctypes
+import time
 
 from asset import *
 
 class BatchRenderer:
-    MAX_OBJECTS = 60
-    MAX_VERTICES = 2000000
+    MAX_OBJECTS = 100
+    MAX_VERTICES = 400000
     MAX_TEXTURES = 0
     def __init__(self, isTransparent=False):
         BatchRenderer.MAX_TEXTURES = min(GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS), 32)
