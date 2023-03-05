@@ -353,6 +353,8 @@ class Renderer:
         self.addBatch()
         id = self.batches[-1].addModel(model, matrix)
         if id == -1:
+            raise Exception(f'Model could not be added to model renderer',
+                            f'Try increasing BatchRenderer.MAX_VERTICES to above {len(model.vertices)}')
             return -1
         modelId = self.nextId
         self.nextId += 1
