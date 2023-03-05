@@ -102,10 +102,6 @@ class UiSlider(GlElement):
         start = self.window.mousePos[0] - self.dim[0] - sliderWidth/2
         self.currentLoc = start/sliderrange
         self.currentLoc = max(0, min(1, self.currentLoc))
-        print(self.dim[2])
-        print(sliderrange)
-        print(start)
-        print(self.currentLoc)
         self.reshape()
 
     def __genVertices(self):
