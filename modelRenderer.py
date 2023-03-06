@@ -269,9 +269,9 @@ class Renderer:
         self.solidBatch = []
         self.batches = []
 
-        self.initCompositeLayers()
+        self.__initCompositeLayers()
     
-    def initCompositeLayers(self):
+    def __initCompositeLayers(self):
         self.accumClear = np.array([0,0,0,0], dtype='float32')
         self.revealClear = np.array([1,0,0,0], dtype='float32')
 
@@ -341,6 +341,17 @@ class Renderer:
         GL.glDrawBuffers(self.transparentDrawBuffers)
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+
+    def updateCompositeLayers(self):
+        textureDim = self.window.dim
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.depthTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, textureDim[0], textureDim[1], 0, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.accumTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_R8, textureDim[0], textureDim[1], 0, GL.GL_RED, GL.GL_FLOAT, None)
 
     def addModel(self, model, matrix):
         for i in range(len(self.batches)):

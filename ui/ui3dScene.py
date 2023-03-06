@@ -49,7 +49,7 @@ class Ui3DScene(GlElement):
 
     def reshape(self):
         self.modelRenderer.setProjectionMatrix(createProjectionMatrix(self.dim[2], self.dim[3], self.FOV, self.NEAR_PLANE, self.FAR_PLANE))
-        self.modelRenderer.initCompositeLayers()
+        self.modelRenderer.updateCompositeLayers()
         self.vertices = np.array([
             [self.openGLDim[0], self.openGLDim[1], *self.color],
             [self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1], *self.color],
