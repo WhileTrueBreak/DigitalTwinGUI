@@ -16,7 +16,7 @@ layout (location = 4) in vec2 uv;
 layout (location = 5) in float texIndex;
 layout (location = 6) in float index;
 
-flat out int objIndex;
+flat out uint objIndex;
 out float shade;
 out float texId;
 out vec2 texCoord;
@@ -29,7 +29,7 @@ float map(float value, float min1, float max1, float min2, float max2) {
 void main() {
   int matIndex = int(tmatIndex);
 
-  objIndex = int(index);
+  objIndex = uint(index);
   texId = texIndex;
   texCoord = uv;
 

@@ -2,12 +2,12 @@
 
 // shader outputs
 layout (location = 0) out vec4 opaque;
-layout (location = 1) out ivec3 picking;
+layout (location = 1) out uvec3 picking;
 
 uniform sampler2D uTextures[32];
-uniform int batchId;
+uniform uint batchId;
 
-flat in int objIndex;
+flat in uint objIndex;
 in float shade;
 in float texId;
 in vec2 texCoord;
@@ -23,6 +23,6 @@ void main() {
 	}else {
 		opaque = vec4(color.rgb*shade, color.a);
 	}
-	picking = ivec3(objIndex, batchId, gl_PrimitiveID+1);
+	picking = uvec3(objIndex, batchId, gl_PrimitiveID+1);
 	// picking = uvec3(objIndex, batchId, 1);
 }

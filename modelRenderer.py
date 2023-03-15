@@ -312,7 +312,7 @@ class Renderer:
 
         self.pickingTexture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB16I, textureDim[0], textureDim[1], 0, GL.GL_RGB_INTEGER, GL.GL_INT, None)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB16UI, textureDim[0], textureDim[1], 0, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
@@ -359,7 +359,7 @@ class Renderer:
     def updateCompositeLayers(self):
         textureDim = self.window.dim
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB16I, textureDim[0], textureDim[1], 0, GL.GL_RGB_INTEGER, GL.GL_INT, None)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB16UI, textureDim[0], textureDim[1], 0, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.depthTexture)
@@ -524,7 +524,7 @@ class Renderer:
         bidLoc = GL.glGetUniformLocation(self.opaqueShader, "batchId")
 
         for batch in self.solidBatch:
-            GL.glUniform1i(bidLoc, self.batches.index(batch))
+            GL.glUniform1ui(bidLoc, self.batches.index(batch))
             batch.render()
 
         # config states
@@ -542,7 +542,7 @@ class Renderer:
         bidLoc = GL.glGetUniformLocation(self.transparentShader, "batchId")
 
         for batch in self.transparentBatch:
-            GL.glUniform1i(bidLoc, self.batches.index(batch))
+            GL.glUniform1ui(bidLoc, self.batches.index(batch))
             batch.render()
 
         # config states

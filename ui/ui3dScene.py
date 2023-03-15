@@ -110,6 +110,9 @@ class Ui3DScene(GlElement):
         relPos[1] = (relPos[1]-self.dim[1])/self.dim[3]
         envPos = [int(self.window.dim[0]*relPos[0]), int(self.window.dim[1]-self.window.dim[1]*relPos[1])]
         data = self.modelRenderer.getScreenSpaceObj(*envPos)
+        if (data[1], data[0]) not in self.modelRenderer.idDict: 
+            print(f'Error: invalid {data}')
+            return -1
         self.hoveredObj = self.modelRenderer.idDict[(data[1], data[0])]
 
     def getHoveredObj(self):
