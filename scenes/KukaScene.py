@@ -7,6 +7,7 @@ from ui.uiWrapper import UiWrapper
 from ui.uiTextInput import UiTextInput
 from ui.uiText import UiText
 from ui.uiSlider import UiSlider
+from ui.uiImage import UiImage
 
 from mjpegStream import MJPEGStream
 from ui.uiHelper import *
@@ -104,7 +105,7 @@ class KukaScene(Scene):
         constraints = [
             ABSOLUTE(T_X, padding),
             ABSOLUTE(T_Y, padding),
-            COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*padding)),
+            COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.renderWindow = Ui3DScene(self.window, constraints)
@@ -139,8 +140,8 @@ class KukaScene(Scene):
         self.sceneWrapper.addChild(self.panelWrapper)
         
         self.__createArmControlUi()
-
         self.__createStreams()
+        self.__createPrinterUi()
 
         self.__createRoom()
         self.__addPrinters()
@@ -218,6 +219,23 @@ class KukaScene(Scene):
         self.unlinkBtn.setHoverColor((0.1,0.1,0.1))
         self.unlinkBtn.setPressColor((0.2,0.2,0.2))
         self.armControlPanel.addChild(self.unlinkBtn)
+
+    def __createPrinterUi(self):
+        self.printerControlPanels = [None]*len(self.printerStreams)
+        self.printerStreamSteals = [None]*len(self.printerStreams)
+        for i in range(len(self.printerControlPanels)):
+            self.printerControlPanels[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
+
+            padding = 10
+            constraints = [
+                ABSOLUTE(T_X, padding),
+                ABSOLUTE(T_Y, padding),
+                COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2 * padding)),
+                RELATIVE(T_H, 3/4, T_W)
+            ]
+            self.printerStreamSteals[i] = UiImage(self.window, constraints)
+            # self.printerStreamSteals[i].setTexture(self.printerStreams[i].texture)
+            self.printerControlPanels[i].addChild(self.printerStreamSteals[i])
 
     def __createStreams(self):
         self.printerStreams = [None]*5
@@ -369,12 +387,16 @@ class KukaScene(Scene):
     def __handleSceneEvents(self, event):
         modelId = event['modelId']
         padding = 10
+        self.panelWrapper.removeAllChildren()
         if modelId in self.twinKukaIds or modelId in self.modelKukaIds or modelId == self.gripperId or modelId == self.TgripperId:
             self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*padding)))
             self.panelWrapper.addChild(self.armControlPanel)
+        elif modelId in self.printers:
+            index = self.printers.index(modelId)
+            self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*padding)))
+            self.panelWrapper.addChild(self.printerControlPanels[index])
         else:
             self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)))
-            self.panelWrapper.removeChild(self.armControlPanel)
 
     def absUpdate(self, delta):
         self.__moveCamera(delta)

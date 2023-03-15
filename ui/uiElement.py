@@ -110,6 +110,10 @@ class GlElement:
         for child in children:
             self.removeChild(child)
     
+    def removeAllChildren(self):
+        for child in self.children:
+            self.removeChild(child)
+    
     def setDirty(self):
         self.isDirty = True
         for child in self.children:

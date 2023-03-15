@@ -80,7 +80,7 @@ class UiImage(GlElement):
         return
 
     def setTexture(self, tex):
-        self.texture = tex.texture
+        self.texture = tex
     
     def setImage(self, img):
         imgData = img.tobytes()
