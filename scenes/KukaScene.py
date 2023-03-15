@@ -128,7 +128,6 @@ class KukaScene(Scene):
         self.recenterBtn.setHoverColor((0.1, 0.1, 0.1))
         self.recenterBtn.setPressColor((1, 0, 0))
         self.renderWindow.addChild(self.recenterBtn)
-
         constraints = [
             COMPOUND(RELATIVE(T_X, 0.7, P_W), ABSOLUTE(T_X, padding)),
             ABSOLUTE(T_Y, padding),
@@ -138,6 +137,20 @@ class KukaScene(Scene):
 
         self.panelWrapper = UiWrapper(self.window, constraints)
         self.sceneWrapper.addChild(self.panelWrapper)
+        
+        self.__createArmControlUi()
+
+        self.__createStreams()
+
+        self.__createRoom()
+        self.__addPrinters()
+        self.__addFurniture()
+        self.__addRobot()
+        return
+
+    def __createArmControlUi(self):
+        self.armControlPanel = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
+
         self.selecterWrappers = [None]*7
         padding = 5
         for i in range(len(self.selecterWrappers)):
@@ -148,7 +161,7 @@ class KukaScene(Scene):
                 COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
             ]
             self.selecterWrappers[i] = UiWrapper(self.window, constraints)
-        self.panelWrapper.addChildren(*self.selecterWrappers)
+        self.armControlPanel.addChildren(*self.selecterWrappers)
 
         self.liveTextWrapper = [None]*len(self.selecterWrappers)
         self.liveAngleText = [None]*len(self.selecterWrappers)
@@ -189,7 +202,7 @@ class KukaScene(Scene):
         self.sendBtn.setDefaultColor((0,0,0))
         self.sendBtn.setHoverColor((0.1,0.1,0.1))
         self.sendBtn.setPressColor((0.2,0.2,0.2))
-        self.panelWrapper.addChild(self.sendBtn)
+        self.armControlPanel.addChild(self.sendBtn)
         
         constraints = [
             COMPOUND(RELATIVE(T_X, 0, P_W), ABSOLUTE(T_X, padding)),
@@ -204,15 +217,7 @@ class KukaScene(Scene):
         self.unlinkBtn.setDefaultColor((0,0,0))
         self.unlinkBtn.setHoverColor((0.1,0.1,0.1))
         self.unlinkBtn.setPressColor((0.2,0.2,0.2))
-        self.panelWrapper.addChild(self.unlinkBtn)
-
-        self.__createStreams()
-
-        self.__createRoom()
-        self.__addFurniture()
-        self.__addRobot()
-        self.__addPrinters()
-        return
+        self.armControlPanel.addChild(self.unlinkBtn)
 
     def __createStreams(self):
         self.printerStreams = [None]*5
@@ -357,8 +362,20 @@ class KukaScene(Scene):
                 self.matchLive = not self.matchLive
                 self.unlinkBtnText.setText('unlink' if self.matchLive else 'link')
                 self.__updateTwinColor()
+            if event['obj'] == self.renderWindow:
+                self.__handleSceneEvents(event)
         return
     
+    def __handleSceneEvents(self, event):
+        modelId = event['modelId']
+        padding = 10
+        if modelId in self.twinKukaIds or modelId in self.modelKukaIds or modelId == self.gripperId or modelId == self.TgripperId:
+            self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*padding)))
+            self.panelWrapper.addChild(self.armControlPanel)
+        else:
+            self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)))
+            self.panelWrapper.removeChild(self.armControlPanel)
+
     def absUpdate(self, delta):
         self.__moveCamera(delta)
         self.__updateStreams(delta)

@@ -114,3 +114,45 @@ class GlElement:
         self.isDirty = True
         for child in self.children:
             child.setDirty()
+
+    def updateXPos(self, constraint):
+        cIndex = -1
+        if constraint.toChange != T_X: return
+        for i,x in enumerate(self.constraints):
+            if x.toChange != T_X: continue
+            cIndex = i
+            break
+        self.constraints[cIndex] = constraint
+        self.setDirty()
+
+    def updateYPos(self, constraint):
+        cIndex = -1
+        if constraint.toChange != T_Y: return
+        for i,x in enumerate(self.constraints):
+            if x.toChange != T_Y: continue
+            cIndex = i
+            break
+        self.constraints[cIndex] = constraint
+        self.setDirty()
+
+    def updateWidth(self, constraint):
+        cIndex = -1
+        if constraint.toChange != T_W: return
+        for i,x in enumerate(self.constraints):
+            if x.toChange != T_W: continue
+            cIndex = i
+            break
+        self.constraints[cIndex] = constraint
+        self.setDirty()
+
+    def updateHeight(self, constraint):
+        cIndex = -1
+        if constraint.toChange != T_H: return
+        for i,x in enumerate(self.constraints):
+            if x.toChange != T_H: continue
+            cIndex = i
+            break
+        self.constraints[cIndex] = constraint
+        self.setDirty()
+
+

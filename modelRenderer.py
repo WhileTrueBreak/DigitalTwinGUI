@@ -12,9 +12,9 @@ class BatchRenderer:
     def __init__(self, isTransparent=False):
         BatchRenderer.MAX_TEXTURES = min(GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS), 32)
 
-        self.vertexSize = 14
+        self.vertexSize = 15
 
-        # vertex shape [x, y, z, nx, ny, nz, r, g, b, a, matIndex, u, v, texIndex]
+        # vertex shape [x, y, z, nx, ny, nz, r, g, b, a, matIndex, u, v, texIndex, objid]
         self.vertices = np.zeros((BatchRenderer.MAX_VERTICES, self.vertexSize), dtype='float32')
         self.indices = np.arange(BatchRenderer.MAX_VERTICES, dtype='int32')
 
@@ -58,6 +58,8 @@ class BatchRenderer:
         GL.glEnableVertexAttribArray(4)
         GL.glVertexAttribPointer(5, 1, GL.GL_FLOAT, GL.GL_FALSE, self.vertexSize*4, ctypes.c_void_p(13*4))
         GL.glEnableVertexAttribArray(5)
+        GL.glVertexAttribPointer(6, 1, GL.GL_FLOAT, GL.GL_FALSE, self.vertexSize*4, ctypes.c_void_p(14*4))
+        GL.glEnableVertexAttribArray(6)
 
         self.ebo = GL.glGenBuffers(1)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
@@ -93,6 +95,7 @@ class BatchRenderer:
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 6:11] = data
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 11:13] = model.vertices[::,6:8]
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 13:14] = np.tile([-1], (vShape[0], 1))
+        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 14:15] = np.tile([index], (vShape[0], 1))
 
         self.currentIndex += vShape[0]
         self.isDirty = True
@@ -149,10 +152,6 @@ class BatchRenderer:
         for i in range(len(self.textures)):
             GL.glActiveTexture(GL.GL_TEXTURE0 + i)
             GL.glBindTexture(GL.GL_TEXTURE_2D, self.textures[i])
-        # for r in self.modelRange:
-        #     v = self.vertices[r[0]:r[1],-1]
-        #     if len(v) != 0:
-        #         print(v[0])
 
         GL.glEnableVertexAttribArray(0)
         GL.glEnableVertexAttribArray(1)
@@ -160,9 +159,11 @@ class BatchRenderer:
         GL.glEnableVertexAttribArray(3)
         GL.glEnableVertexAttribArray(4)
         GL.glEnableVertexAttribArray(5)
+        GL.glEnableVertexAttribArray(6)
 
         GL.glDrawElements(GL.GL_TRIANGLES, self.currentIndex, GL.GL_UNSIGNED_INT, None)
 
+        GL.glDisableVertexAttribArray(6)
         GL.glDisableVertexAttribArray(5)
         GL.glDisableVertexAttribArray(4)
         GL.glDisableVertexAttribArray(3)
@@ -260,6 +261,7 @@ class Renderer:
         GL.glUniform1iv(GL.glGetUniformLocation(self.transparentShader, "uTextures"), 32, textures)
 
         self.idDict = {}
+        self.batchIdMap = {}
         self.nextId = 0
 
         self.projectionMatrix = np.identity(4)
@@ -295,17 +297,24 @@ class Renderer:
         GL.glVertexAttribPointer(1, 2, GL.GL_FLOAT, GL.GL_FALSE, 5 * 4, ctypes.c_void_p(3*4))
         GL.glBindVertexArray(0)
 
+
         self.opaqueFBO = GL.glGenFramebuffers(1)
         self.transparentFBO = GL.glGenFramebuffers(1)
 
         textureDim = self.window.dim
-        # textureDim = GL.glGetIntegerv(GL.GL_VIEWPORT)[2::]
 
         self.opaqueTexture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        self.pickingTexture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB16I, textureDim[0], textureDim[1], 0, GL.GL_RGB_INTEGER, GL.GL_INT, None)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
         self.depthTexture = GL.glGenTextures(1)
@@ -315,7 +324,11 @@ class Renderer:
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
         GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, self.opaqueTexture, 0)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT1, GL.GL_TEXTURE_2D, self.pickingTexture, 0)
         GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_TEXTURE_2D, self.depthTexture, 0)
+
+        self.opaqueDrawBuffers = (GL.GL_COLOR_ATTACHMENT0, GL.GL_COLOR_ATTACHMENT1)
+        GL.glDrawBuffers(self.opaqueDrawBuffers)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 
         self.accumTexture = GL.glGenTextures(1)
@@ -335,15 +348,18 @@ class Renderer:
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.transparentFBO)
         GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, self.accumTexture, 0)
         GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT1, GL.GL_TEXTURE_2D, self.revealTexture, 0)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT2, GL.GL_TEXTURE_2D, self.pickingTexture, 0)
         GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_TEXTURE_2D, self.depthTexture, 0)
 
-        self.transparentDrawBuffers = (GL.GL_COLOR_ATTACHMENT0, GL.GL_COLOR_ATTACHMENT1)
+        self.transparentDrawBuffers = (GL.GL_COLOR_ATTACHMENT0, GL.GL_COLOR_ATTACHMENT1, GL.GL_COLOR_ATTACHMENT2)
         GL.glDrawBuffers(self.transparentDrawBuffers)
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 
     def updateCompositeLayers(self):
         textureDim = self.window.dim
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB16I, textureDim[0], textureDim[1], 0, GL.GL_RGB_INTEGER, GL.GL_INT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.depthTexture)
@@ -352,6 +368,7 @@ class Renderer:
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_R8, textureDim[0], textureDim[1], 0, GL.GL_RED, GL.GL_FLOAT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
     def addModel(self, model, matrix):
         for i in range(len(self.batches)):
@@ -360,6 +377,7 @@ class Renderer:
             modelId = self.nextId
             self.nextId += 1
             self.idDict[modelId] = (i, id)
+            self.idDict[(i, id)] = modelId
             return modelId
         self.addBatch()
         id = self.batches[-1].addModel(model, matrix)
@@ -370,10 +388,12 @@ class Renderer:
         modelId = self.nextId
         self.nextId += 1
         self.idDict[modelId] = (len(self.batches) - 1, id)
+        self.idDict[(len(self.batches) - 1, id)] = modelId
         return modelId
     
     def removeModel(self, id):
         self.batches[self.idDict[id][0]].removeModel(self.idDict[id][1])
+        self.idDict.pop(self.idDict[id])
         self.idDict.pop(id)
     
     def addBatch(self, transparent=False):
@@ -426,6 +446,7 @@ class Renderer:
             self.batches[i].setColor(objId, color)
             self.batches[i].setTexture(objId, data['texture'])
             self.idDict[id] = (i, objId)
+            self.idDict[(i, objId)] = id
             return
 
         #if didnt find suitable batch
@@ -438,6 +459,7 @@ class Renderer:
         self.batches[batchId].setColor(objId, color)
         self.batches[batchId].setTexture(objId, data['texture'])
         self.idDict[id] = (batchId, objId)
+        self.idDict[(batchId, objId)] = id
 
     def setTexture(self, id, tex):
         batch = self.batches[self.idDict[id][0]]
@@ -457,6 +479,7 @@ class Renderer:
             self.batches[i].setColor(objId, data['color'])
             self.batches[i].setTexture(objId, tex)
             self.idDict[id] = (i, objId)
+            self.idDict[(i, objId)] = id
             return
 
         #if didnt find suitable batch
@@ -469,6 +492,7 @@ class Renderer:
         self.batches[i].setColor(objId, data['color'])
         self.batches[i].setTexture(objId, tex)
         self.idDict[id] = (batchId, objId)
+        self.idDict[(batchId, objId)] = id
 
     def render(self):
 
@@ -488,13 +512,19 @@ class Renderer:
         GL.glDepthMask(GL.GL_TRUE)
         GL.glDisable(GL.GL_BLEND)
         GL.glClearColor(0,0,0,0)
+        # GL.glBlendFunci(1, GL.GL_ONE, GL.GL_ONE)
 
         # render opaque
         GL.glUseProgram(self.opaqueShader)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
+        # print(self.pickingTexture)
+        # print(GL.glGetFramebufferAttachmentParameteriv(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, None))
+        # print(GL.glGetFramebufferAttachmentParameteriv(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT1, GL.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, None))
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
+        bidLoc = GL.glGetUniformLocation(self.opaqueShader, "batchId")
 
         for batch in self.solidBatch:
+            GL.glUniform1i(bidLoc, self.batches.index(batch))
             batch.render()
 
         # config states
@@ -509,11 +539,13 @@ class Renderer:
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.transparentFBO)
         GL.glClearBufferfv(GL.GL_COLOR, 0, self.accumClear)
         GL.glClearBufferfv(GL.GL_COLOR, 1, self.revealClear)
+        bidLoc = GL.glGetUniformLocation(self.transparentShader, "batchId")
 
         for batch in self.transparentBatch:
+            GL.glUniform1i(bidLoc, self.batches.index(batch))
             batch.render()
 
-        # # config states
+        # config states
         GL.glDepthFunc(GL.GL_ALWAYS)
         GL.glEnable(GL.GL_BLEND)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
@@ -556,10 +588,20 @@ class Renderer:
         if blend:
             GL.glEnable(GL.GL_BLEND)
         GL.glClearColor(*clearColor)
+
         return
 
     def getData(self, id):
         batch = self.batches[self.idDict[id][0]]
         objId = self.idDict[id][1]
         return batch.getData(objId)
+
+    def getScreenSpaceObj(self, x, y):
+        GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.transparentFBO)
+        GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT2)
+        data = GL.glReadPixels(x, y, 1, 1, GL.GL_RGB_INTEGER, GL.GL_INT, None)
+        GL.glReadBuffer(GL.GL_NONE)
+        GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
+        return data[0][0]
+    
 

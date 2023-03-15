@@ -3,15 +3,19 @@
 // shader outputs
 layout (location = 0) out vec4 accum;
 layout (location = 1) out float reveal;
+layout (location = 2) out ivec3 picking;
 
 uniform sampler2D uTextures[32];
+uniform int batchId;
 
+flat in int objIndex;
 in float shade;
 in float texId;
 in vec2 texCoord;
 in vec4 color;
 
 void main(){
+	picking = ivec3(objIndex, batchId, gl_PrimitiveID+1);
 	vec4 objColor = vec4(0,0,0,0);
 	if(texId > -1){
 		vec4 textureColor = texture(uTextures[int(texId)], texCoord);

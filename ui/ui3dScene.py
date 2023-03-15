@@ -8,6 +8,8 @@ class Ui3DScene(GlElement):
     def __init__(self, window, constraints, supportTransparency=False, dim=(0,0,0,0)):
         super().__init__(window, constraints, dim)
 
+        self.hoveredObj = -1
+
         self.NEAR_PLANE = 0.01
         self.FAR_PLANE = 1000
         self.FOV = 80
@@ -101,3 +103,23 @@ class Ui3DScene(GlElement):
         self.color = color
         self.reshape()
         return
+
+    def onHover(self):
+        relPos = [*self.window.getMousePos()]
+        relPos[0] = (relPos[0]-self.dim[0])/self.dim[2]
+        relPos[1] = (relPos[1]-self.dim[1])/self.dim[3]
+        envPos = [int(self.window.dim[0]*relPos[0]), int(self.window.dim[1]-self.window.dim[1]*relPos[1])]
+        data = self.modelRenderer.getScreenSpaceObj(*envPos)
+        self.hoveredObj = self.modelRenderer.idDict[(data[1], data[0])]
+
+    def getHoveredObj(self):
+        return self.hoveredObj
+
+    def onPress(self, callback=None):
+        if self.window.selectedUi != self: return
+        self.window.uiEvents.append({'obj':self, 'action':'press', 'type':self.type, 'time':time.time_ns(), 'modelId':self.hoveredObj})
+    
+    def onRelease(self, callback=None):
+        if self.window.selectedUi != self: return
+        self.window.uiEvents.append({'obj':self, 'action':'release', 'type':self.type, 'time':time.time_ns(), 'modelId':self.hoveredObj})
+

@@ -14,7 +14,9 @@ layout (location = 2) in vec4 vertexColor;
 layout (location = 3) in float tmatIndex;
 layout (location = 4) in vec2 uv;
 layout (location = 5) in float texIndex;
+layout (location = 6) in float index;
 
+flat out int objIndex;
 out float shade;
 out float texId;
 out vec2 texCoord;
@@ -27,11 +29,12 @@ float map(float value, float min1, float max1, float min2, float max2) {
 void main() {
   int matIndex = int(tmatIndex);
 
+  objIndex = int(index);
   texId = texIndex;
   texCoord = uv;
 
   vec3 lightVec1 = normalize(vec3(-0.5, -2, 1));
-  vec3 lightVec2 = normalize(vec3(0.5, 2, 1));
+  vec3 lightVec2 = normalize(vec3(0.5, 2, -0.5));
   vec4 tnormal = TMAT[matIndex] * vec4(vertexNormal,0.0);
 
   float shade1 = dot(lightVec1, tnormal.xyz)/2+0.5;
