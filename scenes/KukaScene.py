@@ -234,7 +234,7 @@ class KukaScene(Scene):
                 RELATIVE(T_H, 3/4, T_W)
             ]
             self.printerStreamSteals[i] = UiImage(self.window, constraints)
-            # self.printerStreamSteals[i].setTexture(self.printerStreams[i].texture)
+            self.printerStreamSteals[i].setTexture(self.printerStreams[i].texture)
             self.printerControlPanels[i].addChild(self.printerStreamSteals[i])
 
     def __createStreams(self):
