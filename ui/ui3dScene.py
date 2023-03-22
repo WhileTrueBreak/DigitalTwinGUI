@@ -1,7 +1,8 @@
 from ui.uiElement import GlElement
 
+from utils.mathHelper import *
+
 from modelRenderer import *
-from mathHelper import *
 from asset import *
 
 class Ui3DScene(GlElement):

@@ -3,7 +3,8 @@ from ui.uiStream import UiStream
 from ui.uiVideo import UiVideo
 from ui.uiTextInput import UiTextInput
 
-from ui.uiHelper import *
+from utils.uiHelper import *
+
 from constraintManager import *
 from scenes.scene import *
 

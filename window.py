@@ -7,7 +7,7 @@ from math import *
 import sys
 
 from ui.uiWrapper import UiWrapper
-from ui.uiHelper import *
+from utils.uiHelper import *
 from constraintManager import *
 from asset import *
 

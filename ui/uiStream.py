@@ -2,7 +2,7 @@ from ui.uiElement import GlElement
 
 from PIL import Image
 
-from mjpegThread import *
+from connections.mjpegThread import *
 from asset import *
 
 class UiStream(GlElement):

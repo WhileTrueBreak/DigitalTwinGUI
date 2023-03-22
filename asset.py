@@ -10,9 +10,9 @@ from threading import Thread
 
 import time
 
-from model import *
-from texture import *
-from mathHelper import *
+from utils.model import *
+from utils.texture import *
+from utils.mathHelper import *
 
 class Assets:
     

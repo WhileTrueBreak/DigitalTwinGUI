@@ -8,13 +8,14 @@ from ui.uiTextInput import UiTextInput
 from ui.uiText import UiText
 from ui.uiSlider import UiSlider
 from ui.uiImage import UiImage
+from ui.mjpegStream import MJPEGStream
 
-from mjpegStream import MJPEGStream
-from ui.uiHelper import *
+from utils.uiHelper import *
+from utils.mathHelper import *
+from connections.opcua import *
+
 from constraintManager import *
 from scenes.scene import *
-from mathHelper import *
-from opcua import *
 
 from asyncua import ua
 import pygame
