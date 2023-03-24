@@ -8,6 +8,7 @@ from ui.uiTextInput import UiTextInput
 from ui.uiText import UiText
 from ui.uiSlider import UiSlider
 from ui.uiImage import UiImage
+from ui.uiCombiner import UiCombiner
 from ui.mjpegStream import MJPEGStream
 
 from utils.uiHelper import *
@@ -134,7 +135,7 @@ class KukaScene(Scene):
             COMPOUND(RELATIVE(T_X, 0.7, P_W), ABSOLUTE(T_X, padding)),
             ABSOLUTE(T_Y, padding),
             COMPOUND(RELATIVE(T_W, 0.3, P_W), ABSOLUTE(T_W, -2*padding)),
-            COMPOUND(RELATIVE(T_H, 0.8, P_H), ABSOLUTE(T_H, -2*padding)),
+            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
 
         self.panelWrapper = UiWrapper(self.window, constraints)
@@ -224,19 +225,31 @@ class KukaScene(Scene):
     def __createPrinterUi(self):
         self.printerControlPanels = [None]*len(self.printerStreams)
         self.printerStreamSteals = [None]*len(self.printerStreams)
+        self.textImgCombiners = [None]*len(self.printerStreams)
         for i in range(len(self.printerControlPanels)):
             self.printerControlPanels[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
 
+            self.textImgCombiners[i] = UiCombiner(self.window, Constraints.ALIGN_CENTER)
+
             padding = 10
             constraints = [
-                ABSOLUTE(T_X, padding),
-                ABSOLUTE(T_Y, padding),
+                *Constraints.ZERO_ZERO,
                 COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2 * padding)),
                 RELATIVE(T_H, 3/4, T_W)
             ]
             self.printerStreamSteals[i] = UiImage(self.window, constraints)
             self.printerStreamSteals[i].setTexture(self.printerStreams[i].texture)
-            self.printerControlPanels[i].addChild(self.printerStreamSteals[i])
+            constraints = [
+                Constraints.ZERO_ZERO[0],
+                ABSOLUTE(T_Y, -1000),
+                RELATIVE(T_W, 1, P_W),
+                RELATIVE(T_H, 3/4, T_W)
+            ]
+            printerStream = UiImage(self.window, constraints)
+            printerStream.setTexture(Assets.CUBE_TEX.texture)
+            self.printerStreamSteals[i].addChild(printerStream)
+            self.textImgCombiners[i].addChild(self.printerStreamSteals[i])
+            self.printerControlPanels[i].addChild(self.textImgCombiners[i])
 
     def __createStreams(self):
         self.printerStreams = [None]*5

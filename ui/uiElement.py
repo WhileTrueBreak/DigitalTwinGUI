@@ -22,16 +22,7 @@ class GlElement:
 
     def update(self, delta):
         if self.isDirty and self.parent != None:
-            relDim = self.parent.constraintManager.calcConstraints(*self.constraints)
-            self.dim = (relDim[0] + self.parent.dim[0], relDim[1] + self.parent.dim[1], relDim[2], relDim[3])
-            self.openGLDim = (
-                (2*self.dim[0])/self.window.dim[0] - 1,
-                (2*(self.window.dim[1]-self.dim[1]-self.dim[3]))/self.window.dim[1] - 1,
-                (2*self.dim[2])/self.window.dim[0],
-                (2*self.dim[3])/self.window.dim[1],
-            )
-            self.constraintManager.pos = (self.dim[0], self.dim[1])
-            self.constraintManager.dim = (self.dim[2], self.dim[3])
+            self.updateDim()
             self.reshape()
             self.isDirty = False
         for child in self.children:
@@ -39,6 +30,19 @@ class GlElement:
         self.__actions()
         self.absUpdate(delta)
         return
+
+    def updateDim(self):
+        relDim = self.parent.constraintManager.calcConstraints(*self.constraints)
+        self.dim = (relDim[0] + self.parent.dim[0], relDim[1] + self.parent.dim[1], relDim[2], relDim[3])
+        self.openGLDim = (
+            (2*self.dim[0])/self.window.dim[0] - 1,
+            (2*(self.window.dim[1]-self.dim[1]-self.dim[3]))/self.window.dim[1] - 1,
+            (2*self.dim[2])/self.window.dim[0],
+            (2*self.dim[3])/self.window.dim[1],
+        )
+        self.constraintManager.pos = (self.dim[0], self.dim[1])
+        self.constraintManager.dim = (self.dim[2], self.dim[3])
+        
     @abstractmethod
     def reshape(self):
         ...
