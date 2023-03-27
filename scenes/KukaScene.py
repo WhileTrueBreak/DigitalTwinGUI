@@ -241,7 +241,7 @@ class KukaScene(Scene):
             self.printerStreamSteals[i].setTexture(self.printerStreams[i].texture)
             constraints = [
                 Constraints.ZERO_ZERO[0],
-                ABSOLUTE(T_Y, -1000),
+                RELATIVE(T_Y, -1, T_W),
                 RELATIVE(T_W, 1, P_W),
                 RELATIVE(T_H, 3/4, T_W)
             ]

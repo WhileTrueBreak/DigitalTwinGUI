@@ -31,12 +31,11 @@ class UiCombiner(GlElement):
     def absUpdate(self, delta):
         minx, miny = math.inf, math.inf
         maxx, maxy = -math.inf, -math.inf
-        childQueue = self.children
+        childQueue = self.children.copy()
         while len(childQueue) != 0:
             child = childQueue[0]
             childQueue.remove(child)
             childQueue.extend(child.children)
-            print(child)
             if child.dim[0] < minx:
                 minx = child.dim[0]
             if child.dim[1] < miny:
@@ -45,6 +44,7 @@ class UiCombiner(GlElement):
                 maxx = child.dim[0]+child.dim[2]
             if child.dim[1]+child.dim[3] > maxy:
                 maxy = child.dim[1]+child.dim[3]
+        print(minx, miny, maxx, maxy)
         if self.prevDim == (maxx-minx, maxy-miny):
             return
         self.prevDim = (maxx-minx, maxy-miny)
