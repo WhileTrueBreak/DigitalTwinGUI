@@ -6,10 +6,14 @@ from vectors import *
 from math import *
 import sys
 
-from ui.uiWrapper import UiWrapper
-from utils.uiHelper import *
+from ui.elements.uiWrapper import UiWrapper
+from ui.elements.uiButton import UiButton
+from ui.uiLayer import UiLayer
+
 from constraintManager import *
 from asset import *
+
+import ctypes
 
 class Window():
     
@@ -66,17 +70,18 @@ class Window():
         self.sceneMap = {}
         self.currentScene = None
 
+        self.uiLayer = UiLayer(self)
+
         Assets.init()
     
     def createUi(self):
-        self.windowWrapper = UiWrapper(self, [], (0,0,self.dim[0], self.dim[1]))
-        
+
         constraints = [ABSOLUTE(T_X, 0),
                        ABSOLUTE(T_Y, 0),
                        RELATIVE(T_W, 1, P_W),
                        ABSOLUTE(T_H, 40)]
         self.tabWrapper = UiWrapper(self, constraints)
-        self.windowWrapper.addChild(self.tabWrapper)
+        self.uiLayer.getMasterElem().addChild(self.tabWrapper)
 
         self.tabBtns = []
         numBtns = len(self.scenes)
@@ -88,15 +93,16 @@ class Window():
                 RELATIVE(T_H, 0.9, P_H),
                 COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
             ]
-            btn, text = centeredTextButton(self, constraints)
-            text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
-            text.setFontSize(24)
-            text.setTextSpacing(7)
-            text.setTextColor((0,0,0))
+            btn = UiButton(self, constraints)
+            # btn, text = centeredTextButton(self, constraints)
+            # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
+            # text.setFontSize(24)
+            # text.setTextSpacing(7)
+            # text.setTextColor((0,0,0))
             btn.setDefaultColor([1.0,0.8,0.8])
             btn.setHoverColor([1.0,0.7,0.7])
             btn.setPressColor([1.0,0.6,0.6])
-            self.sceneMap[btn] = self.scenes[i]
+            # self.sceneMap[btn] = self.scenes[i]
             self.tabBtns.append(btn)
         
         self.tabWrapper.addChildren(*self.tabBtns)
@@ -149,24 +155,58 @@ class Window():
 
     def updateWindow(self):
         self.dim = pygame.display.get_window_size()
-        self.windowWrapper.dim = (0,0,*self.dim)
-        self.windowWrapper.constraintManager.pos = (0,0)
-        self.windowWrapper.constraintManager.dim = self.dim
-        self.windowWrapper.setDirty()
 
     def update(self):
         self.eventHandler()
         if self.currentScene != None:
             self.currentScene.update(self.delta)
-        self.windowWrapper.update(self.delta)
+        self.uiLayer.update(self.delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
-        self.windowWrapper.render()
+        self.testDraw()
+        # self.uiLayer.render()
         return
+    
+    def testDraw(self):
+        vertices = np.array([[-0.5,-0.5,1,0,0],
+                             [ 0.5,-0.5,1,0,0],
+                             [-0.5, 0.5,1,0,0],
+                             [ 0.5, 0.5,1,0,0],], dtype='float32')
+        indices = np.array([1, 0, 3, 3, 0, 2], dtype='int32')
+
+        vao = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(vao)
+
+        vbo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo)
+        GL.glBufferData(GL.GL_ARRAY_BUFFER, vertices, GL.GL_DYNAMIC_DRAW)
+
+        GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, GL.GL_FALSE, 5*4, ctypes.c_void_p(0*4))
+        GL.glEnableVertexAttribArray(0)
+        GL.glVertexAttribPointer(1, 3, GL.GL_FLOAT, GL.GL_TRUE, 5*4, ctypes.c_void_p(2*4))
+        GL.glEnableVertexAttribArray(1)
+
+        ebo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, ebo)
+        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, indices, GL.GL_DYNAMIC_DRAW)
+
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+        GL.glBindVertexArray(0)
+
+        GL.glUseProgram(Assets.SOLID_SHADER)
+        GL.glBindVertexArray(vao)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, ebo)
+        GL.glEnableVertexAttribArray(0)
+        GL.glEnableVertexAttribArray(1)
+        GL.glDrawElements(GL.GL_TRIANGLES, len(indices), GL.GL_UNSIGNED_INT, None)
+        GL.glDisableVertexAttribArray(1)
+        GL.glDisableVertexAttribArray(0)
 
     def run(self):
-        self.currentScene = self.scenes[2]
-        self.windowWrapper.addChild(self.currentScene.sceneWrapper)
-        self.currentScene.start()
+        # self.currentScene = self.scenes[2]
+        # self.windowWrapper.addChild(self.currentScene.sceneWrapper)
+        # self.currentScene.start()
 
         start = time.time_ns()
         while self.running:
@@ -184,7 +224,8 @@ class Window():
                 print(f'frame time: {1000000/self.frames:.0f}us | FPS: {self.frames}')
                 self.timeCounter -= 1
                 self.frames = 0
-        self.currentScene.stop()
+        if self.currentScene != None:
+            self.currentScene.stop() 
         pygame.quit()
         sys.exit()
 

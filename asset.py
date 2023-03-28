@@ -58,6 +58,8 @@ class Assets:
         Assets.IMAGE_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/imageFragment.glsl')
         Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
 
+        Assets.GUI_SHADER = Assets.linkShaders('res/shader/guiVertex.glsl', 'res/shader/guiFragment.glsl')
+
         Assets.OPAQUE_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/opaqueFragment.glsl')
         Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/transparentFragment.glsl')
         Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shader/3d/compositeVertex.glsl', 'res/shader/3d/compositeFragment.glsl')

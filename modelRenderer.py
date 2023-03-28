@@ -35,9 +35,9 @@ class BatchRenderer:
         self.currentIndex = 0
 
         self.isDirty = False
-        self.__initGLContext()
+        self.__initVertices()
 
-    def __initGLContext(self):
+    def __initVertices(self):
 
         self.vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(self.vao)
@@ -120,7 +120,7 @@ class BatchRenderer:
         self.isDirty = True
         return
 
-    def __updateContext(self):
+    def __updateVertices(self):
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.vertices.nbytes, self.vertices)
 
@@ -140,7 +140,7 @@ class BatchRenderer:
     def render(self):
 
         if self.isDirty:
-            self.__updateContext()
+            self.__updateVertices()
 
         GL.glBindVertexArray(self.vao)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
