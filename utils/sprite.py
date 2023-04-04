@@ -8,6 +8,9 @@ class Sprite:
     def fromTexture(cls, texture):
         return cls(texture, [(1,1), (1,0), (0,0), (0,1)])
     
+    def setTexCoords(self, coords):
+        self.texCoords = coords
+    
     def getTexture(self):
         return self.texture
     

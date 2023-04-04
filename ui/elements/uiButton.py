@@ -1,7 +1,7 @@
 from ui.glElement import GlElement
 from ui.uiRenderer import UiRenderer
 
-from utils.transfom import Transform
+from utils.transform import Transform
 
 from asset import *
 
@@ -26,6 +26,7 @@ class UiButton(GlElement):
         self.renderer.setColor(self.currentColor)
         self.renderer.getTransform().setPos((self.openGLDim[0:2]))
         self.renderer.getTransform().setSize((self.openGLDim[2:4]))
+        self.renderer.setDirtyVertex()
         return
 
     def absUpdate(self, delta):

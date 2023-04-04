@@ -1,4 +1,4 @@
-#version 460 core
+#version 400 core
 
 uniform sampler2D uTextures[8];
 
@@ -9,10 +9,10 @@ in float fTexID;
 out vec4 color;
 
 void main() {
-	if(fTexID > -1){
-		color = fColor * texture(uTextures[int(fTexID)], fTexCoords);
+	if(fTexID >= 0){
+		// color = fColor * texture(uTextures[int(fTexID)], fTexCoords);
+		color = fColor;
 	}else{
 		color = fColor;
 	}
-	color = vec4(1,0,0,1);
 }

@@ -47,6 +47,12 @@ class UiRenderer:
         self.sprite = sprite
         self.isDirtySprite = True
     
+    def setDirtyVertex(self):
+        self.isDirtyVertex = True
+    
+    def setDirtySprite(self):
+        self.isDirtySprite = True
+
     def setCleanVertex(self):
         self.isDirtyVertex = False
 

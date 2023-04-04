@@ -27,9 +27,9 @@ class Transform:
         x,y = self.pos
         w,h = self.size
         return [
-            (x+w,y+h),
-            (x+w,y),
             (x,y),
+            (x+w,y),
+            (x+w,y+h),
             (x,y+h)
         ]
 

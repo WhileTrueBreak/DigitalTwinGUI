@@ -1,5 +1,5 @@
-from ui.uiButton import UiButton
-from ui.uiText import UiText
+from ui.elements.uiButton import UiButton
+from ui.elements.uiText import UiText
 from constraintManager import *
 
 def centeredTextButton(window, constraints):

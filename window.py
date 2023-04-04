@@ -1,7 +1,9 @@
 import pygame
+from pygame.locals import *
 
 import time
 from OpenGL import GL
+
 from vectors import *
 from math import *
 import sys
@@ -10,6 +12,7 @@ from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiButton import UiButton
 from ui.uiLayer import UiLayer
 
+from utils.uiHelper import *
 from constraintManager import *
 from asset import *
 
@@ -30,23 +33,25 @@ class Window():
         self.screen = pygame.display.set_mode(size, display_flags, vsync=(1 if vsync else 0))
         pygame.display.set_caption(title)
 
-
         self.dim = self.screen.get_size()
         self.ogdim = self.dim
 
-        # GL.glDepthFunc(GL.GL_ALWAYS)
-
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-        # GL.glBlendFunc(GL.GL_ONE, GL.GL_ONE)
-        GL.glEnable(GL.GL_BLEND)
-        GL.glCullFace(GL.GL_BACK)
-        GL.glClearColor(0, 0, 0, 1)
+        self.initOpenGL()
 
         self.delta = 1
 
         self.running = True
         self.initialize()
-    
+
+    def initOpenGL(self):
+        GL.glEnable(GL.GL_BLEND)
+        GL.glCullFace(GL.GL_BACK)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glClearColor(0.0, 0.0, 0.0, 1.0) # Set clear color
+        GL.glViewport(0, 0, self.dim[0], self.dim[1]) # Set viewport
+        GL.glEnable(GL.GL_DEPTH_TEST) # Enable depth testing
+        GL.glDepthFunc(GL.GL_LESS)
+
     def initialize(self):
         self.timeCounter = 0
         self.frames = 0
@@ -56,7 +61,7 @@ class Window():
         GL.glEnable(GL.GL_BLEND)
         GL.glEnable(GL.GL_DEPTH_TEST)
         GL.glCullFace(GL.GL_BACK)
-        GL.glClearColor(0.5, 0.5, 0.5, 1)
+        GL.glClearColor(0, 0, 0, 1)
 
         self.uiEvents = []
         self.mousePos = (0,0)
@@ -93,16 +98,16 @@ class Window():
                 RELATIVE(T_H, 0.9, P_H),
                 COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
             ]
-            btn = UiButton(self, constraints)
-            # btn, text = centeredTextButton(self, constraints)
-            # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
-            # text.setFontSize(24)
-            # text.setTextSpacing(7)
-            # text.setTextColor((0,0,0))
+            # btn = UiButton(self, constraints)
+            btn, text = centeredTextButton(self, constraints)
+            text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
+            text.setFontSize(24)
+            text.setTextSpacing(7)
+            text.setTextColor((1,0,0))
             btn.setDefaultColor([1.0,0.8,0.8])
             btn.setHoverColor([1.0,0.7,0.7])
             btn.setPressColor([1.0,0.6,0.6])
-            # self.sceneMap[btn] = self.scenes[i]
+            self.sceneMap[btn] = self.scenes[i]
             self.tabBtns.append(btn)
         
         self.tabWrapper.addChildren(*self.tabBtns)
@@ -162,44 +167,49 @@ class Window():
             self.currentScene.update(self.delta)
         self.uiLayer.update(self.delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
-        self.testDraw()
-        # self.uiLayer.render()
+        # self.testDraw()
+        self.uiLayer.render()
         return
     
     def testDraw(self):
-        vertices = np.array([[-0.5,-0.5,1,0,0],
-                             [ 0.5,-0.5,1,0,0],
-                             [-0.5, 0.5,1,0,0],
-                             [ 0.5, 0.5,1,0,0],], dtype='float32')
-        indices = np.array([1, 0, 3, 3, 0, 2], dtype='int32')
+        vertices = np.array([
+            [-0.5, -0.5, 0.0, 1.0, 0.0, 1.0, 0, 0, -1],
+            [0.5, -0.5, 0.5, 1.0, 0.0, 1.0, 0, 0, -1],
+            [0.5, 0.5, 1.0, 0.0, 1.0, 1.0, 0, 0, -1],
+            [-0.5, 0.5, 0.5, 0.0, 1.0, 1.0, 0, 0, -1]
+        ], dtype='float32')
+
+        indices = np.array([
+            0, 1, 2,
+            2, 3, 0
+        ], dtype='int32')
+
+        GL.glUseProgram(Assets.GUI_SHADER)
 
         vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao)
 
         vbo = GL.glGenBuffers(1)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo)
-        GL.glBufferData(GL.GL_ARRAY_BUFFER, vertices, GL.GL_DYNAMIC_DRAW)
-
-        GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, GL.GL_FALSE, 5*4, ctypes.c_void_p(0*4))
-        GL.glEnableVertexAttribArray(0)
-        GL.glVertexAttribPointer(1, 3, GL.GL_FLOAT, GL.GL_TRUE, 5*4, ctypes.c_void_p(2*4))
-        GL.glEnableVertexAttribArray(1)
+        GL.glBufferData(GL.GL_ARRAY_BUFFER, vertices, GL.GL_STATIC_DRAW)
 
         ebo = GL.glGenBuffers(1)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, ebo)
-        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, indices, GL.GL_DYNAMIC_DRAW)
+        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, indices, GL.GL_STATIC_DRAW)
 
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        GL.glBindVertexArray(0)
 
-        GL.glUseProgram(Assets.SOLID_SHADER)
-        GL.glBindVertexArray(vao)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo)
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, ebo)
+        GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, GL.GL_FALSE, 9*4, ctypes.c_void_p(0*4))
+        GL.glVertexAttribPointer(1, 4, GL.GL_FLOAT, GL.GL_FALSE, 9*4, ctypes.c_void_p(2*4))
+        GL.glVertexAttribPointer(2, 2, GL.GL_FLOAT, GL.GL_FALSE, 9*4, ctypes.c_void_p(6*4))
+        GL.glVertexAttribPointer(3, 1, GL.GL_FLOAT, GL.GL_FALSE, 9*4, ctypes.c_void_p(8*4))
+
         GL.glEnableVertexAttribArray(0)
         GL.glEnableVertexAttribArray(1)
+        GL.glEnableVertexAttribArray(2)
+        GL.glEnableVertexAttribArray(3)
         GL.glDrawElements(GL.GL_TRIANGLES, len(indices), GL.GL_UNSIGNED_INT, None)
+        GL.glDisableVertexAttribArray(3)
+        GL.glDisableVertexAttribArray(2)
         GL.glDisableVertexAttribArray(1)
         GL.glDisableVertexAttribArray(0)
 
