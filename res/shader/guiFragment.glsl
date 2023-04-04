@@ -9,9 +9,8 @@ in float fTexID;
 out vec4 color;
 
 void main() {
-	if(fTexID >= 0){
-		// color = fColor * texture(uTextures[int(fTexID)], fTexCoords);
-		color = fColor;
+	if(fTexID >= -0.5){
+		color = fColor * texture(uTextures[int(fTexID)], fTexCoords);
 	}else{
 		color = fColor;
 	}

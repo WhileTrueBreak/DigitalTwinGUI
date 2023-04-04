@@ -57,7 +57,7 @@ class Window():
         self.frames = 0
         self.resized = False
 
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);  
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         GL.glEnable(GL.GL_BLEND)
         GL.glEnable(GL.GL_DEPTH_TEST)
         GL.glCullFace(GL.GL_BACK)
@@ -71,7 +71,8 @@ class Window():
         self.uiSelectBuffer = []
         self.selectedUi = None
 
-        self.scenes = [None]
+        self.scenes = [None, None]
+        self.text = ['aaaaaa', 'bbbbbb']
         self.sceneMap = {}
         self.currentScene = None
 
@@ -99,11 +100,18 @@ class Window():
                 COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
             ]
             # btn = UiButton(self, constraints)
+            # textConstraints = [
+            #     COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5, P_W)),
+            #     COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H))
+            # ]
+            # text = UiText(self, textConstraints)
+
             btn, text = centeredTextButton(self, constraints)
-            text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
+            # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
+            text.setText(f'{self.text[i]}')
             text.setFontSize(24)
             text.setTextSpacing(7)
-            text.setTextColor((1,0,0))
+            text.setTextColor((0,0,0))
             btn.setDefaultColor([1.0,0.8,0.8])
             btn.setHoverColor([1.0,0.7,0.7])
             btn.setPressColor([1.0,0.6,0.6])

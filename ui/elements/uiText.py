@@ -9,6 +9,7 @@ from utils.sprite import *
 from asset import *
 
 class UiText(GlElement):
+
     def __init__(self, window, constraints, dim=(0,0,0,0)):
         constraints = constraints.copy()
         constraints.append(RELATIVE(T_W, 1, P_W))
@@ -128,7 +129,7 @@ class UiText(GlElement):
             if c.toChange == T_H:
                 heightConstraint = c
         
-        self.textBounds = (x, y, (self.maxDescender + self.maxAscender)*widthAspect, self.maxDescender + self.maxAscender)
+        self.textBounds = (self.dim[0], self.dim[1], (self.maxDescender + self.maxAscender)*widthAspect, self.maxDescender + self.maxAscender)
 
         self.constraints.remove(widthConstraint)
         self.constraints.remove(heightConstraint)
@@ -141,6 +142,7 @@ class UiText(GlElement):
         GL.glUseProgram(Assets.TEXT_SHADER)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.textFrame)
 
+        clearColor = GL.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE)
         GL.glClearColor(0, 0, 0, 0)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
@@ -184,60 +186,12 @@ class UiText(GlElement):
         GL.glBindVertexArray(0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        GL.glClearColor(*clearColor)
 
     def __updateRenderer(self):
-        self.renderer.getTransform().setPos((self.openGLDim[0:2]))
-        self.renderer.getTransform().setSize((self.openGLDim[2:4]))
+        self.renderer.getTransform().setPos((-1,-1))
+        self.renderer.getTransform().setSize((2,2))
         self.renderer.setDirtyVertex()
-
-    # def absRender(self):
-    #     self.__renderText(self.text, Assets.FIRACODE_FONT, self.scaledFontSize/48)
-    #     return
-    
-    # def __renderText(self, text, font, scale):
-    #     GL.glUseProgram(Assets.TEXT_SHADER)
-    #     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.textFrame)
-
-    #     GL.glBindVertexArray(self.textVao)
-
-    #     GL.glUniform3f(GL.glGetUniformLocation(Assets.TEXT_SHADER, "textColor"), *self.textColor)
-
-    #     GL.glActiveTexture(GL.GL_TEXTURE0)
-    #     GL.glEnable(GL.GL_BLEND)
-    #     GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-
-    #     x = self.dim[0]
-    #     y = self.dim[1]
-    #     for c in text:
-    #         ch = font[c]
-    #         w, h = ch.textureSize
-    #         w = w*scale
-    #         h = h*scale
-    #         des = ch.descender*scale
-
-    #         vertices = self.__getVertexData(x, y + des + self.maxAscender, w, h)
-
-    #         #render glyph texture over quad
-    #         GL.glBindTexture(GL.GL_TEXTURE_2D, ch.texture)
-
-    #         #update content of VBO memory
-    #         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.textVbo)
-    #         GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, vertices.nbytes, vertices)
-    #         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-
-    #         #render quad
-    #         GL.glBindVertexArray(self.textVao)
-    #         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.textVbo)
-    #         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.textEbo)
-    #         GL.glEnableVertexAttribArray(0)
-    #         GL.glDrawElements(GL.GL_TRIANGLES, len(self.textIndices), GL.GL_UNSIGNED_INT, None)
-    #         GL.glDisableVertexAttribArray(0)
-    #         #now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-    #         x += w + self.scaledTextSpacing*scale
-
-    #     GL.glBindVertexArray(0)
-    #     GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-    #     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 
     def __getVertexData(self, xpos, ypos, w, h):
         xpos = (2*xpos)/self.window.dim[0] - 1

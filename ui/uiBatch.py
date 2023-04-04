@@ -59,6 +59,10 @@ class UiBatch:
     
     def render(self):
 
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glDisable(GL.GL_DEPTH_TEST)
+
         for i in range(len(self.uiRenderers)):
             if(self.uiRenderers[i].isDirtyVertex):
                 self.__updateVertexData(i)
@@ -82,12 +86,16 @@ class UiBatch:
         GL.glEnableVertexAttribArray(2)
         GL.glEnableVertexAttribArray(3)
 
+        print(self.vertices[0:self.numRenderers * UiBatch.NUM_VERTICES])
+
         GL.glDrawElements(GL.GL_TRIANGLES, self.numRenderers * UiBatch.NUM_ELEMENTS, GL.GL_UNSIGNED_INT, None)
 
         GL.glDisableVertexAttribArray(3)
         GL.glDisableVertexAttribArray(2)
         GL.glDisableVertexAttribArray(1)
         GL.glDisableVertexAttribArray(0)
+
+        GL.glEnable(GL.GL_DEPTH_TEST)
 
         for i in range(len(self.textures)):
             GL.glActiveTexture(GL.GL_TEXTURE0 + i)

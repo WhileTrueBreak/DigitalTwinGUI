@@ -6,7 +6,7 @@ class Sprite:
     
     @classmethod
     def fromTexture(cls, texture):
-        return cls(texture, [(1,1), (1,0), (0,0), (0,1)])
+        return cls(texture, [(0,0), (1,0), (1,1), (0,1)])
     
     def setTexCoords(self, coords):
         self.texCoords = coords
