@@ -12,6 +12,7 @@ import sys
 
 from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiButton import UiButton
+from ui.elements.uiBlock import UiBlock
 from ui.uiLayer import UiLayer
 
 from utils.uiHelper import *
@@ -115,14 +116,13 @@ class Window():
             self.tabBtns.append(btn)
         self.tabWrapper.addChildren(*self.tabBtns)
 
-        # prev = self.uiLayer.getMasterElem()
-        # for i in range(100):
-        #     t = UiButton(self, [
-        #         *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.9, P_W), RELATIVE(T_H, 0.9, P_H)
-        #         ])
-        #     t.setDefaultColor([random.random(),random.random(),random.random()])
-        #     prev.addChild(t)
-        #     prev = t
+
+        t = UiBlock(self, [
+            *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.9, P_W), RELATIVE(T_H, 0.9, P_H)
+            ])
+        t.setTexture(Assets.CUBE_TEX.texture)
+        t.setColor([1,1,1])
+        self.uiLayer.getMasterElem().addChild(t)
 
     def getMousePos(self):
         return self.mousePos

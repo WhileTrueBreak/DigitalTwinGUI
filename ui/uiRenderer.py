@@ -29,6 +29,9 @@ class UiRenderer:
     def getTexture(self):
         return self.sprite.getTexture()
 
+    def setTexture(self, texture):
+        self.sprite.setTexture(texture)
+
     def getColor(self):
         return self.color
     

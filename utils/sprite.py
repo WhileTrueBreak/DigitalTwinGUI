@@ -14,6 +14,9 @@ class Sprite:
     def getTexture(self):
         return self.texture
     
+    def setTexture(self, texture):
+        self.texture = texture
+    
     def getTexCoords(self):
         return self.texCoords
 
