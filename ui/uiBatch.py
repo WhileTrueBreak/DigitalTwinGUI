@@ -49,9 +49,9 @@ class UiBatch:
         GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
 
         GL.glVertexAttribPointer(0, UiBatch.POS_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.POS_OFFSET*4))
-        GL.glVertexAttribPointer(1, UiBatch.COLOR_SIZE, GL.GL_FLOAT, GL.GL_TRUE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.COLOR_OFFSET*4))
-        GL.glVertexAttribPointer(2, UiBatch.UV_SIZE, GL.GL_FLOAT, GL.GL_TRUE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.UV_OFFSET*4))
-        GL.glVertexAttribPointer(3, UiBatch.TEX_ID_SIZE, GL.GL_FLOAT, GL.GL_TRUE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.TEX_ID_OFFSET*4))
+        GL.glVertexAttribPointer(1, UiBatch.COLOR_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.COLOR_OFFSET*4))
+        GL.glVertexAttribPointer(2, UiBatch.UV_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.UV_OFFSET*4))
+        GL.glVertexAttribPointer(3, UiBatch.TEX_ID_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.TEX_ID_OFFSET*4))
 
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
@@ -80,13 +80,12 @@ class UiBatch:
         for i in range(len(self.textures)):
             GL.glActiveTexture(GL.GL_TEXTURE0 + i)
             GL.glBindTexture(GL.GL_TEXTURE_2D, self.textures[i])
+            GL.glUniform1i(GL.glGetUniformLocation(Assets.GUI_SHADER, "uTextures[" + str(i) + "]"), i)
 
         GL.glEnableVertexAttribArray(0)
         GL.glEnableVertexAttribArray(1)
         GL.glEnableVertexAttribArray(2)
         GL.glEnableVertexAttribArray(3)
-
-        print(self.vertices[0:self.numRenderers * UiBatch.NUM_VERTICES])
 
         GL.glDrawElements(GL.GL_TRIANGLES, self.numRenderers * UiBatch.NUM_ELEMENTS, GL.GL_UNSIGNED_INT, None)
 
@@ -113,7 +112,6 @@ class UiBatch:
     def addRenderer(self, renderer):
         index = self.numRenderers
         self.numRenderers += 1
-
         self.uiRenderers.append(renderer)
         self.__addtexture(renderer.getTexture())
         self.__updateVertexData(index)

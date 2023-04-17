@@ -1,6 +1,8 @@
 import pygame
 from pygame.locals import *
 
+import random
+
 import time
 from OpenGL import GL
 
@@ -71,8 +73,8 @@ class Window():
         self.uiSelectBuffer = []
         self.selectedUi = None
 
-        self.scenes = [None, None]
-        self.text = ['aaaaaa', 'bbbbbb']
+        self.scenes = [None, None, None, None, None, None]
+        self.text = ['a', 'b', 'c', 'd', 'e', 'f']
         self.sceneMap = {}
         self.currentScene = None
 
@@ -99,12 +101,6 @@ class Window():
                 RELATIVE(T_H, 0.9, P_H),
                 COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
             ]
-            # btn = UiButton(self, constraints)
-            # textConstraints = [
-            #     COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5, P_W)),
-            #     COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H))
-            # ]
-            # text = UiText(self, textConstraints)
 
             btn, text = centeredTextButton(self, constraints)
             # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
@@ -117,8 +113,16 @@ class Window():
             btn.setPressColor([1.0,0.6,0.6])
             self.sceneMap[btn] = self.scenes[i]
             self.tabBtns.append(btn)
-        
         self.tabWrapper.addChildren(*self.tabBtns)
+
+        # prev = self.uiLayer.getMasterElem()
+        # for i in range(100):
+        #     t = UiButton(self, [
+        #         *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.9, P_W), RELATIVE(T_H, 0.9, P_H)
+        #         ])
+        #     t.setDefaultColor([random.random(),random.random(),random.random()])
+        #     prev.addChild(t)
+        #     prev = t
 
     def getMousePos(self):
         return self.mousePos
