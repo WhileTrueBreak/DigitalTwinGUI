@@ -13,6 +13,7 @@ import time
 from utils.model import *
 from utils.texture import *
 from utils.mathHelper import *
+from utils.sprite import Sprite
 
 class Assets:
     
@@ -189,14 +190,28 @@ class Assets:
             img = img.transpose(Image.ROTATE_180)
         elif rot == 270:
             img = img.transpose(Image.ROTATE_270)
-        texture = Texture(img)
-        return texture
+        
+        imgData = np.array(list(img.getdata()), np.int8)
+
+        texture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, texture)
+        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+        GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, *img.size, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imgData)
+
+        sprite = Sprite.fromTexture(texture)
+        return sprite
     @staticmethod
     def loadVideo(file):
         print(f'Loading video: {file}')
         capture = cv2.VideoCapture(file)
         return capture
-
 
 class CharacterSlot:
     def __init__(self, texture, glyph):
@@ -213,8 +228,3 @@ class CharacterSlot:
             self.advance = None
         else:
             raise RuntimeError('unknown glyph type')
-
-
-
-
-

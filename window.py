@@ -117,12 +117,12 @@ class Window():
         self.tabWrapper.addChildren(*self.tabBtns)
 
 
-        # t = UiBlock(self, [
-        #     *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.9, P_W), RELATIVE(T_H, 0.9, P_H)
-        #     ])
-        # t.setTexture(Assets.CUBE_TEX.texture)
-        # t.setColor([1,1,1])
-        # self.uiLayer.getMasterElem().addChild(t)
+        t = UiBlock(self, [
+            *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.9, P_W), RELATIVE(T_H, 0.9, P_H)
+            ])
+        t.setTexture(Assets.CUBE_TEX.getTexture())
+        t.setColor([1,1,1])
+        self.uiLayer.getMasterElem().addChild(t)
 
     def getMousePos(self):
         return self.mousePos
