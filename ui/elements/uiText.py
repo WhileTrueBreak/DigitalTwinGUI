@@ -26,6 +26,7 @@ class UiText(GlElement):
         self.scaledFontSize = self.fontSize
         self.scaledTextSpacing = self.textSpacing
 
+        self.fitParent = False
         self.prevWindowScale = (0,0)
         self.textBounds = (0,0,0,0)
 
@@ -124,22 +125,19 @@ class UiText(GlElement):
         
         self.maxAscender = maxasc
         self.maxDescender = maxdes
-
-        # find width constraint
-        widthConstraint = None
-        heightConstraint = None
-        for c in self.constraints:
-            if c.toChange == T_W:
-                widthConstraint = c
-            if c.toChange == T_H:
-                heightConstraint = c
         
         self.textBounds = (self.dim[0], self.dim[1], (self.maxDescender + self.maxAscender)*widthAspect, self.maxDescender + self.maxAscender)
 
-        self.constraints.remove(widthConstraint)
-        self.constraints.remove(heightConstraint)
-        self.constraints.append(RELATIVE(T_W, widthAspect, T_H))
-        self.constraints.append(ABSOLUTE(T_H, self.maxDescender + self.maxAscender))
+        print(self.parent.dim)
+        self.updateWidth(RELATIVE(T_W, widthAspect, T_H))
+        if self.fitParent:
+            if (self.maxDescender + self.maxAscender)*widthAspect < self.parent.dim[2]:
+                self.updateHeight(RELATIVE(T_H, 1, P_H))
+            else:
+                scale = self.parent.dim[2]/((self.maxDescender + self.maxAscender)*widthAspect)
+                self.updateHeight(RELATIVE(T_H, scale, P_H))
+        else:
+            self.updateHeight(ABSOLUTE(T_H, self.maxDescender + self.maxAscender))
         self.setDirtyVertices()
         self.dirtyText = False
 
@@ -231,3 +229,6 @@ class UiText(GlElement):
 
     def setTextColor(self, color):
         self.textColor = color
+
+    def isFitParent(self, fit):
+        self.fitParent = fit

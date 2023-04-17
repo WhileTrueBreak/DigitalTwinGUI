@@ -138,7 +138,7 @@ class GlElement:
             cIndex = i
             break
         self.constraints[cIndex] = constraint
-        self.setDirty()
+        self.setDirtyVertices()
 
     def updateYPos(self, constraint):
         cIndex = -1
@@ -148,7 +148,7 @@ class GlElement:
             cIndex = i
             break
         self.constraints[cIndex] = constraint
-        self.setDirty()
+        self.setDirtyVertices()
 
     def updateWidth(self, constraint):
         cIndex = -1
@@ -158,7 +158,7 @@ class GlElement:
             cIndex = i
             break
         self.constraints[cIndex] = constraint
-        self.setDirty()
+        self.setDirtyVertices()
 
     def updateHeight(self, constraint):
         cIndex = -1
@@ -168,7 +168,7 @@ class GlElement:
             cIndex = i
             break
         self.constraints[cIndex] = constraint
-        self.setDirty()
+        self.setDirtyVertices()
 
     def getRenderers(self):
         return self.renderers

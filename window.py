@@ -118,7 +118,7 @@ class Window():
 
 
         t = UiBlock(self, [
-            *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.9, P_W), RELATIVE(T_H, 0.9, P_H)
+            *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.8, P_W), RELATIVE(T_H, 0.9, P_H)
             ])
         t.setTexture(Assets.CUBE_TEX.getTexture())
         t.setColor([1,1,1])

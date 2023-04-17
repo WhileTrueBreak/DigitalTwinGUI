@@ -11,7 +11,6 @@ from threading import Thread
 import time
 
 from utils.model import *
-from utils.texture import *
 from utils.mathHelper import *
 from utils.sprite import Sprite
 
