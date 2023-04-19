@@ -34,11 +34,10 @@ class UiLayer:
         currentBatch = None
         for elem in self.masterList:
             for renderer in elem.getRenderers():
-                if currentBatch != None and currentBatch.hasRoom(renderer):
-                    currentBatch.addRenderer(renderer)
-                    continue
-                currentBatch = UiBatch(UiLayer.MAX_BATCH_SIZE)
-                self.batches.append(currentBatch)
+                if currentBatch == None or not currentBatch.hasRoom(renderer):
+                    currentBatch = UiBatch(self.window, UiLayer.MAX_BATCH_SIZE)
+                    self.batches.append(currentBatch)
+                renderer.setId(self.masterList.index(elem))
                 currentBatch.addRenderer(renderer)
         self.hasMasterListChanged = False
 
@@ -61,4 +60,12 @@ class UiLayer:
     def getMasterElem(self):
         return self.masterElem
     
+    def getScreenSpaceUI(self, x, y):
+        data = (0,0,0)
+        for batch in self.batches:
+            d = batch.getScreenSpaceUI(x, y)
+            if d[0] == 0:
+                continue
+            data = d
+        return (data[0]-1, data[1], data[2])
 

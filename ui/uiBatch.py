@@ -15,13 +15,16 @@ class UiBatch:
     UV_OFFSET = COLOR_OFFSET+COLOR_SIZE
     TEX_ID_SIZE = 1
     TEX_ID_OFFSET = UV_OFFSET+UV_SIZE
+    UI_ID_SIZE = 1
+    UI_ID_OFFSET = UV_OFFSET+UV_SIZE
 
-    VERTEX_SIZE = POS_SIZE+COLOR_SIZE+UV_SIZE+TEX_ID_SIZE
+    VERTEX_SIZE = POS_SIZE+COLOR_SIZE+UV_SIZE+TEX_ID_SIZE+UI_ID_SIZE
 
     NUM_VERTICES = 4
     NUM_ELEMENTS = 6
 
-    def __init__(self, maxRenderers):
+    def __init__(self, window, maxRenderers):
+        self.window = window
         self.maxRenderers = maxRenderers
         self.maxTextures = 8
 
@@ -33,9 +36,63 @@ class UiBatch:
         self.textures = []
         
         self.rebufferData = False
+        self.__initFrame()
         self.__initVertices()
 
+    def __initFrame(self):
+
+        self.renderFBO = GL.glGenFramebuffers(1)
+
+        textureDim = self.window.dim
+
+        self.screenTexture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.screenTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        self.pickingTexture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB16UI, textureDim[0], textureDim[1], 0, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        self.depthTexture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.depthTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, textureDim[0], textureDim[1], 0, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.renderFBO)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, self.screenTexture, 0)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT1, GL.GL_TEXTURE_2D, self.pickingTexture, 0)
+        GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_TEXTURE_2D, self.depthTexture, 0)
+
+        self.renderDrawBuffers = (GL.GL_COLOR_ATTACHMENT0, GL.GL_COLOR_ATTACHMENT1)
+        GL.glDrawBuffers(self.renderDrawBuffers)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+
     def __initVertices(self):
+        self.quadVertices = np.array([
+            [-1,-1,-1, 0, 0],
+            [ 1,-1,-1, 1, 0],
+            [ 1, 1,-1, 1, 1],
+            [ 1, 1,-1, 1, 1],
+            [-1, 1,-1, 0, 1],
+            [-1,-1,-1, 0, 0],
+        ], dtype='float32')
+
+        self.quadVAO = GL.glGenVertexArrays(1)
+        self.quadVBO = GL.glGenBuffers(1)
+        GL.glBindVertexArray(self.quadVAO)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.quadVBO)
+        GL.glBufferData(GL.GL_ARRAY_BUFFER, self.quadVertices.nbytes, self.quadVertices, GL.GL_DYNAMIC_DRAW)
+        GL.glEnableVertexAttribArray(0)
+        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 5 * 4, ctypes.c_void_p(0*4))
+        GL.glEnableVertexAttribArray(1)
+        GL.glVertexAttribPointer(1, 2, GL.GL_FLOAT, GL.GL_FALSE, 5 * 4, ctypes.c_void_p(3*4))
+        GL.glBindVertexArray(0)
 
         self.vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(self.vao)
@@ -52,12 +109,15 @@ class UiBatch:
         GL.glVertexAttribPointer(1, UiBatch.COLOR_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.COLOR_OFFSET*4))
         GL.glVertexAttribPointer(2, UiBatch.UV_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.UV_OFFSET*4))
         GL.glVertexAttribPointer(3, UiBatch.TEX_ID_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.TEX_ID_OFFSET*4))
+        GL.glVertexAttribPointer(4, UiBatch.UI_ID_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.UI_ID_OFFSET*4))
 
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
     
     def render(self):
+
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.renderFBO)
 
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         GL.glEnable(GL.GL_BLEND)
@@ -86,19 +146,30 @@ class UiBatch:
         GL.glEnableVertexAttribArray(1)
         GL.glEnableVertexAttribArray(2)
         GL.glEnableVertexAttribArray(3)
+        GL.glEnableVertexAttribArray(4)
 
         GL.glDrawElements(GL.GL_TRIANGLES, self.numRenderers * UiBatch.NUM_ELEMENTS, GL.GL_UNSIGNED_INT, None)
 
+        GL.glDisableVertexAttribArray(4)
         GL.glDisableVertexAttribArray(3)
         GL.glDisableVertexAttribArray(2)
         GL.glDisableVertexAttribArray(1)
         GL.glDisableVertexAttribArray(0)
 
-        GL.glEnable(GL.GL_DEPTH_TEST)
-
         for i in range(len(self.textures)):
             GL.glActiveTexture(GL.GL_TEXTURE0 + i)
             GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        GL.glUseProgram(Assets.SCREEN_SHADER)
+        GL.glUniform2f(GL.glGetUniformLocation(Assets.SCREEN_SHADER, "texture_dim"), *self.window.dim)
+
+        GL.glActiveTexture(GL.GL_TEXTURE0)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.screenTexture)
+        GL.glBindVertexArray(self.quadVAO)
+        GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
+
+        GL.glEnable(GL.GL_DEPTH_TEST)
 
     def rebuffer(self):
         GL.glBindVertexArray(self.vao)
@@ -140,6 +211,9 @@ class UiBatch:
             self.vertices[index][7] = renderer.getTexCoords()[i][1]
 
             self.vertices[index][8] = -1 if renderer.getTexture() == None else self.textures.index(renderer.getTexture())
+
+            self.vertices[index][9] = renderer.getId()
+
             index += 1
         self.rebuffer()
     
@@ -166,5 +240,12 @@ class UiBatch:
             return False
         return True
 
+    def getScreenSpaceUI(self, x, y):
+        GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.renderFBO)
+        GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT1)
+        data = GL.glReadPixels(x, y, 1, 1, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
+        GL.glReadBuffer(GL.GL_NONE)
+        GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
+        return data[0][0]
 
 

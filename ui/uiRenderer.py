@@ -7,6 +7,9 @@ class UiRenderer:
         self.color = color
         self.sprite = sprite
         self.transform = transform
+
+        self.id = 0
+
         self.isDirtyVertex = True
         self.isDirtySprite = True
     
@@ -67,4 +70,10 @@ class UiRenderer:
 
     def setParentUi(self, ui):
         self.parentUi = ui
+
+    def setId(self, id):
+        self.id = id
+    
+    def getId(self):
+        return self.id
 

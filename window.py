@@ -121,7 +121,7 @@ class Window():
             *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.8, P_W), RELATIVE(T_H, 0.9, P_H)
             ])
         t.setTexture(Assets.CUBE_TEX.getTexture())
-        t.setColor([1,1,1])
+        t.setColor([1,1,1,0.5])
         self.uiLayer.getMasterElem().addChild(t)
 
     def getMousePos(self):
@@ -181,6 +181,7 @@ class Window():
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
         # self.testDraw()
         self.uiLayer.render()
+        print(self.uiLayer.getScreenSpaceUI(*self.getMousePos()))
         return
     
     def testDraw(self):

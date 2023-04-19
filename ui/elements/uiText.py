@@ -128,7 +128,6 @@ class UiText(GlElement):
         
         self.textBounds = (self.dim[0], self.dim[1], (self.maxDescender + self.maxAscender)*widthAspect, self.maxDescender + self.maxAscender)
 
-        print(self.parent.dim)
         self.updateWidth(RELATIVE(T_W, widthAspect, T_H))
         if self.fitParent:
             if (self.maxDescender + self.maxAscender)*widthAspect < self.parent.dim[2]:
