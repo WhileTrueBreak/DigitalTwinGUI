@@ -179,53 +179,10 @@ class Window():
             self.currentScene.update(self.delta)
         self.uiLayer.update(self.delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
-        # self.testDraw()
         self.uiLayer.render()
         print(self.uiLayer.getScreenSpaceUI(*self.getMousePos()))
         return
     
-    def testDraw(self):
-        vertices = np.array([
-            [-0.5, -0.5, 0.0, 1.0, 0.0, 1.0, 0, 0, -1],
-            [0.5, -0.5, 0.5, 1.0, 0.0, 1.0, 0, 0, -1],
-            [0.5, 0.5, 1.0, 0.0, 1.0, 1.0, 0, 0, -1],
-            [-0.5, 0.5, 0.5, 0.0, 1.0, 1.0, 0, 0, -1]
-        ], dtype='float32')
-
-        indices = np.array([
-            0, 1, 2,
-            2, 3, 0
-        ], dtype='int32')
-
-        GL.glUseProgram(Assets.GUI_SHADER)
-
-        vao = GL.glGenVertexArrays(1)
-        GL.glBindVertexArray(vao)
-
-        vbo = GL.glGenBuffers(1)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo)
-        GL.glBufferData(GL.GL_ARRAY_BUFFER, vertices, GL.GL_STATIC_DRAW)
-
-        ebo = GL.glGenBuffers(1)
-        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, ebo)
-        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, indices, GL.GL_STATIC_DRAW)
-
-
-        GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, GL.GL_FALSE, 9*4, ctypes.c_void_p(0*4))
-        GL.glVertexAttribPointer(1, 4, GL.GL_FLOAT, GL.GL_FALSE, 9*4, ctypes.c_void_p(2*4))
-        GL.glVertexAttribPointer(2, 2, GL.GL_FLOAT, GL.GL_FALSE, 9*4, ctypes.c_void_p(6*4))
-        GL.glVertexAttribPointer(3, 1, GL.GL_FLOAT, GL.GL_FALSE, 9*4, ctypes.c_void_p(8*4))
-
-        GL.glEnableVertexAttribArray(0)
-        GL.glEnableVertexAttribArray(1)
-        GL.glEnableVertexAttribArray(2)
-        GL.glEnableVertexAttribArray(3)
-        GL.glDrawElements(GL.GL_TRIANGLES, len(indices), GL.GL_UNSIGNED_INT, None)
-        GL.glDisableVertexAttribArray(3)
-        GL.glDisableVertexAttribArray(2)
-        GL.glDisableVertexAttribArray(1)
-        GL.glDisableVertexAttribArray(0)
-
     def run(self):
         # self.currentScene = self.scenes[2]
         # self.windowWrapper.addChild(self.currentScene.sceneWrapper)
