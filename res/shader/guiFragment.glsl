@@ -16,5 +16,5 @@ void main() {
 	}else{
 		color = fColor;
 	}
-	picking = uvec3(uiId+1,0,gl_PrimitiveID);
+	picking = uvec3(uiId+1,uiId,gl_PrimitiveID);
 }

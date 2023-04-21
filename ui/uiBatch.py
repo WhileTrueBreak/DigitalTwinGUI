@@ -243,7 +243,7 @@ class UiBatch:
     def getScreenSpaceUI(self, x, y):
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.renderFBO)
         GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT1)
-        data = GL.glReadPixels(x, y, 1, 1, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
+        data = GL.glReadPixels(x, self.window.dim[1]-y, 1, 1, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
         GL.glReadBuffer(GL.GL_NONE)
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
         return data[0][0]

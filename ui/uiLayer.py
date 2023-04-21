@@ -32,12 +32,14 @@ class UiLayer:
     def __updateRenderers(self):
         self.batches = []
         currentBatch = None
-        for elem in self.masterList:
+        for i in range(len(self.masterList)):
+            elem = self.masterList[i]
             for renderer in elem.getRenderers():
                 if currentBatch == None or not currentBatch.hasRoom(renderer):
                     currentBatch = UiBatch(self.window, UiLayer.MAX_BATCH_SIZE)
                     self.batches.append(currentBatch)
-                renderer.setId(self.masterList.index(elem))
+                print(i)
+                renderer.setId(i)
                 currentBatch.addRenderer(renderer)
         self.hasMasterListChanged = False
 
@@ -59,7 +61,7 @@ class UiLayer:
 
     def getMasterElem(self):
         return self.masterElem
-    
+
     def getScreenSpaceUI(self, x, y):
         data = (0,0,0)
         for batch in self.batches:

@@ -191,8 +191,16 @@ class UiText(GlElement):
         GL.glClearColor(*clearColor)
 
     def __updateRenderer(self):
-        self.renderer.getTransform().setPos((-1,-1))
-        self.renderer.getTransform().setSize((2,2))
+        screenCoords = [
+            (self.openGLDim[0], self.openGLDim[1]),
+            (self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]),
+            (self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3]),
+            (self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3])
+        ]
+        screenCoords = [((c[0]+1)/2,(c[1]+1)/2)for c in screenCoords]
+        self.renderer.getSprite().setTexCoords(screenCoords)
+        self.renderer.getTransform().setPos((self.openGLDim[0], self.openGLDim[1]))
+        self.renderer.getTransform().setSize((self.openGLDim[2], self.openGLDim[3]))
         self.renderer.setDirtyVertex()
 
     def __getVertexData(self, xpos, ypos, w, h):

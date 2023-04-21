@@ -180,7 +180,8 @@ class Window():
         self.uiLayer.update(self.delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
         self.uiLayer.render()
-        print(self.uiLayer.getScreenSpaceUI(*self.getMousePos()))
+        data = self.uiLayer.getScreenSpaceUI(*self.getMousePos())
+        print(data)
         return
     
     def run(self):
