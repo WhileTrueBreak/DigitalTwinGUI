@@ -8,12 +8,12 @@ layout (location=4) in float aUiId;
 out vec4 fColor;
 out vec2 fTexCoords;
 out float fTexID;
-flat out uint uiId;
+flat out uint fUiId;
 
 void main() {
     gl_Position = vec4(aPos, 0.0, 1.0);
     fColor = aColor;
     fTexCoords = aTexCoords;
     fTexID = aTexID;
-    uiId = uint(aUiId);
+    fUiId = uint(aUiId);
 }

@@ -5,7 +5,7 @@ uniform sampler2D uTextures[8];
 in vec4 fColor;
 in vec2 fTexCoords;
 in float fTexID;
-flat in uint uiId;
+flat in uint fUiId;
 
 layout (location = 0) out vec4 color;
 layout (location = 1) out uvec3 picking;
@@ -16,5 +16,5 @@ void main() {
 	}else{
 		color = fColor;
 	}
-	picking = uvec3(uiId+1,uiId,gl_PrimitiveID);
+	picking = uvec3(fUiId+1,fUiId,gl_PrimitiveID);
 }

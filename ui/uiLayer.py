@@ -38,7 +38,6 @@ class UiLayer:
                 if currentBatch == None or not currentBatch.hasRoom(renderer):
                     currentBatch = UiBatch(self.window, UiLayer.MAX_BATCH_SIZE)
                     self.batches.append(currentBatch)
-                print(i)
                 renderer.setId(i)
                 currentBatch.addRenderer(renderer)
         self.hasMasterListChanged = False
