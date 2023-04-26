@@ -564,20 +564,20 @@ class Renderer:
         GL.glBindVertexArray(self.quadVAO)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
-        # config states
-        GL.glDisable(GL.GL_DEPTH_TEST)
-        GL.glDepthMask(GL.GL_TRUE)
-        GL.glViewport(*viewport)
+        # # config states
+        # GL.glDisable(GL.GL_DEPTH_TEST)
+        # GL.glDepthMask(GL.GL_TRUE)
+        # GL.glViewport(*viewport)
 
-        # render to screen
-        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
-        GL.glUseProgram(self.screenShader)
-        GL.glUniform2f(GL.glGetUniformLocation(self.screenShader, "texture_dim"), *self.window.dim)
+        # # render to screen
+        # GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        # GL.glUseProgram(self.screenShader)
+        # GL.glUniform2f(GL.glGetUniformLocation(self.screenShader, "texture_dim"), *self.window.dim)
 
-        GL.glActiveTexture(GL.GL_TEXTURE0)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
-        GL.glBindVertexArray(self.quadVAO)
-        GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
+        # GL.glActiveTexture(GL.GL_TEXTURE0)
+        # GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
+        # GL.glBindVertexArray(self.quadVAO)
+        # GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
         # reset states
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
@@ -588,7 +588,6 @@ class Renderer:
         if blend:
             GL.glEnable(GL.GL_BLEND)
         GL.glClearColor(*clearColor)
-
         return
 
     def getData(self, id):
@@ -604,4 +603,6 @@ class Renderer:
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
         return data[0][0]
     
+    def getTexture(self):
+        return self.opaqueTexture
 

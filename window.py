@@ -13,6 +13,7 @@ import sys
 from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiButton import UiButton
 from ui.elements.uiBlock import UiBlock
+from ui.elements.ui3dScene import Ui3DScene
 from ui.uiLayer import UiLayer
 
 from utils.uiHelper import *
@@ -85,44 +86,53 @@ class Window():
     
     def createUi(self):
 
-        constraints = [ABSOLUTE(T_X, 0),
-                       ABSOLUTE(T_Y, 0),
-                       RELATIVE(T_W, 1, P_W),
-                       ABSOLUTE(T_H, 40)]
-        self.tabWrapper = UiWrapper(self, constraints)
-        self.uiLayer.getMasterElem().addChild(self.tabWrapper)
+        # constraints = [ABSOLUTE(T_X, 0),
+        #                ABSOLUTE(T_Y, 0),
+        #                RELATIVE(T_W, 1, P_W),
+        #                ABSOLUTE(T_H, 40)]
+        # self.tabWrapper = UiWrapper(self, constraints)
+        # self.uiLayer.getMasterElem().addChild(self.tabWrapper)
 
-        self.tabBtns = []
-        numBtns = len(self.scenes)
+        # self.tabBtns = []
+        # numBtns = len(self.scenes)
         
-        for i in range(numBtns):
-            constraints = [
-                COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H)),
-                COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5/numBtns + 1/numBtns * i, P_W)),
-                RELATIVE(T_H, 0.9, P_H),
-                COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
-            ]
+        # for i in range(numBtns):
+        #     constraints = [
+        #         COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H)),
+        #         COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5/numBtns + 1/numBtns * i, P_W)),
+        #         RELATIVE(T_H, 0.9, P_H),
+        #         COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
+        #     ]
 
-            btn, text = centeredTextButton(self, constraints)
-            # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
-            text.setText(f'{self.text[i]}')
-            text.setFontSize(24)
-            text.setTextSpacing(7)
-            text.setTextColor((0,0,0))
-            btn.setDefaultColor([1.0,0.8,0.8])
-            btn.setHoverColor([1.0,0.7,0.7])
-            btn.setPressColor([1.0,0.6,0.6])
-            self.sceneMap[btn] = self.scenes[i]
-            self.tabBtns.append(btn)
-        self.tabWrapper.addChildren(*self.tabBtns)
+        #     btn, text = centeredTextButton(self, constraints)
+        #     # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
+        #     text.setText(f'{self.text[i]}')
+        #     text.setFontSize(24)
+        #     text.setTextSpacing(7)
+        #     text.setTextColor((0,0,0))
+        #     btn.setDefaultColor([1.0,0.8,0.8])
+        #     btn.setHoverColor([1.0,0.7,0.7])
+        #     btn.setPressColor([1.0,0.6,0.6])
+        #     self.sceneMap[btn] = self.scenes[i]
+        #     self.tabBtns.append(btn)
+        # self.tabWrapper.addChildren(*self.tabBtns)
 
 
-        t = UiBlock(self, [
+        t = Ui3DScene(self, [
             *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.8, P_W), RELATIVE(T_H, 0.9, P_H)
             ])
-        t.setTexture(Assets.CUBE_TEX.getTexture())
-        t.setColor([1,1,1,0.5])
+        self.modelRenderer = t.getModelRenderer()
         self.uiLayer.getMasterElem().addChild(t)
+        self.__createModels()
+
+    def __createModels(self):
+        self.modelRenderer.setViewMatrix(createViewMatrix(-0.7+5, -0.57+2, 1.5, -70.25, 0, 45))
+        self.benches = [0]*5
+        self.benches[0] = self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(7-0.4, 0.8+1.05, 0.85, 0, 0, 0))
+        self.benches[1] = self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(7-1.05, 0.4, 0.85, 0, 0, 90))
+        self.benches[2] = self.modelRenderer.addModel(Assets.TABLES[2], createTransformationMatrix(7-0.9, 0.8+2.1+0.9, 0.85, 0, 0, 0))
+        self.benches[3] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(7-0.9-0.7, 0.8+2.1+0.9-1.6, 0.85+0.06625, 0, 0, 0))
+        self.benches[3] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(7-1, 0.8+2.1+1.8+0.6, 0.85+0.06625, 0, 0, 0))
 
     def getMousePos(self):
         return self.mousePos
@@ -178,10 +188,13 @@ class Window():
         if self.currentScene != None:
             self.currentScene.update(self.delta)
         self.uiLayer.update(self.delta)
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
+
+        GL.glClearColor(1,0,0,1)
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
         self.uiLayer.render()
+
         data = self.uiLayer.getScreenSpaceUI(*self.getMousePos())
-        print(data)
         return
     
     def run(self):
