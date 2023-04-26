@@ -19,6 +19,8 @@ class GlElement:
         self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
         self.lastMouseState = self.window.mouseButtons
 
+        self.linkedElem = self
+
         self.zIndex = 0
 
         self.type = 'nothing'
@@ -172,3 +174,9 @@ class GlElement:
 
     def getRenderers(self):
         return self.renderers
+
+    def setLinkedElement(self, elem):
+        self.linkedElem = elem
+    
+    def getLinkedElement(self):
+        return self.linkedElem

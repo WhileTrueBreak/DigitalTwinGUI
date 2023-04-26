@@ -68,5 +68,7 @@ class UiLayer:
             if d[0] == 0:
                 continue
             data = d
-        return (data[0]-1, data[1], data[2])
+        if (data[0]-1) == -1:
+            return None
+        return self.masterList[data[0]-1].getLinkedElement()
 

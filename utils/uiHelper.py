@@ -10,6 +10,7 @@ def centeredTextButton(window, constraints):
         COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H))
     ]
     text = UiText(window, textConstraints)
+    text.setLinkedElement(btn)
     btn.addChild(text)
     return (btn, text)
 
