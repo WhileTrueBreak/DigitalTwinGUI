@@ -86,36 +86,36 @@ class Window():
     
     def createUi(self):
 
-        # constraints = [ABSOLUTE(T_X, 0),
-        #                ABSOLUTE(T_Y, 0),
-        #                RELATIVE(T_W, 1, P_W),
-        #                ABSOLUTE(T_H, 40)]
-        # self.tabWrapper = UiWrapper(self, constraints)
-        # self.uiLayer.getMasterElem().addChild(self.tabWrapper)
+        constraints = [ABSOLUTE(T_X, 0),
+                       ABSOLUTE(T_Y, 0),
+                       RELATIVE(T_W, 1, P_W),
+                       ABSOLUTE(T_H, 40)]
+        self.tabWrapper = UiWrapper(self, constraints)
+        self.uiLayer.getMasterElem().addChild(self.tabWrapper)
 
-        # self.tabBtns = []
-        # numBtns = len(self.scenes)
+        self.tabBtns = []
+        numBtns = len(self.scenes)
         
-        # for i in range(numBtns):
-        #     constraints = [
-        #         COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H)),
-        #         COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5/numBtns + 1/numBtns * i, P_W)),
-        #         RELATIVE(T_H, 0.9, P_H),
-        #         COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
-        #     ]
+        for i in range(numBtns):
+            constraints = [
+                COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H)),
+                COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5/numBtns + 1/numBtns * i, P_W)),
+                RELATIVE(T_H, 0.9, P_H),
+                COMPOUND(RELATIVE(T_W, 1/numBtns, P_W), RELATIVE(T_W, -0.1, P_H))
+            ]
 
-        #     btn, text = centeredTextButton(self, constraints)
-        #     # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
-        #     text.setText(f'{self.text[i]}')
-        #     text.setFontSize(24)
-        #     text.setTextSpacing(7)
-        #     text.setTextColor((0,0,0))
-        #     btn.setDefaultColor([1.0,0.8,0.8])
-        #     btn.setHoverColor([1.0,0.7,0.7])
-        #     btn.setPressColor([1.0,0.6,0.6])
-        #     self.sceneMap[btn] = self.scenes[i]
-        #     self.tabBtns.append(btn)
-        # self.tabWrapper.addChildren(*self.tabBtns)
+            btn, text = centeredTextButton(self, constraints)
+            # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
+            text.setText(f'{self.text[i]}')
+            text.setFontSize(24)
+            text.setTextSpacing(7)
+            text.setTextColor((0,0,0))
+            btn.setDefaultColor([1.0,0.8,0.8])
+            btn.setHoverColor([1.0,0.7,0.7])
+            btn.setPressColor([1.0,0.6,0.6])
+            self.sceneMap[btn] = self.scenes[i]
+            self.tabBtns.append(btn)
+        self.tabWrapper.addChildren(*self.tabBtns)
 
 
         t = Ui3DScene(self, [
@@ -161,11 +161,11 @@ class Window():
                 self.keyState[event.key] = True
             elif event.type == pygame.KEYUP:
                 self.keyState[event.key] = False
-        if not cResized and self.resized:
+        if cResized:
             self.updateWindow()
-            self.resized = False
-        elif cResized:
             self.resized = True
+        elif not cResized:
+            self.resized = False
         for event in self.uiEvents:
             if event['action'] == 'release' and event['obj'] in self.tabBtns:
                 if self.currentScene != None:
@@ -182,6 +182,7 @@ class Window():
 
     def updateWindow(self):
         self.dim = pygame.display.get_window_size()
+        return
 
     def update(self):
         self.eventHandler()
@@ -189,12 +190,12 @@ class Window():
             self.currentScene.update(self.delta)
         self.uiLayer.update(self.delta)
 
-        GL.glClearColor(1,0,0,1)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         self.uiLayer.render()
 
         data = self.uiLayer.getScreenSpaceUI(*self.getMousePos())
+        # print(data)
         return
     
     def run(self):

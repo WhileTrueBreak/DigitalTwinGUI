@@ -139,6 +139,7 @@ class GlElement:
             if x.toChange != T_X: continue
             cIndex = i
             break
+        if self.constraints[cIndex] == constraint: return
         self.constraints[cIndex] = constraint
         self.setDirtyVertices()
 
@@ -149,6 +150,7 @@ class GlElement:
             if x.toChange != T_Y: continue
             cIndex = i
             break
+        if self.constraints[cIndex] == constraint: return
         self.constraints[cIndex] = constraint
         self.setDirtyVertices()
 
@@ -159,6 +161,7 @@ class GlElement:
             if x.toChange != T_W: continue
             cIndex = i
             break
+        if self.constraints[cIndex] == constraint: return
         self.constraints[cIndex] = constraint
         self.setDirtyVertices()
 
@@ -169,6 +172,7 @@ class GlElement:
             if x.toChange != T_H: continue
             cIndex = i
             break
+        if self.constraints[cIndex] == constraint: return
         self.constraints[cIndex] = constraint
         self.setDirtyVertices()
 

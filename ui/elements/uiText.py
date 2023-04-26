@@ -83,6 +83,7 @@ class UiText(GlElement):
         self.renderers.append(self.renderer)
 
     def reshape(self):
+
         textureDim = self.window.dim
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.textFrameTex)
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
@@ -96,6 +97,7 @@ class UiText(GlElement):
     def absUpdate(self, delta):
         self.__updateTextScale()
         self.__updateTextBound()
+        return
     
     def __updateTextScale(self):
         self.currScale = self.window.getWindowScale()
@@ -105,8 +107,7 @@ class UiText(GlElement):
         self.dirtyText = True
 
     def __updateTextBound(self):
-        if not self.dirtyText:
-            return
+        if not self.dirtyText: return
         scale = self.scaledFontSize/48
         
         maxdes = 1
@@ -137,7 +138,6 @@ class UiText(GlElement):
                 self.updateHeight(RELATIVE(T_H, scale, P_H))
         else:
             self.updateHeight(ABSOLUTE(T_H, self.maxDescender + self.maxAscender))
-        self.setDirtyVertices()
         self.dirtyText = False
 
     def __updateRenderTexture(self, text, font, scale):

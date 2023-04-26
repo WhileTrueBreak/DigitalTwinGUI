@@ -41,6 +41,9 @@ class UiBatch:
 
     def __initFrame(self):
 
+        self.colorClear = np.array([0,0,0,1], dtype='float32')
+        self.pickingClear = np.array([0,0,0], dtype='float32')
+
         self.renderFBO = GL.glGenFramebuffers(1)
 
         textureDim = self.window.dim
@@ -118,6 +121,9 @@ class UiBatch:
     def render(self):
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.renderFBO)
+
+        GL.glClearBufferfv(GL.GL_COLOR, 0, self.colorClear)
+        GL.glClearBufferfv(GL.GL_COLOR, 1, self.pickingClear)
 
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         GL.glEnable(GL.GL_BLEND)

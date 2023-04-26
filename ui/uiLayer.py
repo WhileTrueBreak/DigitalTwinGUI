@@ -22,12 +22,12 @@ class UiLayer:
             self.__updateMasterList()
         if self.hasMasterListChanged:
             self.__updateRenderers()
-        for elem in self.masterList:
-            elem.update(delta)
+        self.masterElem.update(delta)
 
     def render(self):
         for batch in self.batches:
             batch.render()
+        return
 
     def __updateRenderers(self):
         self.batches = []
