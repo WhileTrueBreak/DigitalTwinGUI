@@ -54,8 +54,8 @@ class Assets:
 
         Assets.CUBE_TEX = Assets.loadTexture('res/textures/cube.jpg', flipY=True)
         
-        Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
-        Assets.GUI_SHADER = Assets.linkShaders('res/shader/guiVertex.glsl', 'res/shader/guiFragment.glsl')
+        Assets.TEXT_SHADER = Assets.linkShaders('res/shader/ui/textureVertex.glsl', 'res/shader/ui/textFragment.glsl')
+        Assets.GUI_SHADER = Assets.linkShaders('res/shader/ui/guiVertex.glsl', 'res/shader/ui/guiFragment.glsl')
 
         Assets.OPAQUE_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/opaqueFragment.glsl')
         Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/transparentFragment.glsl')
