@@ -100,7 +100,7 @@ class UiText(GlElement):
         return
     
     def __updateTextScale(self):
-        self.currScale = self.window.getWindowScale()
+        self.currScale = (1,1)#self.window.getWindowScale()
         if self.prevWindowScale[1] == self.currScale[1]: return
         self.scaledFontSize = self.fontSize*self.currScale[1]
         self.scaledTextSpacing = self.textSpacing*self.currScale[1]
