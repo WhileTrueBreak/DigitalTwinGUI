@@ -118,6 +118,16 @@ class UiBatch:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
     
+    def updateFrame(self):
+        textureDim = self.window.dim
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.screenTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB16UI, textureDim[0], textureDim[1], 0, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.depthTexture)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, textureDim[0], textureDim[1], 0, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+
     def render(self):
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.renderFBO)

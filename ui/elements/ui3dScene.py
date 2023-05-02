@@ -38,14 +38,16 @@ class Ui3DScene(GlElement):
         self.backgroundRenderer.getTransform().setSize((self.openGLDim[2:4]))
         self.renderer.setDirtyVertex()
         self.backgroundRenderer.setDirtyVertex()
+        self.modelRenderer.setProjectionMatrix(createProjectionMatrix(self.dim[2], self.dim[3], self.FOV, self.NEAR_PLANE, self.FAR_PLANE))
+        self.modelRenderer.updateCompositeLayers()
         return
 
     def absUpdate(self, delta):
         GL.glEnable(GL.GL_CULL_FACE)
         GL.glEnable(GL.GL_DEPTH_TEST)
-        GL.glViewport(int(self.dim[0]), int(self.window.dim[1]-self.dim[3]-self.dim[1]), int(self.dim[2]), int(self.dim[3]))
+        # GL.glViewport(int(self.dim[0]), int(self.window.dim[1]-self.dim[3]-self.dim[1]), int(self.dim[2]), int(self.dim[3]))
         self.modelRenderer.render()
-        GL.glViewport(0, 0, *self.window.dim)
+        # GL.glViewport(0, 0, *self.window.dim)
         GL.glDisable(GL.GL_DEPTH_TEST)
         GL.glDisable(GL.GL_CULL_FACE)
         return

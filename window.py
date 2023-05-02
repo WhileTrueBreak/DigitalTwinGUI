@@ -119,7 +119,7 @@ class Window():
 
 
         t = Ui3DScene(self, [
-            *Constraints.ALIGN_CENTER,RELATIVE(T_W, 0.8, P_W), RELATIVE(T_H, 0.9, P_H)
+            *Constraints.ALIGN_CENTER,RELATIVE(T_W, 1, P_W), RELATIVE(T_H, 1, P_H)
             ])
         self.modelRenderer = t.getModelRenderer()
         self.uiLayer.getMasterElem().addChild(t)

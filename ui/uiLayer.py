@@ -17,6 +17,8 @@ class UiLayer:
     
     def update(self, delta):
         if self.window.resized:
+            for batch in self.batches:
+                batch.updateFrame()
             self.__updateMasterElem()
         if self.masterElem.isDirtyComponents:
             self.__updateMasterList()

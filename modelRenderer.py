@@ -502,9 +502,9 @@ class Renderer:
         depthMask = GL.glGetIntegerv(GL.GL_DEPTH_WRITEMASK)
         blend = GL.glGetIntegerv(GL.GL_BLEND)
         clearColor = GL.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE)
-        viewport = GL.glGetIntegerv(GL.GL_VIEWPORT)
+        # viewport = GL.glGetIntegerv(GL.GL_VIEWPORT)
 
-        GL.glViewport(0, 0, *self.window.dim)
+        # GL.glViewport(0, 0, *self.window.dim)
 
         # config states
         GL.glEnable(GL.GL_DEPTH_TEST)
