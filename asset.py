@@ -62,9 +62,9 @@ class Assets:
         Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/transparentFragment.glsl')
         Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shader/3d/compositeVertex.glsl', 'res/shader/3d/compositeFragment.glsl')
 
-        Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf', 48*64)
-        Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF', 48*64)
-        Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf', 48*64)
+        Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf')
+        Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF')
+        Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf')
 
         floorVertices = [
             [0,0,0],[1,0,0],[0,1,0],

@@ -51,7 +51,6 @@ class Window():
         GL.glEnable(GL.GL_BLEND)
         GL.glCullFace(GL.GL_BACK)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-        GL.glClearColor(0.0, 0.0, 0.0, 1.0) # Set clear color
         GL.glViewport(0, 0, self.dim[0], self.dim[1]) # Set viewport
         GL.glEnable(GL.GL_DEPTH_TEST) # Enable depth testing
         GL.glDepthFunc(GL.GL_LESS)
@@ -75,8 +74,8 @@ class Window():
         self.uiSelectBuffer = []
         self.selectedUi = None
 
-        self.scenes = [None, None, None, None, None, None]
-        self.text = ['a', 'b', 'c', 'd', 'e', 'f']
+        self.scenes = [None]
+        self.sceneName = ['None']
         self.sceneMap = {}
         self.currentScene = None
 
@@ -92,6 +91,12 @@ class Window():
                        ABSOLUTE(T_H, 40)]
         self.tabWrapper = UiWrapper(self, constraints)
         self.uiLayer.getMasterElem().addChild(self.tabWrapper)
+        constraints = [ABSOLUTE(T_X, 0),
+                       ABSOLUTE(T_Y, 40),
+                       RELATIVE(T_W, 1, P_W),
+                       COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, 40))]
+        self.sceneWrapper = UiWrapper(self, constraints)
+        self.uiLayer.getMasterElem().addChild(self.sceneWrapper)
 
         self.tabBtns = []
         numBtns = len(self.scenes)
@@ -106,7 +111,7 @@ class Window():
 
             btn, text = centeredTextButton(self, constraints)
             # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
-            text.setText(f'{self.text[i]}')
+            text.setText(f'{self.sceneName[i]}')
             text.setFontSize(24)
             text.setTextSpacing(7)
             text.setTextColor((0,0,0))
@@ -117,13 +122,12 @@ class Window():
             self.tabBtns.append(btn)
         self.tabWrapper.addChildren(*self.tabBtns)
 
-
-        t = Ui3DScene(self, [
-            *Constraints.ALIGN_CENTER,RELATIVE(T_W, 1, P_W), RELATIVE(T_H, 1, P_H)
-            ])
-        self.modelRenderer = t.getModelRenderer()
-        self.uiLayer.getMasterElem().addChild(t)
-        self.__createModels()
+        # t = Ui3DScene(self, [
+        #     *Constraints.ALIGN_CENTER,RELATIVE(T_W, 1, P_W), RELATIVE(T_H, 1, P_H)
+        #     ])
+        # self.modelRenderer = t.getModelRenderer()
+        # self.uiLayer.getMasterElem().addChild(t)
+        # self.__createModels()
 
     def __createModels(self):
         self.modelRenderer.setViewMatrix(createViewMatrix(-0.7+5, -0.57+2, 1.5, -70.25, 0, 45))
@@ -153,7 +157,7 @@ class Window():
             if event.type == pygame.QUIT:
                 self.running = False
                 if self.currentScene != None:
-                    self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
+                    self.uiLayer.getMasterElem().removeChild(self.currentScene.sceneWrapper)
                     self.currentScene.stop()
             elif event.type == pygame.VIDEORESIZE:
                 cResized = True
@@ -169,11 +173,11 @@ class Window():
         for event in self.uiEvents:
             if event['action'] == 'release' and event['obj'] in self.tabBtns:
                 if self.currentScene != None:
-                    self.windowWrapper.removeChild(self.currentScene.sceneWrapper)
+                    self.uiLayer.getMasterElem().removeChild(self.currentScene.sceneWrapper)
                     self.currentScene.stop()
                 self.currentScene = self.sceneMap[event['obj']]
                 if self.currentScene != None:
-                    self.windowWrapper.addChild(self.currentScene.sceneWrapper)
+                    self.uiLayer.getMasterElem().addChild(self.currentScene.sceneWrapper)
                     self.currentScene.start()
             if self.currentScene: self.currentScene.eventHandler(event)
         self.selectedUi = self.uiSelectBuffer[0] if len(self.uiSelectBuffer) > 0 else self.selectedUi
@@ -189,17 +193,13 @@ class Window():
         if self.currentScene != None:
             self.currentScene.update(self.delta)
         self.uiLayer.update(self.delta)
-
+        GL.glClearColor(0.5, 0.5, 0.5, 1.0) # Set clear color
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         self.uiLayer.render()
         return
     
     def run(self):
-        # self.currentScene = self.scenes[2]
-        # self.windowWrapper.addChild(self.currentScene.sceneWrapper)
-        # self.currentScene.start()
-
         start = time.time_ns()
         while self.running:
             end = start
@@ -220,6 +220,14 @@ class Window():
             self.currentScene.stop() 
         pygame.quit()
         sys.exit()
+
+    def addScene(self, scene):
+        scene.sceneWrapper.updateXPos(ABSOLUTE(T_X, 0))
+        scene.sceneWrapper.updateYPos(ABSOLUTE(T_Y, 40))
+        scene.sceneWrapper.updateWidth(RELATIVE(T_W, 1, P_W))
+        scene.sceneWrapper.updateHeight(COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -40)))
+        self.scenes.append(scene)
+        self.sceneName.append(scene.name)
 
     def getWindowScale(self):
         return (self.dim[0]/self.ogdim[0],self.dim[1]/self.ogdim[1])

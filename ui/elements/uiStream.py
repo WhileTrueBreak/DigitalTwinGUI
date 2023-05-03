@@ -1,19 +1,36 @@
+from ui.glElement import GlElement
+from ui.uiRenderer import UiRenderer
+
 from PIL import Image
 
 from connections.mjpegThread import *
 from asset import *
 
-class MJPEGStream:
-    def __init__(self, url):
+class UiStream(GlElement):
+    def __init__(self, window, constraints, url, dim=(0,0,0,0)):
+        super().__init__(window, constraints, dim)
+        self.type = 'stream'
 
         self.url = url
         self.container = StreamContainer()
         self.threadStopFlag = True
         self.thread = createMjpegThread(self.container, self.url, lambda:self.threadStopFlag)
         self.image = None
-
+        
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
+        
+        self.renderer = UiRenderer.fromSprite(Sprite.fromTexture(self.texture), Transform.fromPS((self.openGLDim[0:2]),(self.openGLDim[2:4])))
+        self.renderers.append(self.renderer)
+
+    def reshape(self):
+        self.renderer.getTransform().setPos((self.openGLDim[0:2]))
+        self.renderer.getTransform().setSize((self.openGLDim[2:4]))
+        self.renderer.setDirtyVertex()
+
+    def absUpdate(self, delta):
+        self.updateImage(delta)
+        return
 
     def updateImage(self, delta):
         stream = self.container.getStream()
@@ -43,7 +60,7 @@ class MJPEGStream:
                 self.image)       # data to load as texture
         GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-    
+
     def start(self):
         self.threadStopFlag = False
         if self.thread.is_alive(): return

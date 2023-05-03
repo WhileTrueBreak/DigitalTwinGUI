@@ -1,14 +1,12 @@
-from ui_old.uiButton import UiButton
-from ui_old.uiWrapper import UiWrapper
-from ui_old.ui3dScene import Ui3DScene
-from ui_old.uiStream import UiStream
-from ui_old.uiVideo import UiVideo
-from ui_old.uiWrapper import UiWrapper
-from ui_old.uiTextInput import UiTextInput
-from ui_old.uiText import UiText
-from ui_old.uiSlider import UiSlider
-from ui_old.uiImage import UiImage
-from ui_old.uiCombiner import UiCombiner
+from ui.elements.uiButton import UiButton
+from ui.elements.uiWrapper import UiWrapper
+from ui.elements.ui3dScene import Ui3DScene
+from ui.elements.uiStream import UiStream
+from ui.elements.uiWrapper import UiWrapper
+# from ui.elements.uiTextInput import UiTextInput
+from ui.elements.uiText import UiText
+from ui.elements.uiSlider import UiSlider
+# from ui.elements.uiImage import UiImage
 from ui_old.mjpegStream import MJPEGStream
 
 from utils.uiHelper import *
@@ -229,27 +227,15 @@ class KukaScene(Scene):
         for i in range(len(self.printerControlPanels)):
             self.printerControlPanels[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
 
-            self.textImgCombiners[i] = UiCombiner(self.window, Constraints.ALIGN_CENTER)
-
-            padding = 10
-            constraints = [
-                *Constraints.ZERO_ZERO,
-                COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2 * padding)),
-                RELATIVE(T_H, 3/4, T_W)
-            ]
-            self.printerStreamSteals[i] = UiImage(self.window, constraints)
-            self.printerStreamSteals[i].setTexture(self.printerStreams[i].texture)
             constraints = [
                 Constraints.ZERO_ZERO[0],
                 RELATIVE(T_Y, -1, T_W),
                 RELATIVE(T_W, 1, P_W),
                 RELATIVE(T_H, 3/4, T_W)
             ]
-            printerStream = UiImage(self.window, constraints)
+            printerStream = UiBlock(self.window, constraints)
             printerStream.setTexture(Assets.CUBE_TEX.texture)
-            self.printerStreamSteals[i].addChild(printerStream)
-            self.textImgCombiners[i].addChild(self.printerStreamSteals[i])
-            self.printerControlPanels[i].addChild(self.textImgCombiners[i])
+            self.printerControlPanels[i].addChild(printerStream)
 
     def __createStreams(self):
         self.printerStreams = [None]*5

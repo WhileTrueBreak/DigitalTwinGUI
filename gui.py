@@ -3,7 +3,7 @@ import nest_asyncio
 
 from window import *
 # from scenes.CamScene import *
-# from scenes.KukaScene import *
+from scenes.KukaScene import *
 # from scenes.BadApple import *
 from asset import *
 
@@ -13,13 +13,13 @@ window = Window((1200, 800), 'Digital Twin GUI', fullscreen=False, resizeable=Tr
 
 # scene3 = CamScene(window, '3D Printers')
 # scene3.createUi()
-# scene4 = KukaScene(window, 'Digital Twin')
-# scene4.createUi()
+scene4 = KukaScene(window, 'Digital Twin')
+scene4.createUi()
 # scene5 = BadApple(window, 'bad apple')
 # scene5.createUi()
 
 # window.scenes.append(scene3)
-# window.scenes.append(scene4)
+window.addScene(scene4)
 # window.scenes.append(scene5)
 
 window.createUi()
