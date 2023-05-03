@@ -3,15 +3,14 @@ from ui.elements.uiWrapper import UiWrapper
 from ui.elements.ui3dScene import Ui3DScene
 from ui.elements.uiStream import UiStream
 from ui.elements.uiWrapper import UiWrapper
-# from ui.elements.uiTextInput import UiTextInput
 from ui.elements.uiText import UiText
 from ui.elements.uiSlider import UiSlider
-# from ui.elements.uiImage import UiImage
-from ui_old.mjpegStream import MJPEGStream
 
 from utils.uiHelper import *
 from utils.mathHelper import *
+
 from connections.opcua import *
+from connections.mjpegStream import MJPEGStream
 
 from constraintManager import *
 from scenes.scene import *
