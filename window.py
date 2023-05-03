@@ -78,8 +78,8 @@ class Window():
         self.uiSelectBuffer = []
         self.selectedUi = None
 
-        self.scenes = [None]
-        self.sceneName = ['None']
+        self.scenes = []
+        self.sceneName = []
         self.sceneMap = {}
         self.currentScene = None
 

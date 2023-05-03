@@ -234,7 +234,7 @@ class KukaScene(Scene):
                 RELATIVE(T_H, 3/4, T_W)
             ]
             printerStream = UiBlock(self.window, constraints)
-            printerStream.setTexture(Assets.CUBE_TEX.texture)
+            printerStream.setTexture(self.printerStreams[i].texture)
             self.printerControlPanels[i].addChild(printerStream)
 
     def __createStreams(self):
