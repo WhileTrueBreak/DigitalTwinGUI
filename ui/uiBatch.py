@@ -134,6 +134,8 @@ class UiBatch:
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.renderFBO)
 
+        clearColor = GL.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE)
+
         GL.glClearBufferfv(GL.GL_COLOR, 0, self.colorClear)
         GL.glClearBufferfv(GL.GL_COLOR, 1, self.pickingClear)
 
@@ -188,6 +190,7 @@ class UiBatch:
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
         GL.glEnable(GL.GL_DEPTH_TEST)
+        GL.glClearColor(*clearColor)
 
     def rebuffer(self):
         GL.glBindVertexArray(self.vao)

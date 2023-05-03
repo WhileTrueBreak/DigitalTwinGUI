@@ -502,6 +502,7 @@ class Renderer:
         depthMask = GL.glGetIntegerv(GL.GL_DEPTH_WRITEMASK)
         blend = GL.glGetIntegerv(GL.GL_BLEND)
         clearColor = GL.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE)
+        print(clearColor)
         # viewport = GL.glGetIntegerv(GL.GL_VIEWPORT)
 
         # GL.glViewport(0, 0, *self.window.dim)
@@ -512,14 +513,10 @@ class Renderer:
         GL.glDepthMask(GL.GL_TRUE)
         GL.glDisable(GL.GL_BLEND)
         GL.glClearColor(0,0,0,0)
-        # GL.glBlendFunci(1, GL.GL_ONE, GL.GL_ONE)
-
+        
         # render opaque
         GL.glUseProgram(self.opaqueShader)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
-        # print(self.pickingTexture)
-        # print(GL.glGetFramebufferAttachmentParameteriv(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, None))
-        # print(GL.glGetFramebufferAttachmentParameteriv(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT1, GL.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, None))
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
         bidLoc = GL.glGetUniformLocation(self.opaqueShader, "batchId")
 

@@ -55,6 +55,7 @@ class Window():
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         GL.glViewport(0, 0, self.dim[0], self.dim[1]) # Set viewport
         GL.glEnable(GL.GL_DEPTH_TEST) # Enable depth testing
+        GL.glClearColor(0,0,0,1)
         GL.glDepthFunc(GL.GL_LESS)
 
         Constants.MAX_TEXTURE_SLOTS = GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS)
@@ -68,7 +69,6 @@ class Window():
         GL.glEnable(GL.GL_BLEND)
         GL.glEnable(GL.GL_DEPTH_TEST)
         GL.glCullFace(GL.GL_BACK)
-        GL.glClearColor(0, 0, 0, 1)
 
         self.uiEvents = []
         self.mousePos = (0,0)
@@ -125,13 +125,6 @@ class Window():
             self.sceneMap[btn] = self.scenes[i]
             self.tabBtns.append(btn)
         self.tabWrapper.addChildren(*self.tabBtns)
-
-        # t = Ui3DScene(self, [
-        #     *Constraints.ALIGN_CENTER,RELATIVE(T_W, 1, P_W), RELATIVE(T_H, 1, P_H)
-        #     ])
-        # self.modelRenderer = t.getModelRenderer()
-        # self.uiLayer.getMasterElem().addChild(t)
-        # self.__createModels()
 
     def __createModels(self):
         self.modelRenderer.setViewMatrix(createViewMatrix(-0.7+5, -0.57+2, 1.5, -70.25, 0, 45))
@@ -197,7 +190,6 @@ class Window():
         if self.currentScene != None:
             self.currentScene.update(self.delta)
         self.uiLayer.update(self.delta)
-        GL.glClearColor(0.5, 0.5, 0.5, 1.0) # Set clear color
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         self.uiLayer.render()
