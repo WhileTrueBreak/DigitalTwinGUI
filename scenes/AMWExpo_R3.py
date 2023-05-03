@@ -12,7 +12,7 @@ from connections.opcua import *
 from utils.uiHelper import *
 from utils.mathHelper import *
 
-from constraintManager import *
+from ui.constraintManager import *
 from scenes.scene import *
 
 from asyncua import ua

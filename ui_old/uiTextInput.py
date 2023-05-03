@@ -1,6 +1,6 @@
 from ui.uiElement import GlElement
 from ui.uiText import UiText
-from constraintManager import *
+from ui.constraintManager import *
 import OpenGL.GL as GL
 import ctypes
 import pygame

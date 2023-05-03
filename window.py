@@ -17,7 +17,7 @@ from ui.elements.ui3dScene import Ui3DScene
 from ui.uiLayer import UiLayer
 
 from utils.uiHelper import *
-from constraintManager import *
+from ui.constraintManager import *
 from asset import *
 
 from constants import Constants

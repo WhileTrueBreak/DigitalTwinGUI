@@ -1,5 +1,5 @@
 from ui.uiElement import GlElement
-from constraintManager import *
+from ui.constraintManager import *
 
 from asset import *
 import math

@@ -12,7 +12,7 @@ from utils.mathHelper import *
 from connections.opcua import *
 from connections.mjpegStream import MJPEGStream
 
-from constraintManager import *
+from ui.constraintManager import *
 from scenes.scene import *
 
 from asyncua import ua

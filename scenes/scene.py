@@ -1,4 +1,4 @@
-from constraintManager import *
+from ui.constraintManager import *
 
 from ui.elements.uiWrapper import *
 

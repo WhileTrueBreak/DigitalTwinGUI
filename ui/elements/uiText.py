@@ -1,5 +1,5 @@
 from ui.glElement import GlElement
-from constraintManager import *
+from ui.constraintManager import *
 
 from ui.uiRenderer import *
 

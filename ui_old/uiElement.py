@@ -1,4 +1,4 @@
-from constraintManager import *
+from ui.constraintManager import *
 
 from abc import abstractmethod
 import OpenGL.GL as GL
