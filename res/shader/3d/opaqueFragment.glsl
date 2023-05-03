@@ -17,7 +17,7 @@ void main() {
 	// opaque = vec4(float(objIndex), float(batchId), float(gl_PrimitiveID), 1);
 	// return;
 
-	if(texId >= 0){
+	if(texId > -0.5){
 		vec4 color = vec4(color.rgb*shade, color.a); 
 		opaque = color * vec4(texture(uTextures[int(texId)], texCoord).rgb, 1);
 	}else {

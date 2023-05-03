@@ -17,7 +17,7 @@ in vec4 color;
 void main(){
 	picking = uvec3(objIndex, batchId, gl_PrimitiveID+1);
 	vec4 objColor = vec4(0,0,0,0);
-	if(texId >= 0){
+	if(texId > -0.5){
 		vec4 textureColor = texture(uTextures[int(texId)], texCoord);
 		vec4 baseColor = vec4(color.rgb*shade, color.a);
 		objColor = vec4(textureColor.r*baseColor.r, textureColor.g*baseColor.r, textureColor.b*baseColor.b, baseColor.a);
