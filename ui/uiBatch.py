@@ -1,5 +1,7 @@
 from asset import Assets
 
+from constants import Constants
+
 import OpenGL.GL as GL
 
 import numpy as np
@@ -26,7 +28,7 @@ class UiBatch:
     def __init__(self, window, maxRenderers):
         self.window = window
         self.maxRenderers = maxRenderers
-        self.maxTextures = 8
+        self.maxTextures = Constants.MAX_TEXTURE_SLOTS
 
         self.numRenderers = 0
         self.uiRenderers = []

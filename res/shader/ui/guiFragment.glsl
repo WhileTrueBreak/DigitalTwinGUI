@@ -1,6 +1,6 @@
 #version 400 core
 
-uniform sampler2D uTextures[8];
+uniform sampler2D uTextures[%max_textures%];
 
 in vec4 fColor;
 in vec2 fTexCoords;

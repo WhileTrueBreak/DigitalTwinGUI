@@ -20,6 +20,8 @@ from utils.uiHelper import *
 from constraintManager import *
 from asset import *
 
+from constants import Constants
+
 import ctypes
 
 class Window():
@@ -54,6 +56,8 @@ class Window():
         GL.glViewport(0, 0, self.dim[0], self.dim[1]) # Set viewport
         GL.glEnable(GL.GL_DEPTH_TEST) # Enable depth testing
         GL.glDepthFunc(GL.GL_LESS)
+
+        Constants.MAX_TEXTURE_SLOTS = GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS)
 
     def initialize(self):
         self.timeCounter = 0

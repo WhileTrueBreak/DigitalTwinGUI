@@ -14,6 +14,8 @@ from utils.model import *
 from utils.mathHelper import *
 from utils.sprite import Sprite
 
+from constants import Constants
+
 class Assets:
     
     INIT = False
@@ -113,6 +115,7 @@ class Assets:
     def complieShader(shaderFile, shaderType):
         print(f'Compiling shader: {shaderFile}')
         shaderCode = Path(shaderFile).read_text()
+        shaderCode = shaderCode.replace('%max_textures%', str(Constants.MAX_TEXTURE_SLOTS))
         shaderRef = GL.glCreateShader(shaderType)
         GL.glShaderSource(shaderRef, shaderCode)
         GL.glCompileShader(shaderRef)
