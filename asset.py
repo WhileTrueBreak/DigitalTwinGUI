@@ -1,3 +1,4 @@
+import os
 import cv2
 from PIL import Image
 
@@ -53,7 +54,6 @@ class Assets:
         Assets.SHELF = Assets.loadModelFile('res/models/Objects/Shelving1.stl', createTransformationMatrix(0, 0, 0, 90, 0, 0))
 
         Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')
-
         Assets.CUBE_TEX = Assets.loadTexture('res/textures/cube.jpg', flipY=True)
         
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/ui/textureVertex.glsl', 'res/shader/ui/textFragment.glsl')
@@ -74,14 +74,14 @@ class Assets:
             # [0,0,0],[0,1,0],[1,0,0],
             # [1,0,0],[0,1,0],[1,1,0],
         ]
-        Assets.UNIT_WALL = Model(vertices=floorVertices)
+        Assets.UNIT_WALL = Assets.loadModelVertices(vertices=floorVertices)
         screenVertices = [
             [0, 0, 0.0, 1, 0],[ 2*3/4, 0, 0.0, 1, 1],[ 0, 2, 0.0, 0, 0],
             [0, 2, 0.0, 0, 0],[ 2*3/4, 0, 0.0, 1, 1],[ 2*3/4, 2, 0.0, 0, 1],
             [0, 0, 0.0, 1, 0],[ 0, 2, 0.0, 0, 0],[ 2*3/4, 0, 0.0, 1, 1],
             [0, 2, 0.0, 0, 0],[ 2*3/4, 2, 0.0, 0, 1],[ 2*3/4, 0, 0.0, 1, 1],
         ]
-        Assets.SCREEN = Model(vertices=screenVertices)
+        Assets.SCREEN = Assets.loadModelVertices(vertices=screenVertices)
 
         Assets.INIT = True
     @staticmethod
@@ -156,10 +156,22 @@ class Assets:
     @staticmethod
     def loadModelFile(file, tmat=np.identity(4)):
         print(f'Loading model: {file}')
-        return Model(file=file, transform=tmat)
+        ext = os.path.splitext(file)[1].lower()
+        models = None
+        match ext:
+            case '.stl':
+                models = Model.fromSTL(file=file, transform=tmat)
+            case '.obj':
+                models = Model.fromOBJ(file=file, transform=tmat)
+            case _:
+                raise Exception(f'Unknown file type: {ext}')
+        if len(models) > 1:
+            return models
+        return models[0]
+
     @staticmethod
     def loadModelVertices(vertices):
-        return Model(vertices=vertices)
+        return Model.fromVertices(vertices)[0]
     @staticmethod
     def loadImage(file, flipX=False, flipY=False, rot=0):
         print(f'Loading image: {file}')
