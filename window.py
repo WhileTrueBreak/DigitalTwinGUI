@@ -193,9 +193,6 @@ class Window():
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         self.uiLayer.render()
-
-        data = self.uiLayer.getScreenSpaceUI(*self.getMousePos())
-        # print(data)
         return
     
     def run(self):
@@ -226,3 +223,7 @@ class Window():
 
     def getWindowScale(self):
         return (self.dim[0]/self.ogdim[0],self.dim[1]/self.ogdim[1])
+
+    def getHoveredUI(self):
+        data = self.uiLayer.getScreenSpaceUI(*self.getMousePos())
+        return data

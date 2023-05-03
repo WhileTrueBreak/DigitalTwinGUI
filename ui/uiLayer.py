@@ -51,8 +51,10 @@ class UiLayer:
             elem = queue.pop(0)
             self.masterList.append(elem)
             queue.extend(elem.children)
+        self.masterList = sorted(self.masterList, key=lambda a:a.getZIndex())
         self.masterElem.setCleanComponents()
         self.hasMasterListChanged = True
+
 
     def __updateMasterElem(self):
         self.masterElem.dim = (0,0,*self.window.dim)
@@ -72,5 +74,8 @@ class UiLayer:
             data = d
         if (data[0]-1) == -1:
             return None
-        return self.masterList[data[0]-1].getLinkedElement()
+        element = self.masterList[data[0]-1]
+        while element.getLinkedElement() != element:
+            element = element.getLinkedElement()
+        return element
 

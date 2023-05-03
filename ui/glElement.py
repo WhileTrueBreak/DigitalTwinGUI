@@ -57,7 +57,7 @@ class GlElement:
     def __actions(self):
         mousePos = self.window.mousePos
         self.isDefault = False
-        if mousePos[0] > self.dim[0] and mousePos[0] < self.dim[0] + self.dim[2] and mousePos[1] > self.dim[1] and mousePos[1] < self.dim[1] + self.dim[3]:
+        if self.window.getHoveredUI() == self:
             self.isDefault = False
             if self.window.mouseButtons[0] and not self.lastMouseState[0]:
                 self.onPress()
@@ -184,3 +184,9 @@ class GlElement:
     
     def getLinkedElement(self):
         return self.linkedElem
+
+    def getZIndex(self):
+        return self.zIndex
+    
+    def setZIndex(self, z):
+        self.zIndex = z
