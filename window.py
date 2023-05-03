@@ -114,14 +114,14 @@ class Window():
             ]
 
             btn, text = centeredTextButton(self, constraints)
-            # text.setText(f'{self.scenes[i].name if self.scenes[i] != None else "None"}')
             text.setText(f'{self.sceneName[i]}')
             text.setFontSize(24)
-            text.setTextSpacing(7)
-            text.setTextColor((0,0,0))
-            btn.setDefaultColor([1.0,0.8,0.8])
-            btn.setHoverColor([1.0,0.7,0.7])
-            btn.setPressColor([1.0,0.6,0.6])
+            text.setTextSpacing(6)
+            text.setTextColor((1,1,1))
+            text.setFont(Assets.ARIAL_FONT)
+            btn.setDefaultColor([0,109/255,174/255])
+            btn.setHoverColor([0,159/255,218/255])
+            btn.setPressColor([0,172/255,62/255])
             self.sceneMap[btn] = self.scenes[i]
             self.tabBtns.append(btn)
         self.tabWrapper.addChildren(*self.tabBtns)

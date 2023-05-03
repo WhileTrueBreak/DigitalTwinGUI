@@ -47,6 +47,15 @@ class Assets:
         Assets.TUBE_OUTSIDE = Assets.loadModelFile('res/models/tube/tube_outside.stl', createTransformationMatrix(0,0,0,0,90,0))
         Assets.TUBE_HOLDER = Assets.loadModelFile('res/models/tube/tube_holder.stl')
 
+        Assets.BAR_STOOL = Assets.loadModelFile('res/models/Expo/BarStool.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.COUNTER = Assets.loadModelFile('res/models/Expo/Counter.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.TABLE = Assets.loadModelFile('res/models/Expo/RoundTable.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.TVSCREEN = Assets.loadModelFile('res/models/Expo/TvScreen.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+
+        Assets.AMW_LEFT_TEX = Assets.loadTexture('res/textures/AMW_LEFT.jpg', flipX=True, flipY=True)
+        Assets.AMW_RIGHT_TEX = Assets.loadTexture('res/textures/AMW_RIGHT.jpg', flipX=False, flipY=True)
+        Assets.AMW_MID_TEX = Assets.loadTexture('res/textures/AMW_MID.jpg', flipX=True, flipY=True)
+
         Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', createScaleMatrix(0.01, 0.01, 0.01).dot(createTransformationMatrix(0,0,0,90,0,0)))
         Assets.POLE = Assets.loadModelFile('res/models/pole.stl', createScaleMatrix(10, 10, 10))
 
@@ -67,6 +76,7 @@ class Assets:
         Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf')
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF')
         Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf')
+        Assets.ARIAL_FONT = Assets.loadFont('res/fonts/ARIALNB.TTF',48*64)
 
         floorVertices = [
             [0,0,0],[1,0,0],[0,1,0],
@@ -82,6 +92,13 @@ class Assets:
             [0, 2, 0.0, 0, 0],[ 2*3/4, 2, 0.0, 0, 1],[ 2*3/4, 0, 0.0, 1, 1],
         ]
         Assets.SCREEN = Assets.loadModelVertices(vertices=screenVertices)
+        screenVertices1 = [
+            [0, 0, 0.0, 1, 0],[ 1, 0, 0.0, 1, 1],[ 0, 1, 0.0, 0, 0],
+            [0, 1, 0.0, 0, 0],[ 1, 0, 0.0, 1, 1],[ 1, 1, 0.0, 0, 1],
+            [0, 0, 0.0, 1, 0],[ 0, 1, 0.0, 0, 0],[ 1, 0, 0.0, 1, 1],
+            [0, 1, 0.0, 0, 0],[ 1, 1, 0.0, 0, 1],[ 1, 0, 0.0, 1, 1],
+        ]
+        Assets.SCREENSQ = Assets.loadModelVertices(vertices=screenVertices1)
 
         Assets.INIT = True
     @staticmethod
