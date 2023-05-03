@@ -3,7 +3,7 @@ from ui.uiBatch import UiBatch
 
 class UiLayer:
 
-    MAX_BATCH_SIZE = 64
+    MAX_BATCH_SIZE = 1
 
     def __init__(self, window):
         self.window = window

@@ -41,7 +41,7 @@ class UiBatch:
 
     def __initFrame(self):
 
-        self.colorClear = np.array([0,0,0,1], dtype='float32')
+        self.colorClear = np.array([0,0,0,0], dtype='float32')
         self.pickingClear = np.array([0,0,0], dtype='float32')
 
         self.renderFBO = GL.glGenFramebuffers(1)
