@@ -144,16 +144,6 @@ class Assets:
             return
         return programRef
     @staticmethod
-    def loadModelQ(file, tmat=np.identity(4)):
-        q = Queue()
-        t = Thread(target = Assets.modelLoader, args =(q, file, tmat))
-        t.start()
-        return q
-    @staticmethod
-    def modelLoader(q, file, tmat):
-        print(f'Loading model: {file}')
-        q.put(Model(file=file, transform=tmat))
-    @staticmethod
     def loadModelFile(file, tmat=np.identity(4)):
         print(f'Loading model: {file}')
         ext = os.path.splitext(file)[1].lower()
@@ -168,25 +158,9 @@ class Assets:
         if len(models) > 1:
             return models
         return models[0]
-
     @staticmethod
     def loadModelVertices(vertices):
         return Model.fromVertices(vertices)[0]
-    @staticmethod
-    def loadImage(file, flipX=False, flipY=False, rot=0):
-        print(f'Loading image: {file}')
-        img = Image.open(file)
-        if flipX:
-            img = img.transpose(Image.FLIP_LEFT_RIGHT)
-        if flipY:
-            img = img.transpose(Image.FLIP_TOP_BOTTOM)
-        if rot == 90:
-            img = img.transpose(Image.ROTATE_90)
-        elif rot == 180:
-            img = img.transpose(Image.ROTATE_180)
-        elif rot == 270:
-            img = img.transpose(Image.ROTATE_270)
-        return img
     @staticmethod
     def loadTexture(file, flipX=False, flipY=False, rot=0):
         print(f'Loading texture: {file}')
