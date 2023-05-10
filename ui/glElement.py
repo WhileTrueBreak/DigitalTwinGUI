@@ -16,7 +16,9 @@ class GlElement:
         self.parent = None
         self.isDirtyVertices = True
         self.isDirtyComponents = True
-        self.constraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
+        self.childConstraintManager = ConstraintManager((self.dim[0], self.dim[1]), (self.dim[2], self.dim[3]))
+        
+        self.constraintManager = None
         self.lastMouseState = self.window.mouseButtons
 
         self.linkedElem = self
@@ -37,7 +39,8 @@ class GlElement:
         return
 
     def updateDim(self):
-        relDim = self.parent.constraintManager.calcConstraints(*self.constraints)
+        if self.constraintManager != None:
+            relDim = self.constraintManager.calcConstraints(*self.constraints)
         self.dim = (relDim[0] + self.parent.dim[0], relDim[1] + self.parent.dim[1], relDim[2], relDim[3])
         self.openGLDim = (
             (2*self.dim[0])/self.window.dim[0] - 1,
@@ -45,8 +48,8 @@ class GlElement:
             (2*self.dim[2])/self.window.dim[0],
             (2*self.dim[3])/self.window.dim[1],
         )
-        self.constraintManager.pos = (self.dim[0], self.dim[1])
-        self.constraintManager.dim = (self.dim[2], self.dim[3]) 
+        self.childConstraintManager.pos = (self.dim[0], self.dim[1])
+        self.childConstraintManager.dim = (self.dim[2], self.dim[3]) 
     @abstractmethod
     def reshape(self):
         ...
@@ -92,6 +95,7 @@ class GlElement:
         if child.parent != None: return
         if child in self.children: return
         self.setDirtyComponents()
+        child.setConstraintManager(self.childConstraintManager)
         child.setDirtyVertices()
         self.children.append(child)
         child.parent = self
@@ -190,3 +194,9 @@ class GlElement:
     
     def setZIndex(self, z):
         self.zIndex = z
+
+    def setConstraintManager(self, manager):
+        self.constraintManager = manager
+
+    def getConstraintManager(self):
+        return self.constraintManager

@@ -12,6 +12,8 @@ class UiRenderer:
 
         self.isDirtyVertex = True
         self.isDirtySprite = True
+
+        self.edgeRadius = 0
     
     @classmethod
     def fromColor(cls, color, transform):
@@ -76,4 +78,11 @@ class UiRenderer:
     
     def getId(self):
         return self.id
+
+    def setEdgeRadius(self, radius):
+        self.edgeRadius = radius
+
+    def getEdgeRadius(self):
+        return self.edgeRadius
+    
 

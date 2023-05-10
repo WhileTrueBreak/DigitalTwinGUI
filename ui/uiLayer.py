@@ -55,7 +55,6 @@ class UiLayer:
         self.masterElem.setCleanComponents()
         self.hasMasterListChanged = True
 
-
     def __updateMasterElem(self):
         self.masterElem.dim = (0,0,*self.window.dim)
         self.masterElem.constraintManager.pos = (0,0)

@@ -36,6 +36,8 @@ class UiBatch:
         self.vertices = np.zeros((self.maxRenderers*UiBatch.NUM_VERTICES, UiBatch.VERTEX_SIZE), dtype='float32')
         self.indices = self.__genDefaultIndices()
         self.textures = []
+
+        self.textureIds = np.full((self.maxRenderers), -1, dtype='int32')
         
         self.rebufferData = False
         self.__initFrame()
@@ -110,6 +112,11 @@ class UiBatch:
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
         GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.indices, GL.GL_DYNAMIC_DRAW)
 
+        self.ssboTextureId = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssboTextureId)
+        GL.glBufferData(GL.GL_SHADER_STORAGE_BUFFER, self.textureIds, GL.GL_DYNAMIC_DRAW)
+        GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssboTextureId)
+
         GL.glVertexAttribPointer(0, UiBatch.POS_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.POS_OFFSET*4))
         GL.glVertexAttribPointer(1, UiBatch.COLOR_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.COLOR_OFFSET*4))
         GL.glVertexAttribPointer(2, UiBatch.UV_SIZE, GL.GL_FLOAT, GL.GL_FALSE, UiBatch.VERTEX_SIZE*4, ctypes.c_void_p(UiBatch.UV_OFFSET*4))
@@ -156,6 +163,8 @@ class UiBatch:
         GL.glBindVertexArray(self.vao)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
+        GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssboTextureId)
+        GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssboTextureId)
 
         for i in range(len(self.textures)):
             GL.glActiveTexture(GL.GL_TEXTURE0 + i)
@@ -198,6 +207,9 @@ class UiBatch:
         GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.vertices)
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
         GL.glBufferSubData(GL.GL_ELEMENT_ARRAY_BUFFER, 0, self.indices)
+        GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssboTextureId)
+        GL.glBufferSubData(GL.GL_SHADER_STORAGE_BUFFER, 0, self.textureIds.nbytes, self.textureIds)
+        GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssboTextureId)
         
         self.rebufferData = False
 
@@ -217,6 +229,7 @@ class UiBatch:
     
     def __updateVertexData(self, index):
         renderer = self.uiRenderers[index]
+        rendererIndex = index
         index = index * UiBatch.NUM_VERTICES
         vertexPos = renderer.getTransform().getVertices()
         for i in range(UiBatch.NUM_VERTICES):
@@ -231,11 +244,14 @@ class UiBatch:
             self.vertices[index][6] = renderer.getTexCoords()[i][0]
             self.vertices[index][7] = renderer.getTexCoords()[i][1]
 
-            self.vertices[index][8] = -1 if renderer.getTexture() == None else self.textures.index(renderer.getTexture())
+            # self.vertices[index][8] = -1 if renderer.getTexture() == None else self.textures.index(renderer.getTexture())
 
-            self.vertices[index][9] = renderer.getId()
+            self.vertices[index][8] = renderer.getId()
+
+            self.vertices[index][9] = rendererIndex
 
             index += 1
+        self.textureIds[rendererIndex] = -1 if renderer.getTexture() == None else self.textures.index(renderer.getTexture())
         self.rebuffer()
     
     def __genDefaultIndices(self):
