@@ -1,10 +1,10 @@
 from ui.glElement import GlElement
 from ui.uiRenderer import UiRenderer
+from ui.ui3d.modelRenderer import *
 
 from utils.mathHelper import *
 from utils.transform import *
 
-from modelRenderer import *
 from asset import *
 
 class Ui3DScene(GlElement):
