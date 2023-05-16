@@ -1,0 +1,4 @@
+- Use single shader for all ui
+    - Include texture and color
+- batch render objects with renderer
+- order by layer and hierarchy

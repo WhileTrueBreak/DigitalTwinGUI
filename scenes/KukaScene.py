@@ -1,20 +1,18 @@
-from ui.uiButton import UiButton
-from ui.ui3dScene import Ui3DScene
-from ui.uiWrapper import UiWrapper
-from ui.uiStream import UiStream
-from ui.uiVideo import UiVideo
-from ui.uiWrapper import UiWrapper
-from ui.uiTextInput import UiTextInput
-from ui.uiText import UiText
-from ui.uiSlider import UiSlider
-from ui.uiImage import UiImage
-from ui.mjpegStream import MJPEGStream
+from ui.elements.uiButton import UiButton
+from ui.elements.uiWrapper import UiWrapper
+from ui.elements.ui3dScene import Ui3DScene
+from ui.elements.uiStream import UiStream
+from ui.elements.uiWrapper import UiWrapper
+from ui.elements.uiText import UiText
+from ui.elements.uiSlider import UiSlider
 
 from utils.uiHelper import *
 from utils.mathHelper import *
-from connections.opcua import *
 
-from constraintManager import *
+from connections.opcua import *
+from connections.mjpegStream import MJPEGStream
+
+from ui.constraintManager import *
 from scenes.scene import *
 
 from asyncua import ua
@@ -134,7 +132,7 @@ class KukaScene(Scene):
             COMPOUND(RELATIVE(T_X, 0.7, P_W), ABSOLUTE(T_X, padding)),
             ABSOLUTE(T_Y, padding),
             COMPOUND(RELATIVE(T_W, 0.3, P_W), ABSOLUTE(T_W, -2*padding)),
-            COMPOUND(RELATIVE(T_H, 0.8, P_H), ABSOLUTE(T_H, -2*padding)),
+            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
 
         self.panelWrapper = UiWrapper(self.window, constraints)
@@ -224,19 +222,19 @@ class KukaScene(Scene):
     def __createPrinterUi(self):
         self.printerControlPanels = [None]*len(self.printerStreams)
         self.printerStreamSteals = [None]*len(self.printerStreams)
+        self.textImgCombiners = [None]*len(self.printerStreams)
         for i in range(len(self.printerControlPanels)):
             self.printerControlPanels[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
 
-            padding = 10
             constraints = [
-                ABSOLUTE(T_X, padding),
-                ABSOLUTE(T_Y, padding),
-                COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2 * padding)),
+                Constraints.ZERO_ZERO[0],
+                RELATIVE(T_Y, -1, T_W),
+                RELATIVE(T_W, 1, P_W),
                 RELATIVE(T_H, 3/4, T_W)
             ]
-            self.printerStreamSteals[i] = UiImage(self.window, constraints)
-            self.printerStreamSteals[i].setTexture(self.printerStreams[i].texture)
-            self.printerControlPanels[i].addChild(self.printerStreamSteals[i])
+            printerStream = UiBlock(self.window, constraints)
+            printerStream.setTexture(self.printerStreams[i].texture)
+            self.printerControlPanels[i].addChild(printerStream)
 
     def __createStreams(self):
         self.printerStreams = [None]*5

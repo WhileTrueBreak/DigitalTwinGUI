@@ -1,6 +1,6 @@
-from ui.uiButton import UiButton
-from ui.uiText import UiText
-from constraintManager import *
+from ui.elements.uiButton import UiButton
+from ui.elements.uiText import UiText
+from ui.constraintManager import *
 
 def centeredTextButton(window, constraints):
     btn = UiButton(window, constraints,)
@@ -10,6 +10,7 @@ def centeredTextButton(window, constraints):
         COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H))
     ]
     text = UiText(window, textConstraints)
+    text.setLinkedElement(btn)
     btn.addChild(text)
     return (btn, text)
 

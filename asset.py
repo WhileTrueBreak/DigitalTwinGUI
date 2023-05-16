@@ -1,3 +1,4 @@
+import os
 import cv2
 from PIL import Image
 
@@ -11,8 +12,10 @@ from threading import Thread
 import time
 
 from utils.model import *
-from utils.texture import *
 from utils.mathHelper import *
+from utils.sprite import Sprite
+
+from constants import Constants
 
 class Assets:
     
@@ -44,6 +47,15 @@ class Assets:
         Assets.TUBE_OUTSIDE = Assets.loadModelFile('res/models/tube/tube_outside.stl', createTransformationMatrix(0,0,0,0,90,0))
         Assets.TUBE_HOLDER = Assets.loadModelFile('res/models/tube/tube_holder.stl')
 
+        Assets.BAR_STOOL = Assets.loadModelFile('res/models/Expo/BarStool.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.COUNTER = Assets.loadModelFile('res/models/Expo/Counter.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.TABLE = Assets.loadModelFile('res/models/Expo/RoundTable.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.TVSCREEN = Assets.loadModelFile('res/models/Expo/TvScreen.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+
+        Assets.AMW_LEFT_TEX = Assets.loadTexture('res/textures/AMW_LEFT.jpg', flipX=True, flipY=True)
+        Assets.AMW_RIGHT_TEX = Assets.loadTexture('res/textures/AMW_RIGHT.jpg', flipX=False, flipY=True)
+        Assets.AMW_MID_TEX = Assets.loadTexture('res/textures/AMW_MID.jpg', flipX=True, flipY=True)
+
         Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', createScaleMatrix(0.01, 0.01, 0.01).dot(createTransformationMatrix(0,0,0,90,0,0)))
         Assets.POLE = Assets.loadModelFile('res/models/pole.stl', createScaleMatrix(10, 10, 10))
 
@@ -51,21 +63,20 @@ class Assets:
         Assets.SHELF = Assets.loadModelFile('res/models/Objects/Shelving1.stl', createTransformationMatrix(0, 0, 0, 90, 0, 0))
 
         Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')
-
         Assets.CUBE_TEX = Assets.loadTexture('res/textures/cube.jpg', flipY=True)
         
-        Assets.TEXT_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/textFragment.glsl')
-        Assets.IMAGE_SHADER = Assets.linkShaders('res/shader/textureVertex.glsl', 'res/shader/imageFragment.glsl')
-        Assets.SOLID_SHADER = Assets.linkShaders('res/shader/solidVertex.glsl', 'res/shader/solidFragment.glsl')
+        Assets.TEXT_SHADER = Assets.linkShaders('res/shader/ui/textureVertex.glsl', 'res/shader/ui/textFragment.glsl')
+        Assets.GUI_SHADER = Assets.linkShaders('res/shader/ui/guiVertex.glsl', 'res/shader/ui/guiFragment.glsl')
+        Assets.SCREEN_SHADER = Assets.linkShaders('res/shader/ui/screenVertex.glsl', 'res/shader/ui/screenFragment.glsl')
 
         Assets.OPAQUE_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/opaqueFragment.glsl')
         Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/transparentFragment.glsl')
         Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shader/3d/compositeVertex.glsl', 'res/shader/3d/compositeFragment.glsl')
-        Assets.SCREEN_SHADER = Assets.linkShaders('res/shader/3d/screenVertex.glsl', 'res/shader/3d/screenFragment.glsl')
 
-        Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf', 48*64)
-        Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF', 48*64)
-        Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf', 48*64)
+        Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf')
+        Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF')
+        Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf')
+        Assets.ARIAL_FONT = Assets.loadFont('res/fonts/ARIALNB.TTF',48*64)
 
         floorVertices = [
             [0,0,0],[1,0,0],[0,1,0],
@@ -73,14 +84,21 @@ class Assets:
             # [0,0,0],[0,1,0],[1,0,0],
             # [1,0,0],[0,1,0],[1,1,0],
         ]
-        Assets.UNIT_WALL = Model(vertices=floorVertices)
+        Assets.UNIT_WALL = Assets.loadModelVertices(vertices=floorVertices)
         screenVertices = [
             [0, 0, 0.0, 1, 0],[ 2*3/4, 0, 0.0, 1, 1],[ 0, 2, 0.0, 0, 0],
             [0, 2, 0.0, 0, 0],[ 2*3/4, 0, 0.0, 1, 1],[ 2*3/4, 2, 0.0, 0, 1],
             [0, 0, 0.0, 1, 0],[ 0, 2, 0.0, 0, 0],[ 2*3/4, 0, 0.0, 1, 1],
             [0, 2, 0.0, 0, 0],[ 2*3/4, 2, 0.0, 0, 1],[ 2*3/4, 0, 0.0, 1, 1],
         ]
-        Assets.SCREEN = Model(vertices=screenVertices)
+        Assets.SCREEN = Assets.loadModelVertices(vertices=screenVertices)
+        screenVertices1 = [
+            [0, 0, 0.0, 1, 0],[ 1, 0, 0.0, 1, 1],[ 0, 1, 0.0, 0, 0],
+            [0, 1, 0.0, 0, 0],[ 1, 0, 0.0, 1, 1],[ 1, 1, 0.0, 0, 1],
+            [0, 0, 0.0, 1, 0],[ 0, 1, 0.0, 0, 0],[ 1, 0, 0.0, 1, 1],
+            [0, 1, 0.0, 0, 0],[ 1, 1, 0.0, 0, 1],[ 1, 0, 0.0, 1, 1],
+        ]
+        Assets.SCREENSQ = Assets.loadModelVertices(vertices=screenVertices1)
 
         Assets.INIT = True
     @staticmethod
@@ -114,6 +132,7 @@ class Assets:
     def complieShader(shaderFile, shaderType):
         print(f'Compiling shader: {shaderFile}')
         shaderCode = Path(shaderFile).read_text()
+        shaderCode = shaderCode.replace('%max_textures%', str(Constants.MAX_TEXTURE_SLOTS))
         shaderRef = GL.glCreateShader(shaderType)
         GL.glShaderSource(shaderRef, shaderCode)
         GL.glCompileShader(shaderRef)
@@ -142,37 +161,23 @@ class Assets:
             return
         return programRef
     @staticmethod
-    def loadModelQ(file, tmat=np.identity(4)):
-        q = Queue()
-        t = Thread(target = Assets.modelLoader, args =(q, file, tmat))
-        t.start()
-        return q
-    @staticmethod
-    def modelLoader(q, file, tmat):
-        print(f'Loading model: {file}')
-        q.put(Model(file=file, transform=tmat))
-    @staticmethod
     def loadModelFile(file, tmat=np.identity(4)):
         print(f'Loading model: {file}')
-        return Model(file=file, transform=tmat)
+        ext = os.path.splitext(file)[1].lower()
+        models = None
+        match ext:
+            case '.stl':
+                models = Model.fromSTL(file=file, transform=tmat)
+            case '.obj':
+                models = Model.fromOBJ(file=file, transform=tmat)
+            case _:
+                raise Exception(f'Unknown file type: {ext}')
+        if len(models) > 1:
+            return models
+        return models[0]
     @staticmethod
     def loadModelVertices(vertices):
-        return Model(vertices=vertices)
-    @staticmethod
-    def loadImage(file, flipX=False, flipY=False, rot=0):
-        print(f'Loading image: {file}')
-        img = Image.open(file)
-        if flipX:
-            img = img.transpose(Image.FLIP_LEFT_RIGHT)
-        if flipY:
-            img = img.transpose(Image.FLIP_TOP_BOTTOM)
-        if rot == 90:
-            img = img.transpose(Image.ROTATE_90)
-        elif rot == 180:
-            img = img.transpose(Image.ROTATE_180)
-        elif rot == 270:
-            img = img.transpose(Image.ROTATE_270)
-        return img
+        return Model.fromVertices(vertices)[0]
     @staticmethod
     def loadTexture(file, flipX=False, flipY=False, rot=0):
         print(f'Loading texture: {file}')
@@ -187,14 +192,28 @@ class Assets:
             img = img.transpose(Image.ROTATE_180)
         elif rot == 270:
             img = img.transpose(Image.ROTATE_270)
-        texture = Texture(img)
-        return texture
+        
+        imgData = np.array(list(img.getdata()), np.int8)
+
+        texture = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, texture)
+        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+        GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+        GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, *img.size, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imgData)
+
+        sprite = Sprite.fromTexture(texture)
+        return sprite
     @staticmethod
     def loadVideo(file):
         print(f'Loading video: {file}')
         capture = cv2.VideoCapture(file)
         return capture
-
 
 class CharacterSlot:
     def __init__(self, texture, glyph):
@@ -211,8 +230,3 @@ class CharacterSlot:
             self.advance = None
         else:
             raise RuntimeError('unknown glyph type')
-
-
-
-
-

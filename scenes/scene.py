@@ -1,6 +1,6 @@
-from constraintManager import *
+from ui.constraintManager import *
 
-from ui.uiWrapper import *
+from ui.elements.uiWrapper import *
 
 from window import *
 
@@ -12,13 +12,7 @@ class Scene:
         self.name = name
 
         self.dim = self.window.screen.get_size()
-        constraints = [
-            ABSOLUTE(T_X, 0),
-            ABSOLUTE(T_Y, Window.TAB_HEIGHT),
-            RELATIVE(T_W, 1, P_W),
-            COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -Window.TAB_HEIGHT))
-        ]
-        self.sceneWrapper = UiWrapper(self.window, constraints)
+        self.sceneWrapper = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0, 0))
     @abstractmethod
     def createUi(self):
         ...
