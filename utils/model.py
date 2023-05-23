@@ -82,6 +82,10 @@ class Model:
     @classmethod
     def fromVertices(cls, vertices, transform=np.identity(4)):
         return [cls(vertices, np.arange(len(vertices)))]
+    
+    @classmethod
+    def fromVertIndex(cls, vertices, indices, transform=np.identity(4)):
+        return [cls(vertices[indices], indices)]
 
     def __init__(self, vertices, indices):
         self.vertices = vertices
