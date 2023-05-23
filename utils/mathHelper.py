@@ -91,6 +91,10 @@ def createScaleMatrix(x, y, z):
     mat[2,2] = z
     return mat
 
+def solveQuadratic(a, b, c):
+    d = (b**2-4*a*c)**0.5
+    return ((-b+d)/(2*a),(-b-d)/(2*a))
+
 
 
 

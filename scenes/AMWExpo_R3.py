@@ -5,11 +5,11 @@ from ui.elements.uiStream import UiStream
 from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiText import UiText
 from ui.elements.uiSlider import UiSlider
+from ui.uiHelper import *
 
 from connections.mjpegStream import MJPEGStream
 from connections.opcua import *
 
-from utils.uiHelper import *
 from utils.mathHelper import *
 
 from ui.constraintManager import *

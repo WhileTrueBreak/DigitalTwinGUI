@@ -5,9 +5,10 @@ from ui.elements.uiStream import UiStream
 from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiText import UiText
 from ui.elements.uiSlider import UiSlider
+from ui.uiHelper import *
 
-from utils.uiHelper import *
 from utils.mathHelper import *
+from utils.kukaIK import *
 
 from connections.opcua import *
 from connections.mjpegStream import MJPEGStream
@@ -66,37 +67,17 @@ class KukaScene(Scene):
 
         self.threadStopFlag = True
         self.opcuaReceiverContainer = OpcuaContainer()
+        self.opcuaTransmitterContainer = OpcuaContainer()
         
-        self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
-            [
-                'ns=24;s=R4d_Joi1', 
-                'ns=24;s=R4d_Joi2', 
-                'ns=24;s=R4d_Joi3', 
-                'ns=24;s=R4d_Joi4', 
-                'ns=24;s=R4d_Joi5', 
-                'ns=24;s=R4d_Joi6', 
-                'ns=24;s=R4d_Joi7'
-            ], lambda:self.threadStopFlag)
-        self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
-            [
-                'ns=24;s=R4d_ForX', 
-                'ns=24;s=R4d_ForY', 
-                'ns=24;s=R4d_ForZ' 
-            ], lambda:self.threadStopFlag)
-        self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
-            [
-                'ns=24;s=R4c_ProgID', 
-                'ns=24;s=R4c_Start',    
-                'ns=24;s=R4f_Ready', 
-                'ns=24;s=R4f_End',  
-            ], lambda:self.threadStopFlag)
+        self.dataThread1 = None
+        self.dataThread2 = None
+        self.forceThread = None
+        self.progControlThread = None
+        self.transmitter = None
 
         self.progStartFlag = False
         self.executingFlag = False
         self.doneFlag = False
-
-        self.opcuaTransmitterContainer = OpcuaContainer()
-        self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/', lambda:self.threadStopFlag)
         return
 
     def createUi(self):
@@ -440,6 +421,21 @@ class KukaScene(Scene):
         elif self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
             self.sendBtn.unlock()
 
+    def __updateEndeffector(self):
+        data_pos = ['ns=24;s=R4d_PosX',
+                    'ns=24;s=R4d_PosY',
+                    'ns=24;s=R4d_PosZ']
+        data_rot = ['ns=24;s=R4d_RotA',
+                    'ns=24;s=R4d_RotB',
+                    'ns=24;s=R4d_RotC']
+        pos = [self.opcuaReceiverContainer.getValue(d,default=0)[0]/1000 for d in data_pos]
+        rot = [self.opcuaReceiverContainer.getValue(d,default=0)[0] for d in data_rot]
+
+        #update jointsRad with new position
+        #hope IK is fast here
+        self.jointsRad = self.jointsRad
+        return
+
     def __updateGuiText(self):
         for i in range(len(self.selecterWrappers)):
             self.liveAngleText[i].setText(f'Live: {int(self.jointsRad[i]*180/pi)}')
@@ -462,6 +458,9 @@ class KukaScene(Scene):
             self.forceVector[2] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForZ', default=0)[0]
         if self.matchLive:
             self.twinJoints = self.jointsRad.copy()
+        
+        self.__updateEndeffector()
+
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(self.jointsRad)
         for id in self.modelKukaIds:
             mat = Robot1_T_0_[self.modelKukaData[id][3]].copy()
@@ -546,8 +545,8 @@ class KukaScene(Scene):
             stream.start()
         self.threadStopFlag = False
 
-        if not self.dataThread.is_alive():
-            self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+        if self.dataThread1 == None or not self.dataThread1.is_alive():
+            self.dataThread1 = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
                 [
                     'ns=24;s=R4d_Joi1', 
                     'ns=24;s=R4d_Joi2', 
@@ -557,14 +556,14 @@ class KukaScene(Scene):
                     'ns=24;s=R4d_Joi6', 
                     'ns=24;s=R4d_Joi7'
                 ], lambda:self.threadStopFlag)
-        if not self.forceThread.is_alive():
+        if self.forceThread == None or not self.forceThread.is_alive():
             self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
                 [
                     'ns=24;s=R4d_ForX', 
                     'ns=24;s=R4d_ForY', 
                     'ns=24;s=R4d_ForZ' 
                 ], lambda:self.threadStopFlag)
-        if not self.progControlThread.is_alive():
+        if self.progControlThread == None or not self.progControlThread.is_alive():
             self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
                 'ns=24;s=R4c_ProgID', 
@@ -572,8 +571,19 @@ class KukaScene(Scene):
                 'ns=24;s=R4f_Ready', 
                 'ns=24;s=R4f_End',  
             ], lambda:self.threadStopFlag)
-        if not self.transmitter.is_alive():
+        if self.transmitter == None or not self.transmitter.is_alive():
             self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/', lambda:self.threadStopFlag)
+        if self.dataThread2 == None or not self.dataThread2.is_alive():
+            self.dataThread2 = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+                [
+                    'ns=24;s=R4d_PosX',
+                    'ns=24;s=R4d_PosY',
+                    'ns=24;s=R4d_PosZ',
+                    'ns=24;s=R4d_RotA',
+                    'ns=24;s=R4d_RotB',
+                    'ns=24;s=R4d_RotC',
+                ], lambda:self.threadStopFlag)
+        
         return
     
     def stop(self):
