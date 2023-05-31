@@ -1,7 +1,25 @@
+from ui.elements.uiSlider import UiSlider
+from ui.elements.uiButton import UiButton
+from ui.elements.uiWrapper import UiWrapper
+from ui.elements.uiText import UiText
+from ui.constraintManager import *
+from ui.uiHelper import *
+
+from scenes.ui.pages import Pages
+
+from connections.opcua import *
+from connections.opcuaReceiver import OpcuaReceiver
+from connections.opcuaTransmitter import OpcuaTransmitter
+
+from asset import *
+
+import numpy as np
+from asyncua import ua
+
 class KukaRobot:
 
     def __init__(self, pos, nid, rid, modelRenderer, hasGripper=True, hasForceVector=False):
-        self.joints = [0,0,0,pi/2,0,0,0]
+        self.joints = [0,0,0,0,0,0,0]
         self.forceVector = np.array([0,0,0], dtype='float32')
         self.pos = pos
         self.nodeId = nid
@@ -9,7 +27,7 @@ class KukaRobot:
         self.modelRenderer = modelRenderer
         self.hasGripper = hasGripper
         self.hasForceVector = hasForceVector
-        self.colors = np.zero((8,4), dtype='float32')
+        self.colors = np.zeros((8,4), dtype='float32')
         self.isLinkedOpcua = True
         self.__loadModel()
         self.__setupConnections()
@@ -17,6 +35,7 @@ class KukaRobot:
     def __loadModel(self):
         self.modelKukaIds = []
         x, y, z = self.pos
+        Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
         for i in range(0,8):
             mat = Robot1_T_0_[i].copy()
             self.modelKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
@@ -57,7 +76,7 @@ class KukaRobot:
         if not self.isLinkedOpcua: return
         for i in range(7):
             if not self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_Joi{i+1}')): continue
-            self.jointsRad[i] = radians(self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_Joi{i+1}'), default=0)[0])
+            self.joints[i] = radians(self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_Joi{i+1}'), default=0)[0])
         if self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForX')):
             self.forceVector[0] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForX'), default=0)[0]
         if self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForY')):
@@ -66,9 +85,9 @@ class KukaRobot:
             self.forceVector[2] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForZ'), default=0)[0]
 
     def __updateJoints(self):
-        Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.jointsRad)
+        Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
         for i,id in enumerate(self.modelKukaIds):
-            mat = Robot1_T_0_[max(i, len(Robot1_T_0_)-1)].copy()
+            mat = Robot1_T_0_[min(i, len(Robot1_T_0_)-1)].copy()
             mat[0][3] += self.pos[0]*2/2
             mat[1][3] += self.pos[1]*2/2
             mat[2][3] += self.pos[2]*2/2
@@ -92,14 +111,10 @@ class KukaRobot:
         if not self.isLinkedOpcua:return
         self.jointReceiver.start()
         self.forceReceiver.start()
-        self.progControlReceiver.start()
-        self.transmitter.start()
 
     def stop(self):
         self.jointReceiver.stop()
         self.forceReceiver.stop()
-        self.progControlReceiver.stop()
-        self.transmitter.stop()
 
     def __DH(self, DH_table):
         T_0_ = np.ndarray(shape=(len(DH_table)+1,4,4))
@@ -151,6 +166,12 @@ class KukaRobot:
     def getJoints(self):
         return self.joints
 
+    def isModel(self, modelId):
+        return modelId in self.modelKukaIds
+
+    def getColors(self):
+        return [self.modelRenderer.getData(i)['color'] for i in self.modelKukaIds]
+
 class KukaRobotTwin:
 
     FREE_MOVE_PROG = 2
@@ -160,6 +181,8 @@ class KukaRobotTwin:
         self.twinRobot = KukaRobot(pos, nid, rid, modelRenderer, hasGripper, False)
 
         self.window = window
+        self.nodeId = nid
+        self.robotId = rid
 
         self.twinJoints = self.twinRobot.getJoints().copy()
 
@@ -275,6 +298,7 @@ class KukaRobotTwin:
     def __updateJoints(self):
         if self.matchLive:
             self.twinJoints = self.liveRobot.getJoints().copy()
+        self.twinRobot.setJoints(self.twinJoints)
 
     def __updateProgram(self):
         if not self.opcuaReceiverContainer.getValue(self.__getNodeName('f_Ready'), default=False)[0]:
@@ -291,7 +315,7 @@ class KukaRobotTwin:
             self.sendBtn.lock()
             self.unlinkBtn.lock()
             self.sendBtnText.setText('Executing')
-            if self.opcuaReceiverContainer.getValue(self.__getNodeName('c_ProgID'), default=self.progid)[0] == 0:
+            if self.opcuaReceiverContainer.getValue(self.__getNodeName('c_ProgID'), default=KukaRobotTwin.FREE_MOVE_PROG)[0] == 0:
                 self.doneFlag = True
                 self.executingFlag = False
         elif self.doneFlag:
@@ -307,13 +331,13 @@ class KukaRobotTwin:
 
     def __updateGui(self):
         for i in range(len(self.selecterWrappers)):
-            self.liveAngleText[i].setText(f'Live: {int(self.jointsRad[i]*180/pi)}')
+            self.liveAngleText[i].setText(f'Live: {int(self.liveRobot.getJoints()[i]*180/pi)}')
             if not self.matchLive:
                 twinText = self.angleSlider[i].getValue()
                 self.twinJoints[i] = float(twinText)
             else:
                 self.angleSlider[i].setValue(self.twinJoints[i])
-            self.twinAngleText[i].setText(f'Twin: {int(self.twinJoints[i]*180/pi)}')
+            self.twinAngleText[i].setText(f'Twin: {int(self.twinRobot.getJoints()[i]*180/pi)}')
 
     def handleEvents(self, event):
         self.pages.handleEvents(event)
@@ -338,10 +362,14 @@ class KukaRobotTwin:
     def start(self):
         self.liveRobot.start()
         self.twinRobot.start()
+        self.progControlReceiver.start()
+        self.transmitter.start()
 
     def stop(self):
         self.liveRobot.stop()
         self.twinRobot.stop()
+        self.progControlReceiver.stop()
+        self.transmitter.stop()
 
     def getControlPanel(self):
         return self.pages.getPageWrapper()
@@ -359,10 +387,10 @@ class KukaRobotTwin:
         return True
 
     def __updateTwinColor(self):
-        for id in self.twinKukaIds:
-            color = self.modelRenderer.getData(id)['color']
-            self.modelRenderer.setColor(id, (*color[0:3], 0 if self.matchLive else 0.7))
-        color = self.modelRenderer.getData(self.TgripperId)['color']
-        self.modelRenderer.setColor(self.TgripperId, (*color[0:3], 0 if self.matchLive else 0.7))
+        colors = self.twinRobot.getColors()
+        self.twinRobot.setColors([(*color[0:3], 0 if self.matchLive else 0.7) for color in colors])
+
+    def isModel(self, modelId):
+        return self.twinRobot.isModel(modelId) or self.liveRobot.isModel(modelId)
 
 

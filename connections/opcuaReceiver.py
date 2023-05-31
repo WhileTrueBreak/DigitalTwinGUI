@@ -1,3 +1,5 @@
+from connections.opcua import *
+
 class OpcuaReceiver:
     def __init__(self, data, container, host):
         self.data = data
