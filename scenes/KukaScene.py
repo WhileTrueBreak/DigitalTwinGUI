@@ -7,6 +7,8 @@ from ui.elements.uiText import UiText
 from ui.elements.uiSlider import UiSlider
 from ui.uiHelper import *
 
+from scenes.ui.pages import Pages
+
 from utils.mathHelper import *
 # from utils.kukaIK import *
 
@@ -130,7 +132,12 @@ class KukaScene(Scene):
         return
 
     def __createArmControlUi(self):
-        self.armControlPanel = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
+        self.pages = Pages(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
+        self.pages.addPage()
+        self.pages.addPage()
+        self.pages.addPage()
+        self.page0 = self.pages.getPage(0)
+        self.armControlPanel = self.pages.getPageWrapper()
 
         self.selecterWrappers = [None]*7
         padding = 5
@@ -142,7 +149,7 @@ class KukaScene(Scene):
                 COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
             ]
             self.selecterWrappers[i] = UiWrapper(self.window, constraints)
-        self.armControlPanel.addChildren(*self.selecterWrappers)
+        self.page0.addChildren(*self.selecterWrappers)
 
         self.liveTextWrapper = [None]*len(self.selecterWrappers)
         self.liveAngleText = [None]*len(self.selecterWrappers)
@@ -180,10 +187,11 @@ class KukaScene(Scene):
         self.sendBtnText.setText('Execute')
         self.sendBtnText.setFontSize(20)
         self.sendBtnText.setTextSpacing(8)
-        self.sendBtn.setDefaultColor((0,0,0))
-        self.sendBtn.setHoverColor((0.1,0.1,0.1))
-        self.sendBtn.setPressColor((0.2,0.2,0.2))
-        self.armControlPanel.addChild(self.sendBtn)
+        self.sendBtn.setDefaultColor((0,109/255,174/255))
+        self.sendBtn.setHoverColor((0,159/255,218/255))
+        self.sendBtn.setPressColor((0,172/255,62/255))
+        self.sendBtn.setLockColor((0.6, 0.6, 0.6))
+        self.page0.addChild(self.sendBtn)
         
         constraints = [
             COMPOUND(RELATIVE(T_X, 0, P_W), ABSOLUTE(T_X, padding)),
@@ -195,10 +203,11 @@ class KukaScene(Scene):
         self.unlinkBtnText.setText('Unlink')
         self.unlinkBtnText.setFontSize(20)
         self.unlinkBtnText.setTextSpacing(8)
-        self.unlinkBtn.setDefaultColor((0,0,0))
-        self.unlinkBtn.setHoverColor((0.1,0.1,0.1))
-        self.unlinkBtn.setPressColor((0.2,0.2,0.2))
-        self.armControlPanel.addChild(self.unlinkBtn)
+        self.unlinkBtn.setDefaultColor((0,109/255,174/255))
+        self.unlinkBtn.setHoverColor((0,159/255,218/255))
+        self.unlinkBtn.setPressColor((0,172/255,62/255))
+        self.unlinkBtn.setLockColor((0.6, 0.6, 0.6))
+        self.page0.addChild(self.unlinkBtn)
 
     def __createPrinterUi(self):
         self.printerControlPanels = [None]*len(self.printerStreams)
@@ -290,15 +299,15 @@ class KukaScene(Scene):
         self.twinKukaIds = []
         for i in range(0,8):
             mat = Robot1_T_0_[i].copy()
-            x, y, z = 7-0.9-0.7, 0.8+2.1+0.9-1.6, 0.85+0.06625
+            x, y, z = 7-0.9-0.7+0.2, 0.8+2.1+0.9-1.6, 0.85+0.06625
             self.modelKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
             self.modelRenderer.setColor(self.modelKukaIds[-1], (0.5, i/8, 1, 0.7))
-            self.modelKukaData[self.modelKukaIds[-1]] = (x+0.2, y, z, i)
+            self.modelKukaData[self.modelKukaIds[-1]] = (x, y, z, i)
 
             mat = TRobot1_T_0_[i].copy()
             self.twinKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
             self.modelRenderer.setColor(self.twinKukaIds[-1], (1, 0.5, i/8, 0))
-            self.twinKukaData[self.twinKukaIds[-1]] = (x+0.2, y, z, i)
+            self.twinKukaData[self.twinKukaIds[-1]] = (x, y, z, i)
         
         self.gripperId = self.modelRenderer.addModel(Assets.GRIPPER, Robot1_T_0_[7].copy())
         self.modelRenderer.setColor(self.gripperId, (0.5, 1, 1, 0.8))
@@ -347,21 +356,22 @@ class KukaScene(Scene):
             self.modelRenderer.setTexture(self.printerScreen[i], self.printerStreams[i].texture)
 
     def handleUiEvents(self, event):
+        self.pages.handleEvents(event)
         if event['action'] == 'release':
             if event['obj'] == self.recenterBtn:
                 self.cameraTransform = [-0.7+5, -0.57+2, 1.5, -70.25, 0, 45]
+            if event['obj'] == self.renderWindow:
+                self.__handleSceneEvents(event)
             if event['obj'] == self.sendBtn:
-                self.sendBtn.lock
+                self.sendBtn.lock()
                 for i in range(len(self.twinJoints)):
-                    self.opcuaTransmitterContainer.setValue(f'ns=24;s=R4c_Joi{i+1}', self.twinJoints[i]*180/pi, ua.VariantType.Double)
-                self.opcuaTransmitterContainer.setValue(f'ns=24;s=R4c_ProgID', self.progid, ua.VariantType.Int32)
+                    self.opcuaTransmitterContainer.setValue(self.__getNodeName(f'c_Joi{i+1}'), self.twinJoints[i]*180/pi, ua.VariantType.Double)
+                self.opcuaTransmitterContainer.setValue(self.__getNodeName(f'c_ProgID'), self.progid, ua.VariantType.Int32)
                 self.progStartFlag = True
             if event['obj'] == self.unlinkBtn:
                 self.matchLive = not self.matchLive
-                self.unlinkBtnText.setText('unlink' if self.matchLive else 'link')
+                self.unlinkBtnText.setText('Unlink' if self.matchLive else 'Link')
                 self.__updateTwinColor()
-            if event['obj'] == self.renderWindow:
-                self.__handleSceneEvents(event)
         return
     
     def __handleSceneEvents(self, event):
@@ -421,21 +431,6 @@ class KukaScene(Scene):
         elif self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
             self.sendBtn.unlock()
 
-    def __updateEndeffector(self):
-        data_pos = ['ns=24;s=R4d_PosX',
-                    'ns=24;s=R4d_PosY',
-                    'ns=24;s=R4d_PosZ']
-        data_rot = ['ns=24;s=R4d_RotA',
-                    'ns=24;s=R4d_RotB',
-                    'ns=24;s=R4d_RotC']
-        pos = [self.opcuaReceiverContainer.getValue(d,default=0)[0]/1000 for d in data_pos]
-        rot = [self.opcuaReceiverContainer.getValue(d,default=0)[0] for d in data_rot]
-
-        #update jointsRad with new position
-        #hope IK is fast here
-        self.jointsRad = self.jointsRad
-        return
-
     def __updateGuiText(self):
         for i in range(len(self.selecterWrappers)):
             self.liveAngleText[i].setText(f'Live: {int(self.jointsRad[i]*180/pi)}')
@@ -458,8 +453,6 @@ class KukaScene(Scene):
             self.forceVector[2] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForZ', default=0)[0]
         if self.matchLive:
             self.twinJoints = self.jointsRad.copy()
-        
-        self.__updateEndeffector()
 
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(self.jointsRad)
         for id in self.modelKukaIds:
@@ -610,5 +603,5 @@ class KukaScene(Scene):
             color = self.modelRenderer.getData(id)['color']
             self.modelRenderer.setColor(id, (*color[0:3], 0 if self.matchLive else 0.7))
         color = self.modelRenderer.getData(self.TgripperId)['color']
-        self.modelRenderer.setColor(self.TgripperId, (*color[0:3], 0 if self.matchLive else 0.8))
+        self.modelRenderer.setColor(self.TgripperId, (*color[0:3], 0 if self.matchLive else 0.7))
 

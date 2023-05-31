@@ -6,7 +6,7 @@ import time
 from asset import *
 
 class BatchRenderer:
-    MAX_OBJECTS = 100
+    MAX_OBJECTS = 10000
     MAX_VERTICES = 400000
     MAX_TEXTURES = 0
     def __init__(self, isTransparent=False):

@@ -28,7 +28,7 @@ class LimitScene(Scene):
     
     def __createModels(self):
         size = 10
-        for i in range(size):    
+        for i in range(size): 
             for j in range(size):
                 for k in range(size):
                     if random.random() < 0.3:
@@ -110,13 +110,13 @@ class LimitScene(Scene):
         self.__moveCamera(delta)
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.cameraTransform))
         return
-    
+
     def start(self):
         return
-    
+
     def stop(self):
         return
-    
+
     def __moveCamera(self, delta):
         if self.window.selectedUi != self.renderArea:
             return
@@ -153,4 +153,4 @@ class LimitScene(Scene):
         self.cameraTransform[0] += yawX-deltaPos[1]*sin(radYaw)#*sin(radPitch)
         self.cameraTransform[1] += yawY-deltaPos[1]*cos(radYaw)#*sin(radPitch)
         self.cameraTransform[2] += -deltaPos[2]*sin(radPitch)#+deltaPos[1]*cos(radPitch)
-    
+
