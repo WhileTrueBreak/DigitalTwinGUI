@@ -11,6 +11,7 @@ class Pages:
         self.currentPage = None
         self.buttonMap = {}
         self.pageButtons = {}
+        self.pageContentWrapper = {}
     
     def handleEvents(self, event):
         if event['action'] != 'release': return
@@ -24,8 +25,11 @@ class Pages:
     
     def addPage(self):
         page = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0,0,1,1))
+        wrapper = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 0.9))
+        page.addChild(wrapper)
         self.pages.append(page)
         self.pageButtons[page] = {'prev':None, 'next':None}
+        self.pageContentWrapper[page] = wrapper
         self.addNext(page)
         self.addPrev(page)
         if (prevbutton:=self.pageButtons[page]['prev']) != None:
@@ -35,6 +39,7 @@ class Pages:
     
     def removePage(self, pageNum):
         if pageNum < 0 or pageNum >= len(self.pages): return
+        self.pageContentWrapper.pop(self.pages[pageNum])
         prevButton = self.pageButtons[self.pages[pageNum]]['prev']
         prevPage = None
         if prevButton != None:
@@ -58,7 +63,7 @@ class Pages:
     
     def getPage(self, pageNum):
         if pageNum < 0 or pageNum >= len(self.pages): return None
-        return self.pages[pageNum]
+        return self.pageContentWrapper[self.pages[pageNum]]
     
     def addNext(self, page):
         if self.pages.index(page) >= len(self.pages)-1: return

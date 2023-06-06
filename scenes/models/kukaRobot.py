@@ -5,6 +5,7 @@ from ui.elements.uiText import UiText
 from ui.constraintManager import *
 from ui.uiHelper import *
 
+from scenes.models.iModel import IModel
 from scenes.ui.pages import Pages
 
 from connections.opcua import *
@@ -16,7 +17,7 @@ from asset import *
 import numpy as np
 from asyncua import ua
 
-class KukaRobot:
+class KukaRobot(IModel):
 
     def __init__(self, pos, nid, rid, modelRenderer, hasGripper=True, hasForceVector=False):
         self.joints = [0,0,0,0,0,0,0]
@@ -150,7 +151,7 @@ class KukaRobot:
     def setColors(self, colors):
         self.colors = colors
         for i,id in enumerate(self.modelKukaIds):
-            self.modelRenderer.setColor(id, self.colors[i])
+            self.modelRenderer.setColor(id, self.colors[min(i,len(colors)-1)])
 
     def disconnectOpcua(self):
         self.isLinkedOpcua = False
@@ -217,17 +218,16 @@ class KukaRobotTwin:
         self.pages.addPage()
         self.pages.addPage()
         self.page0 = self.pages.getPage(0)
+        self.p0title = UiText(self.window, Constraints.ALIGN_TEXT_PERCENTAGE(0.5, 0.05))
+        self.p0title.setText('Joint Control')
+        self.p0title.setTextColor((1,1,1))
+        self.p0title.setFontSize(28)
+        self.page0.addChild(self.p0title)
 
         self.selecterWrappers = [None]*7
         padding = 5
         for i in range(len(self.selecterWrappers)):
-            constraints = [
-                ABSOLUTE(T_X, padding),
-                COMPOUND(RELATIVE(T_Y, 0.1*i, P_H), ABSOLUTE(T_Y, padding)),
-                COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)),
-                COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
-            ]
-            self.selecterWrappers[i] = UiWrapper(self.window, constraints)
+            self.selecterWrappers[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0, 0.1*i+0.1, 1, 0.1, padding))
         self.page0.addChildren(*self.selecterWrappers)
 
         self.liveTextWrapper = [None]*len(self.selecterWrappers)
@@ -251,18 +251,11 @@ class KukaRobotTwin:
             self.twinTextWrapper[i].addChild(self.twinAngleText[i])
             self.angleSlider[i] = UiSlider(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 1, 0.5))
             self.angleSlider[i].setRange(-pi, pi)
-            self.angleSlider[i].setBaseColor((0,0,0))
-            self.angleSlider[i].setSliderColor((0.8,0.8,0.8))
+            self.angleSlider[i].setBaseColor((1,1,1))
+            self.angleSlider[i].setSliderColor((0,109/255,174/255))
             self.angleSlider[i].setSliderPercentage(0.05)
             self.selecterWrappers[i].addChild(self.angleSlider[i])
-        
-        constraints = [
-            COMPOUND(RELATIVE(T_X, 0.5, P_W), ABSOLUTE(T_X, padding)),
-            COMPOUND(RELATIVE(T_Y, 0.8, P_H), ABSOLUTE(T_Y, padding)),
-            COMPOUND(RELATIVE(T_W, 0.5, P_W), ABSOLUTE(T_W, -2*padding)),
-            COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
-        ]
-        self.sendBtn, self.sendBtnText = centeredTextButton(self.window, constraints)
+        self.sendBtn, self.sendBtnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.5, 0.9, 0.5, 0.1, padding))
         self.sendBtnText.setText('Execute')
         self.sendBtnText.setFontSize(20)
         self.sendBtnText.setTextSpacing(8)
@@ -274,7 +267,7 @@ class KukaRobotTwin:
         
         constraints = [
             COMPOUND(RELATIVE(T_X, 0, P_W), ABSOLUTE(T_X, padding)),
-            COMPOUND(RELATIVE(T_Y, 0.8, P_H), ABSOLUTE(T_Y, padding)),
+            COMPOUND(RELATIVE(T_Y, 0.9, P_H), ABSOLUTE(T_Y, padding)),
             COMPOUND(RELATIVE(T_W, 0.5, P_W), ABSOLUTE(T_W, -2*padding)),
             COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]

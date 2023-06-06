@@ -112,11 +112,18 @@ class Constraints:
     ZERO_ZERO = [ABSOLUTE(T_X, 0), ABSOLUTE(T_Y, 0)]
     ALIGN_CENTER = [COMPOUND(RELATIVE(T_X, -0.5, T_W), RELATIVE(T_X, 0.5, P_W)),
                         COMPOUND(RELATIVE(T_Y, -0.5, T_H), RELATIVE(T_Y, 0.5, P_H))]
+
     def ALIGN_PERCENTAGE(x, y, w, h):
         return [RELATIVE(T_X, x, P_W),
                 RELATIVE(T_Y, y, P_H),
                 RELATIVE(T_W, w, P_W),
                 RELATIVE(T_H, h, P_H)]
+
+    def ALIGN_PERCENTAGE_PADDING(x, y, w, h, padding):
+        return [COMPOUND(RELATIVE(T_X, x, P_W), ABSOLUTE(T_X, padding)),
+                COMPOUND(RELATIVE(T_Y, y, P_H), ABSOLUTE(T_Y, padding)),
+                COMPOUND(RELATIVE(T_W, w, P_W), ABSOLUTE(T_W, -2*padding)),
+                COMPOUND(RELATIVE(T_H, h, P_H), ABSOLUTE(T_H, -2*padding))]
     
     def ALIGN_TEXT_PERCENTAGE(xp, yp):
         return [COMPOUND(RELATIVE(T_X, -xp, T_W), RELATIVE(T_X, xp, P_W)),
