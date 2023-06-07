@@ -125,6 +125,6 @@ class Constraints:
                 COMPOUND(RELATIVE(T_W, w, P_W), ABSOLUTE(T_W, -2*padding)),
                 COMPOUND(RELATIVE(T_H, h, P_H), ABSOLUTE(T_H, -2*padding))]
     
-    def ALIGN_TEXT_PERCENTAGE(xp, yp):
+    def ALIGN_CENTER_PERCENTAGE(xp, yp):
         return [COMPOUND(RELATIVE(T_X, -xp, T_W), RELATIVE(T_X, xp, P_W)),
                 COMPOUND(RELATIVE(T_Y, -yp, T_H), RELATIVE(T_Y, yp, P_H))]
