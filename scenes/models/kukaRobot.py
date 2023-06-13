@@ -173,6 +173,9 @@ class KukaRobot(IModel):
     def getColors(self):
         return [self.modelRenderer.getData(i)['color'] for i in self.modelKukaIds]
 
+    def setPos(self, pos):
+        self.pos = pos
+
 class KukaRobotTwin:
 
     FREE_MOVE_PROG = 2
@@ -385,5 +388,12 @@ class KukaRobotTwin:
 
     def isModel(self, modelId):
         return self.twinRobot.isModel(modelId) or self.liveRobot.isModel(modelId)
+
+    def setPos(self, pos):
+        self.liveRobot.setPos(pos)
+        self.twinRobot.setPos(pos)
+    
+    def getPos(self):
+        return self.liveRobot.pos
 
 

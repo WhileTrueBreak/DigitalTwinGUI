@@ -40,7 +40,7 @@ class KukaScene(Scene):
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.renderWindow = Ui3DScene(self.window, constraints)
-        self.renderWindow.setBackgroundColor((1, 1, 1))
+        self.renderWindow.setBackgroundColor((0.2, 0.2, 0.2))
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
 
@@ -234,7 +234,7 @@ class KukaScene(Scene):
             stream.updateImage(delta)
         self.armStream.updateImage(delta)
 
-    def __moveCamera(self, delta):
+    def __moveCamera(self, delta): 
         if self.window.selectedUi != self.renderWindow:
             return
 

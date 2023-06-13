@@ -36,7 +36,7 @@ class Assets:
         Assets.KUKA_IIWA14_MODEL[7] = Assets.loadModelFile('res/models/iiwa14/visual/link_7.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
 
         Assets.GRIPPER = Assets.loadModelFile('res/models/gripper/2F140.stl', createTransformationMatrix(0, 0, 0, 0, 0, 90))
-        Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, -0.925, 0, 0, 0))
+        Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, 0, 0, 0, 0))
 
         Assets.TABLES = [None]*3
         Assets.TABLES[0] = Assets.loadModelFile('res/models/Objects/Benchtop_Custom.stl')
@@ -193,7 +193,8 @@ class Assets:
         elif rot == 270:
             img = img.transpose(Image.ROTATE_270)
         
-        imgData = np.array(list(img.getdata()), np.int8)
+        # imgData = np.array(list(img.getdata()), np.int8)
+        imgData = np.asarray(img)
 
         texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, texture)
