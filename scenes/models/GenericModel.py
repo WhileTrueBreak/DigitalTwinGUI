@@ -29,13 +29,37 @@ class GenericModel(IModel):
         self.title.setTextColor((1,1,1))
         self.title.setFontSize(28)
         movePage.addChild(self.title)
+
+        wrapper = UiWrapper(self.window, [
+            *Constraints.ALIGN_CENTER,
+            RELATIVE(T_W, 1, P_W),
+            RELATIVE(T_H, 1, T_W),
+        ])
+        movePage.addChild(wrapper)
+        
+        self.buttons = []
+        self.buttons.append(UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.0,0.3,0.3,0.3,2)))
+        self.buttons.append(UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.3,0.0,0.3,0.3,2)))
+        self.buttons.append(UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.3,0.6,0.3,0.3,2)))
+        self.buttons.append(UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.6,0.3,0.3,0.3,2)))
+        wrapper.addChildren(*self.buttons)
         return
 
     def update(self):
         return
 
     def handleEvents(self, event):
+        if event['action'] == 'release':
+            if not event['obj'] in self.buttons: return
+            index = self.buttons.index(event['obj'])
+            self.__move(index)
         return
+    
+    def __move(self, index):
+        d = 0.1
+        m = {0:(-d,0),1:(0,d),2:(0,-d),3:(d,0)}
+        x,y,z = self.getPos()
+        self.setPos((x+m[index][0], y+m[index][1], z))
 
     def getControlPanel(self):
         return self.pages.getPageWrapper()
@@ -48,5 +72,5 @@ class GenericModel(IModel):
     
     def setPos(self, pos):
         self.transform[0:3,3] = pos
-        self.modelRenderer.setTransformMatrix(self.modelId, self.transform)
+        self.renderer.setTransformMatrix(self.modelId, self.transform)
         return
