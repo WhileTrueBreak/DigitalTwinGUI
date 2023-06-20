@@ -1,14 +1,18 @@
+from asset import *
+
 from scenes.models.iModel import IModel
 from scenes.ui.pages import Pages
 
 from ui.constraintManager import *
 from ui.elements.uiButton import UiButton
-from ui.elements.uiWrapper import UiWrapper
+from ui.elements.uiBlock import UiBlock
 from ui.elements.ui3dScene import Ui3DScene
 from ui.elements.uiStream import UiStream
 from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiText import UiText
 from ui.elements.uiSlider import UiSlider
+
+import numpy as np
 
 class GenericModel(IModel):
 
@@ -17,6 +21,9 @@ class GenericModel(IModel):
         self.renderer = renderer
         self.transform = transform
         self.modelId = self.renderer.addModel(model, transform)
+
+        self.attach = np.identity(4)
+
         self.__createUi()
         return
 
@@ -38,25 +45,43 @@ class GenericModel(IModel):
         movePage.addChild(wrapper)
         
         self.buttons = []
-        self.buttons.append(UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.0,0.3,0.3,0.3,2)))
-        self.buttons.append(UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.3,0.0,0.3,0.3,2)))
-        self.buttons.append(UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.3,0.6,0.3,0.3,2)))
-        self.buttons.append(UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.6,0.3,0.3,0.3,2)))
+        b_l = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.0,1/3,1/3,1/3,2))
+        b_l.setMaskingTexture(Assets.LEFT_ARROW.getTexture())
+        self.buttons.append(b_l)
+        b_u = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(1/3,0.0,1/3,1/3,2))
+        b_u.setMaskingTexture(Assets.UP_ARROW.getTexture())
+        self.buttons.append(b_u)
+        b_d = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(1/3,2/3,1/3,1/3,2))
+        b_d.setMaskingTexture(Assets.DOWN_ARROW.getTexture())
+        self.buttons.append(b_d)
+        b_r = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(2/3,1/3,1/3,1/3,2))
+        b_r.setMaskingTexture(Assets.RIGHT_ARROW.getTexture())
+        self.buttons.append(b_r)
+        for btn in self.buttons:
+            btn.setDefaultColor((0,109/255,174/255))
+            btn.setHoverColor((0,159/255,218/255))
+            btn.setPressColor((0,172/255,62/255))
         wrapper.addChildren(*self.buttons)
         return
 
     def update(self):
+        self.__pollMove()
+        return
+    
+    def __updateTranforms(self):
+        self.renderer.setTransformMatrix(self.modelId, np.matmul(self.attach, self.transform))
         return
 
+    def __pollMove(self):
+        for i in range(4):
+            if not self.buttons[i].isPressed: continue
+            self.__move(i)
+
     def handleEvents(self, event):
-        if event['action'] == 'release':
-            if not event['obj'] in self.buttons: return
-            index = self.buttons.index(event['obj'])
-            self.__move(index)
         return
     
     def __move(self, index):
-        d = 0.1
+        d = 0.01
         m = {0:(-d,0),1:(0,d),2:(0,-d),3:(d,0)}
         x,y,z = self.getPos()
         self.setPos((x+m[index][0], y+m[index][1], z))
@@ -72,5 +97,17 @@ class GenericModel(IModel):
     
     def setPos(self, pos):
         self.transform[0:3,3] = pos
-        self.renderer.setTransformMatrix(self.modelId, self.transform)
+        self.__updateTranforms()
         return
+
+    def getFrame(self):
+        return self.transform
+
+    def setAttach(self, mat):
+        self.attach = mat
+        self.__updateTranforms()
+        return
+    
+    def setTransform(self, mat):
+        self.transform = mat
+        self.__updateTranforms()

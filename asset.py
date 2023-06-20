@@ -65,6 +65,11 @@ class Assets:
         Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')
         Assets.CUBE_TEX = Assets.loadTexture('res/textures/cube.jpg', flipY=True)
         
+        Assets.LEFT_ARROW = Assets.loadTexture('res/textures/arrow.png')
+        Assets.UP_ARROW = Assets.loadTexture('res/textures/arrow.png', rot=90)
+        Assets.RIGHT_ARROW = Assets.loadTexture('res/textures/arrow.png', flipX=True)
+        Assets.DOWN_ARROW = Assets.loadTexture('res/textures/arrow.png', rot=270)
+
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/ui/textureVertex.glsl', 'res/shader/ui/textFragment.glsl')
         Assets.GUI_SHADER = Assets.linkShaders('res/shader/ui/guiVertex.glsl', 'res/shader/ui/guiFragment.glsl')
         Assets.SCREEN_SHADER = Assets.linkShaders('res/shader/ui/screenVertex.glsl', 'res/shader/ui/screenFragment.glsl')
@@ -206,7 +211,12 @@ class Assets:
         GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
         GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
         GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, *img.size, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imgData)
+        if imgData.shape[2] == 3:
+            GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, *img.size, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imgData)
+        elif imgData.shape[2] == 4:
+            GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, *img.size, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, imgData)
+        else:
+            raise Exception(f'Unknown image shape: {imgData.shape}')
 
         sprite = Sprite.fromTexture(texture)
         return sprite

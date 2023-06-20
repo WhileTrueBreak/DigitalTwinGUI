@@ -11,6 +11,7 @@ class UiButton(GlElement):
         super().__init__(window, constraints, dim)
         self.type = 'button'
 
+        self.mask = None
         self.currentColor = (1, 1, 1)
         self.defaultColor = (1, 1, 1)
         self.hoverColor = (1, 1, 1)
@@ -24,6 +25,7 @@ class UiButton(GlElement):
 
     def reshape(self):
         self.renderer.setColor(self.currentColor)
+        self.renderer.setTexture(self.mask)
         self.renderer.getTransform().setPos((self.openGLDim[0:2]))
         self.renderer.getTransform().setSize((self.openGLDim[2:4]))
         self.renderer.setDirtyVertex()
@@ -50,6 +52,10 @@ class UiButton(GlElement):
 
     def setLockColor(self, color):
         self.lockColor = color
+    
+    def setMaskingTexture(self, texture):
+        self.mask = texture
+        self.reshape()
 
     def onDefault(self, callback=None):
         if self.lockFlag: return

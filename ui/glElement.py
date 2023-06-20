@@ -20,6 +20,7 @@ class GlElement:
         
         self.constraintManager = None
         self.lastMouseState = self.window.mouseButtons
+        self.isPressed = False
 
         self.linkedElem = self
 
@@ -64,14 +65,18 @@ class GlElement:
             self.isDefault = False
             if self.window.mouseButtons[0] and not self.lastMouseState[0]:
                 self.onPress()
+                self.isPressed = True
                 self.window.uiSelectBuffer.append(self)
-            elif not self.window.mouseButtons[0] and self.lastMouseState[0]:
+            elif not self.window.mouseButtons[0] and self.lastMouseState[0] and self.isPressed:
                 self.onRelease()
+                self.isPressed = False
             elif not self.window.mouseButtons[0] and not self.lastMouseState[0]:
                 self.onHover()
             else:
                 self.onHeld()
         elif not self.isDefault:
+            if self.isPressed:
+                self.isPressed = False
             self.onDefault()
             self.isDefault = True
         self.lastMouseState = self.window.mouseButtons

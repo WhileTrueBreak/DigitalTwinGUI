@@ -132,10 +132,10 @@ class DigitalTwinLab(Scene):
         self.bases = {}
         self.arms = []
 
-        base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_BASE, createTransformationMatrix(5, 5, 0, 0, 0, 0))
+        base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_BASE, createTransformationMatrix(12, 2, 0, 0, 0, 0))
         self.genericModels.append(base)
 
-        arm = KukaRobotTwin(self.window, (0,0,0.925), 24, 4, self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.3, 0, 0.926, 0, 0, 0), 24, 4, self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
         self.bases[base] = arm
@@ -172,8 +172,9 @@ class DigitalTwinLab(Scene):
     
     def __updateModelPos(self):
         for base in self.bases:
-            aPos = self.bases[base].getPos()
-            self.bases[base].setPos((*base.getPos()[0:2], aPos[2]))
+            self.bases[base].setAttach(base.getFrame())
+            # aPos = self.bases[base].getPos()
+            # self.bases[base].setPos((*base.getPos()[0:2], aPos[2]))
         return
     
     def __updateEnv(self, delta):

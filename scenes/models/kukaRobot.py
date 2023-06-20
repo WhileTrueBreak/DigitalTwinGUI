@@ -19,10 +19,10 @@ from asyncua import ua
 
 class KukaRobot(IModel):
 
-    def __init__(self, pos, nid, rid, modelRenderer, hasGripper=True, hasForceVector=False):
+    def __init__(self, tmat, nid, rid, modelRenderer, hasGripper=True, hasForceVector=False):
         self.joints = [0,0,0,0,0,0,0]
         self.forceVector = np.array([0,0,0], dtype='float32')
-        self.pos = pos
+        self.tmat = tmat
         self.nodeId = nid
         self.robotId = rid
         self.modelRenderer = modelRenderer
@@ -30,12 +30,12 @@ class KukaRobot(IModel):
         self.hasForceVector = hasForceVector
         self.colors = np.zeros((8,4), dtype='float32')
         self.isLinkedOpcua = True
+        self.attach = np.identity(4)
         self.__loadModel()
         self.__setupConnections()
     
     def __loadModel(self):
         self.modelKukaIds = []
-        x, y, z = self.pos
         Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
         for i in range(0,8):
             mat = Robot1_T_0_[i].copy()
@@ -89,9 +89,11 @@ class KukaRobot(IModel):
         Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
         for i,id in enumerate(self.modelKukaIds):
             mat = Robot1_T_0_[min(i, len(Robot1_T_0_)-1)].copy()
-            mat[0][3] += self.pos[0]*2/2
-            mat[1][3] += self.pos[1]*2/2
-            mat[2][3] += self.pos[2]*2/2
+            # mat[0][3] += self.pos[0]*2/2
+            # mat[1][3] += self.pos[1]*2/2
+            # mat[2][3] += self.pos[2]*2/2
+            mat = np.matmul(self.tmat, mat)
+            mat = np.matmul(self.attach, mat)
             self.modelRenderer.setTransformMatrix(id, mat)
         self.__updateForceVector(Robot1_T_0_[-1])
     
@@ -105,6 +107,7 @@ class KukaRobot(IModel):
             self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0))
             return
         forceTransform = vectorTransform(transform[:3,3], transform[:3,3]+2*self.forceVector, 1, upperLimit=100)
+        forceTransform = np.matmul(self.attach, forceTransform)
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
         self.modelRenderer.setTransformMatrix(self.forceVectorId, forceTransform)
 
@@ -173,16 +176,19 @@ class KukaRobot(IModel):
     def getColors(self):
         return [self.modelRenderer.getData(i)['color'] for i in self.modelKukaIds]
 
-    def setPos(self, pos):
-        self.pos = pos
+    def setPos(self, tmat):
+        self.tmat = tmat
+
+    def setAttach(self, mat):
+        self.attach = mat
 
 class KukaRobotTwin:
 
     FREE_MOVE_PROG = 2
 
-    def __init__(self, window, pos, nid, rid, modelRenderer, hasGripper=True, hasForceVector=False):
-        self.liveRobot = KukaRobot(pos, nid, rid, modelRenderer, hasGripper, hasForceVector)
-        self.twinRobot = KukaRobot(pos, nid, rid, modelRenderer, hasGripper, False)
+    def __init__(self, window, tmat, nid, rid, modelRenderer, hasGripper=True, hasForceVector=False):
+        self.liveRobot = KukaRobot(tmat, nid, rid, modelRenderer, hasGripper, hasForceVector)
+        self.twinRobot = KukaRobot(tmat, nid, rid, modelRenderer, hasGripper, False)
 
         self.window = window
         self.nodeId = nid
@@ -396,4 +402,7 @@ class KukaRobotTwin:
     def getPos(self):
         return self.liveRobot.pos
 
+    def setAttach(self, mat):
+        self.liveRobot.setAttach(mat)
+        self.twinRobot.setAttach(mat)
 

@@ -25,3 +25,8 @@ class IModel:
     @abstractmethod
     def isModel(self):
         ...
+    
+    @abstractmethod
+    def setAttach(self, mat):
+        ...
+    
