@@ -26,7 +26,7 @@ class DigitalTwinLab(Scene):
 
     def __init__(self, window, name):
         super().__init__(window, name)
-        self.camera = MovingCamera(self.window, [1.5, -1.1, 1.5, -90, 0, -50], 2)
+        self.camera = MovingCamera(self.window, [12, 3, 1.5, -90, 0, -50], 1)
 
     def createUi(self):
         self.renderWindow = Ui3DScene(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0, 0, 1, 1, DigitalTwinLab.UI_PADDING))
@@ -132,14 +132,14 @@ class DigitalTwinLab(Scene):
         self.arms = {}
 
         base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(10, 3, 0.89, 0, 0, 0))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.3, 0, 0, 0, 0, 0), 21, 'R1', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 21, 'R1', self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
         self.genericModels.append(base)
         self.arms[base] = arm
 
         base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(10, 5, 0.89, 0, 0, 0))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.3, 0, 0, 0, 0, 0), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
         self.genericModels.append(base)

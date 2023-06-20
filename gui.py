@@ -15,12 +15,12 @@ nest_asyncio.apply()
 
 window = Window((1200, 800), 'Digital Twin GUI', fullscreen=False, resizeable=True, vsync=False)
 
-scene0 = KukaScene(window, 'Digital Twin Staging Lab')
-scene0.createUi()
+# scene0 = KukaScene(window, 'Digital Twin Staging Lab')
+# scene0.createUi()
 scene3 = DigitalTwinLab(window, 'Digital Twin Lab')
 scene3.createUi()
 
-window.addScene(scene0)
+# window.addScene(scene0)
 # window.addScene(scene1)
 # window.addScene(scene2)
 window.addScene(scene3)
