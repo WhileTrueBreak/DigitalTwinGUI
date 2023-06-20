@@ -129,20 +129,24 @@ class DigitalTwinLab(Scene):
 
     def __addRobots(self):
         self.genericModels = []
-        self.bases = {}
-        self.arms = []
+        self.arms = {}
 
-        base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_BASE, createTransformationMatrix(12, 2, 0, 0, 0, 0))
-        self.genericModels.append(base)
-
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.3, 0, 0.926, 0, 0, 0), 24, 4, self.modelRenderer, hasForceVector=True, hasGripper=True)
+        base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_BASE, createTransformationMatrix(12, 2, 0.926, 0, 0, 0))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.3, 0, 0, 0, 0, 0), 21, 1, self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
-        self.bases[base] = arm
-        self.arms.append(arm)
+        self.genericModels.append(base)
+        self.arms[base] = arm
+
+        base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_BASE, createTransformationMatrix(10, 5, 0.926, 0, 0, 0))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.3, 0, 0, 0, 0, 0), 24, 4, self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
+        arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        self.genericModels.append(base)
+        self.arms[base] = arm
 
     def handleUiEvents(self, event):
-        [arm.handleEvents(event) for arm in self.arms]
+        [arm.handleEvents(event) for arm in self.arms.values()]
         [model.handleEvents(event) for model in self.genericModels]
         if event['action'] == 'release':
             if event['obj'] == self.renderWindow:
@@ -152,7 +156,7 @@ class DigitalTwinLab(Scene):
     def __handleSceneEvents(self, event):
         modelId = event['modelId']
         self.panelWrapper.removeAllChildren()
-        for arm in self.arms:
+        for arm in self.arms.values():
             if arm.isModel(modelId):
                 self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
                 self.panelWrapper.addChild(arm.getControlPanel())
@@ -166,15 +170,13 @@ class DigitalTwinLab(Scene):
     def absUpdate(self, delta):
         self.__updateEnv(delta)
         self.__updateModelPos()
-        [arm.update() for arm in self.arms]
+        [arm.update() for arm in self.arms.values()]
         [model.update() for model in self.genericModels]
         return
     
     def __updateModelPos(self):
-        for base in self.bases:
-            self.bases[base].setAttach(base.getFrame())
-            # aPos = self.bases[base].getPos()
-            # self.bases[base].setPos((*base.getPos()[0:2], aPos[2]))
+        for base in self.arms:
+            self.arms[base].setAttach(base.getFrame())
         return
     
     def __updateEnv(self, delta):
@@ -183,11 +185,11 @@ class DigitalTwinLab(Scene):
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.camera.getCameraTransform()))
         
     def start(self):
-        [arm.start() for arm in self.arms]
+        [arm.start() for arm in self.arms.values()]
         return
         
     def stop(self):
-        [arm.stop() for arm in self.arms]
+        [arm.stop() for arm in self.arms.values()]
         return
 
 

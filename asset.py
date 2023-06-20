@@ -36,7 +36,7 @@ class Assets:
         Assets.KUKA_IIWA14_MODEL[7] = Assets.loadModelFile('res/models/iiwa14/visual/link_7.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
 
         Assets.GRIPPER = Assets.loadModelFile('res/models/gripper/2F140.stl', createTransformationMatrix(0, 0, 0, 0, 0, 90))
-        Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, -0.926, 0, 0, 0))
 
         Assets.TABLES = [None]*3
         Assets.TABLES[0] = Assets.loadModelFile('res/models/Objects/Benchtop_Custom.stl')

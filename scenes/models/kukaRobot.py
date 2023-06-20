@@ -89,9 +89,6 @@ class KukaRobot(IModel):
         Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
         for i,id in enumerate(self.modelKukaIds):
             mat = Robot1_T_0_[min(i, len(Robot1_T_0_)-1)].copy()
-            # mat[0][3] += self.pos[0]*2/2
-            # mat[1][3] += self.pos[1]*2/2
-            # mat[2][3] += self.pos[2]*2/2
             mat = np.matmul(self.tmat, mat)
             mat = np.matmul(self.attach, mat)
             self.modelRenderer.setTransformMatrix(id, mat)

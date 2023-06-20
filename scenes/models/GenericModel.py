@@ -12,6 +12,7 @@ from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiText import UiText
 from ui.elements.uiSlider import UiSlider
 
+from functools import lru_cache
 import numpy as np
 
 class GenericModel(IModel):
@@ -40,28 +41,41 @@ class GenericModel(IModel):
         wrapper = UiWrapper(self.window, [
             *Constraints.ALIGN_CENTER,
             RELATIVE(T_W, 1, P_W),
-            RELATIVE(T_H, 1, T_W),
+            RELATIVE(T_H, 4/3, T_W),
         ])
         movePage.addChild(wrapper)
         
-        self.buttons = []
-        b_l = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.0,1/3,1/3,1/3,2))
+        self.tbuttons = []
+        b_l = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.0,1/4,1/3,1/4,2))
         b_l.setMaskingTexture(Assets.LEFT_ARROW.getTexture())
-        self.buttons.append(b_l)
-        b_u = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(1/3,0.0,1/3,1/3,2))
+        self.tbuttons.append(b_l)
+        b_u = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(1/3,0.0,1/3,1/4,2))
         b_u.setMaskingTexture(Assets.UP_ARROW.getTexture())
-        self.buttons.append(b_u)
-        b_d = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(1/3,2/3,1/3,1/3,2))
+        self.tbuttons.append(b_u)
+        b_d = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(1/3,2/4,1/3,1/4,2))
         b_d.setMaskingTexture(Assets.DOWN_ARROW.getTexture())
-        self.buttons.append(b_d)
-        b_r = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(2/3,1/3,1/3,1/3,2))
+        self.tbuttons.append(b_d)
+        b_r = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(2/3,1/4,1/3,1/4,2))
         b_r.setMaskingTexture(Assets.RIGHT_ARROW.getTexture())
-        self.buttons.append(b_r)
-        for btn in self.buttons:
+        self.tbuttons.append(b_r)
+        for btn in self.tbuttons:
             btn.setDefaultColor((0,109/255,174/255))
             btn.setHoverColor((0,159/255,218/255))
             btn.setPressColor((0,172/255,62/255))
-        wrapper.addChildren(*self.buttons)
+        
+        self.rbuttons = []
+        b_rl = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0/3,3/4,1/3,1/4,2))
+        b_rl.setMaskingTexture(Assets.LEFT_ARROW.getTexture())
+        self.rbuttons.append(b_rl)
+        b_rr = UiButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(2/3,3/4,1/3,1/4,2))
+        b_rr.setMaskingTexture(Assets.RIGHT_ARROW.getTexture())
+        self.rbuttons.append(b_rr)
+        for btn in self.rbuttons:
+            btn.setDefaultColor((0,109/255,174/255))
+            btn.setHoverColor((0,159/255,218/255))
+            btn.setPressColor((0,172/255,62/255))
+        wrapper.addChildren(*self.tbuttons)
+        wrapper.addChildren(*self.rbuttons)
         return
 
     def update(self):
@@ -74,18 +88,27 @@ class GenericModel(IModel):
 
     def __pollMove(self):
         for i in range(4):
-            if not self.buttons[i].isPressed: continue
-            self.__move(i)
+            if not self.tbuttons[i].isPressed: continue
+            self.__translate(i)
+        if self.rbuttons[0].isPressed:
+            self.__rotate(-1)
+        if self.rbuttons[1].isPressed:
+            self.__rotate(-1)
 
-    def handleEvents(self, event):
-        return
-    
-    def __move(self, index):
+    def __translate(self, index):
         d = 0.01
         m = {0:(-d,0),1:(0,d),2:(0,-d),3:(d,0)}
         x,y,z = self.getPos()
         self.setPos((x+m[index][0], y+m[index][1], z))
 
+    def __rotate(self, angle):
+        self.transform = np.matmul(self.transform, createTransformationMatrix(0, 0, 0, 0, 0, angle))
+        self.__updateTranforms()
+        return
+
+    def handleEvents(self, event):
+        return
+    
     def getControlPanel(self):
         return self.pages.getPageWrapper()
 

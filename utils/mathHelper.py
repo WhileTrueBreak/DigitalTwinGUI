@@ -27,6 +27,7 @@ def createProjectionMatrix(width, height, FOV, NEAR_PLANE, FAR_PLANE):
     projectionMatrix[3][3] = 0
     return projectionMatrix
 
+@functools.lru_cache(maxsize=None)
 def createTransformationMatrix(x, y, z, rotx, roty, rotz):
     rotx = radians(rotx)
     roty = radians(roty)
