@@ -79,7 +79,7 @@ class BatchRenderer:
         transformationMatrix = transformationMatrix.T
         if not True in self.isAvaliable:
             return -1
-        if self.currentIndex + len(model.vertices) > BatchRenderer.MAX_VERTICES:
+        if self.currentIndex + model.vertices.shape[0] > BatchRenderer.MAX_VERTICES:
             return -1
 
         vShape = model.vertices.shape
@@ -376,24 +376,53 @@ class Renderer:
             if id == -1: continue
             modelId = self.nextId
             self.nextId += 1
-            self.idDict[modelId] = (i, id)
+            self.idDict[modelId] = [(i, id)]
             self.idDict[(i, id)] = modelId
             return modelId
         self.addBatch()
         id = self.batches[-1].addModel(model, matrix)
-        if id == -1:
-            raise Exception(f'Model could not be added to model renderer',
-                            f'Try increasing BatchRenderer.MAX_VERTICES to above {len(model.vertices)}')
-            return -1
+        if id != -1:
+            modelId = self.nextId
+            self.nextId += 1
+            self.idDict[modelId] = [(len(self.batches) - 1, id)]
+            self.idDict[(len(self.batches) - 1, id)] = modelId
+            return modelId
+
+        # add each submodel seperately
+        submodels = model.generateSubModels(BatchRenderer.MAX_VERTICES)
+        ids = []
         modelId = self.nextId
         self.nextId += 1
-        self.idDict[modelId] = (len(self.batches) - 1, id)
-        self.idDict[(len(self.batches) - 1, id)] = modelId
+        while len(submodels) != 0:
+            isAdded = False
+            for i in range(len(self.batches)):
+                id = self.batches[i].addModel(submodels[0], matrix)
+                if id == -1: continue
+                self.idDict[(i, id)] = modelId
+                ids.append((i, id))
+                isAdded = True
+            if isAdded:
+                submodels.pop(0)
+                continue
+            self.addBatch()
+            id = self.batches[-1].addModel(submodels[0], matrix)
+            if id == -1:
+                raise Exception(f'Submodel could not be added to model renderer')
+            self.idDict[(len(self.batches) - 1, id)] = modelId
+            ids.append((len(self.batches) - 1, id))
+            submodels.pop(0)
+            continue
+        self.idDict[modelId] = ids
         return modelId
+
+        raise Exception(f'Model could not be added to model renderer\n',
+                        f'Try increasing BatchRenderer.MAX_VERTICES to above {len(model.vertices)}')
+        return -1
     
     def removeModel(self, id):
-        self.batches[self.idDict[id][0]].removeModel(self.idDict[id][1])
-        self.idDict.pop(self.idDict[id])
+        for modelid in self.idDict[id]:
+            self.batches[modelid[0]].removeModel(modelid[1])
+            self.idDict.pop(modelid)
         self.idDict.pop(id)
     
     def addBatch(self, transparent=False):
@@ -422,77 +451,84 @@ class Renderer:
             batch.setViewMatrix(self.transparentShader, matrix)
     
     def setTransformMatrix(self, id, matrix):
-        self.batches[self.idDict[id][0]].setTransformMatrix(self.idDict[id][1], matrix)
+        for modelid in self.idDict[id]: 
+            self.batches[modelid[0]].setTransformMatrix(modelid[1], matrix)
 
     def setColor(self, id, color):
-        batch = self.batches[self.idDict[id][0]]
-        objId = self.idDict[id][1]
-        isTransparent = color[3] != 1
+        for i in range(len(self.idDict[id])):
+            modelId = self.idDict[id][i]
+            batch = self.batches[modelId[0]]
+            objId = modelId[1]
+            isTransparent = color[3] != 1
+    
+            # matches batch settings
+            if not (isTransparent ^ batch.isTransparent):
+                batch.setColor(objId, color)
+                return
 
-        #is trans or solid
-        if not (isTransparent ^ batch.isTransparent):
-            batch.setColor(objId, color)
-            return
+            # remove from batch and added to new batch
+            data = batch.getData(objId)
+            batch.removeModel(objId)
+            del self.idDict[modelId]
 
-        # remove from batch and added to new batch
-        data = batch.getData(objId)
-        batch.removeModel(objId)
+            #loop through batches
+            for j in range(len(self.batches)):
+                if isTransparent ^ self.batches[j].isTransparent: continue
+                objId = self.batches[j].addModel(data['model'], data['matrix'])
+                if objId == -1: continue
+                self.batches[j].setColor(objId, color)
+                self.batches[j].setTexture(objId, data['texture'])
+                self.idDict[id][i] = (j, objId)
+                self.idDict[(j, objId)] = id
+                return
 
-        #loop through batches
-        for i in range(len(self.batches)):
-            if isTransparent ^ self.batches[i].isTransparent: continue
-            objId = self.batches[i].addModel(data['model'], data['matrix'])
-            if objId == -1: continue
-            self.batches[i].setColor(objId, color)
-            self.batches[i].setTexture(objId, data['texture'])
-            self.idDict[id] = (i, objId)
-            self.idDict[(i, objId)] = id
-            return
-
-        #if didnt find suitable batch
-        self.addBatch(isTransparent)
-        batchId = len(self.batches)-1
-        objId = self.batches[-1].addModel(data['model'], data['matrix'])
-        if objId == -1:
-            print('failed to update color')
-            return
-        self.batches[batchId].setColor(objId, color)
-        self.batches[batchId].setTexture(objId, data['texture'])
-        self.idDict[id] = (batchId, objId)
-        self.idDict[(batchId, objId)] = id
+            #if didnt find suitable batch
+            self.addBatch(isTransparent)
+            batchId = len(self.batches)-1
+            objId = self.batches[-1].addModel(data['model'], data['matrix'])
+            if objId == -1:
+                print('failed to update color')
+                return
+            self.batches[batchId].setColor(objId, color)
+            self.batches[batchId].setTexture(objId, data['texture'])
+            self.idDict[id][i] = (batchId, objId)
+            self.idDict[(batchId, objId)] = id
 
     def setTexture(self, id, tex):
-        batch = self.batches[self.idDict[id][0]]
-        objId = self.idDict[id][1]
-        if batch.setTexture(objId, tex):
-            return
-        
-        isTransparent = batch.colors[objId][3] != 1
-        data = batch.getData(objId)
-        batch.removeModel(objId)
+        for i in range(len(self.idDict[id])):
+            modelId = self.idDict[id][i]
+            batch = self.batches[modelId[0]]
+            objId = modelId[1]
+            if batch.setTexture(objId, tex):
+                return
+            
+            isTransparent = batch.colors[objId][3] != 1
+            data = batch.getData(objId)
+            batch.removeModel(objId)
+            del self.idDict[modelId]
 
-        #loop through batches
-        for i in range(len(self.batches)):
-            if not self.batches[i].hasTextureSpace(): continue
-            objId = self.batches[i].addModel(data['model'], data['matrix'])
-            if objId == -1: continue
-            self.batches[i].setColor(objId, data['color'])
-            self.batches[i].setTexture(objId, tex)
-            self.idDict[id] = (i, objId)
-            self.idDict[(i, objId)] = id
-            return
+            #loop through batches
+            for j in range(len(self.batches)):
+                if not self.batches[j].hasTextureSpace(): continue
+                objId = self.batches[j].addModel(data['model'], data['matrix'])
+                if objId == -1: continue
+                self.batches[j].setColor(objId, data['color'])
+                self.batches[j].setTexture(objId, tex)
+                self.idDict[id][i] = (j, objId)
+                self.idDict[(j, objId)] = id
+                return
 
-        #if didnt find suitable batch
-        self.addBatch(isTransparent)
-        batchId = len(self.batches)-1
-        objId = self.batches[-1].addModel(data['model'], data['matrix'])
-        if objId == -1:
-            print('failed to update color')
-            return
-        self.batches[i].setColor(objId, data['color'])
-        self.batches[i].setTexture(objId, tex)
-        self.idDict[id] = (batchId, objId)
-        self.idDict[(batchId, objId)] = id
+            #if didnt find suitable batch
+            self.addBatch(isTransparent)
+            batchId = len(self.batches)-1
+            objId = self.batches[-1].addModel(data['model'], data['matrix'])
+            if objId == -1:
+                print('failed to update color')
+                return
+            self.batches[batchId].setColor(objId, data['color'])
+            self.batches[batchId].setTexture(objId, tex)
+            self.idDict[id][i] = (batchId, objId)
+            self.idDict[(batchId, objId)] = id
 
     def render(self):
 
@@ -584,9 +620,11 @@ class Renderer:
         return
 
     def getData(self, id):
-        batch = self.batches[self.idDict[id][0]]
-        objId = self.idDict[id][1]
-        return batch.getData(objId)
+        data = []
+        for modelid in self.idDict[id]: 
+            batch = self.batches[modelid[0]]
+            data.append(batch.getData(modelid[1]))
+        return data
 
     def getScreenSpaceObj(self, x, y):
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.transparentFBO)

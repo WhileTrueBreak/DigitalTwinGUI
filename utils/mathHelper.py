@@ -2,7 +2,6 @@ from math import *
 import numpy as np
 import functools
 
-@functools.lru_cache(maxsize=3)
 def normalize(v):
     norm = np.linalg.norm(v)
     if norm == 0: 

@@ -93,7 +93,7 @@ class GenericModel(IModel):
         if self.rbuttons[0].isPressed:
             self.__rotate(-1)
         if self.rbuttons[1].isPressed:
-            self.__rotate(-1)
+            self.__rotate(1)
 
     def __translate(self, index):
         d = 0.01
