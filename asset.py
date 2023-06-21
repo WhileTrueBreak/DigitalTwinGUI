@@ -17,12 +17,18 @@ from utils.sprite import Sprite
 
 from constants import Constants
 
+import sys
+
 class Assets:
     
     INIT = False
 
     @staticmethod
     def init():
+        # require python 3.10+
+        if sys.version_info < (3,10,0):
+            raise Exception('Python 3.10.0+ required')
+
         if Assets.INIT: return
 
         Assets.KUKA_IIWA14_MODEL = [None]*8
