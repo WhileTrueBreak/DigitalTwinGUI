@@ -36,6 +36,7 @@ class Ui3DScene(GlElement):
         self.renderer.getTransform().setSize((self.openGLDim[2:4]))
         self.backgroundRenderer.getTransform().setPos((self.openGLDim[0:2]))
         self.backgroundRenderer.getTransform().setSize((self.openGLDim[2:4]))
+        self.backgroundRenderer.setColor(self.backgroundColor)
         self.renderer.setDirtyVertex()
         self.backgroundRenderer.setDirtyVertex()
         self.modelRenderer.setProjectionMatrix(createProjectionMatrix(self.dim[2], self.dim[3], self.FOV, self.NEAR_PLANE, self.FAR_PLANE))

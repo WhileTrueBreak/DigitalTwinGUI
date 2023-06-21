@@ -38,7 +38,7 @@ class Opcua:
             if node in self.nodeDict:
                 return await self.nodeDict[node].set_value(value, type)
             self.nodeDict[node] = self.opcuaClient.get_node(node)
-            print(f'added {node} to dict for {self}')
+            print(f'added {node} to dict for {self.__class__.__name__}')
             return await self.nodeDict[node].set_value(value, type)
         except Exception:
             raise Exception(f'Error setting value')
@@ -69,15 +69,15 @@ class Opcua:
         rate = 0
         accum = 0
         while not stop():
+            start = time.time_ns()
             try:
                 asyncio.run(Opcua.OpcuaGetData(container, data, client))
             except:
                 return
             time_past = time.time_ns() - start
-            start = time.time_ns()
-            rate += 1
-            accum += time_past
             time.sleep(max(0.01, (delay-time_past)/1000000000))
+            rate += 1
+            accum += time.time_ns() - start
             if accum >= 10000000000:
                 print(f'Opcua receiver polling rate: {int(rate/10)}/s')
                 accum -= 10000000000
@@ -104,7 +104,6 @@ class Opcua:
         rate = 0
         accum = 0
         while not stop():
-            time_past = time.time_ns() - start
             start = time.time_ns()
             try:
                 for key in container.opcuaDict:
@@ -113,9 +112,10 @@ class Opcua:
                     asyncio.run(client.setValue(key, v, t))
             except:
                 return
-            rate += 1
-            accum += time_past
+            time_past = time.time_ns() - start
             time.sleep(max(0.01, (delay-time_past)/1000000000))
+            rate += 1
+            accum += time.time_ns() - start
             if accum >= 10000000000:
                 print(f'Opcua transmitter polling rate: {int(rate/10)}/s')
                 accum -= 10000000000

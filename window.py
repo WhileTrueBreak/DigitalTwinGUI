@@ -15,9 +15,10 @@ from ui.elements.uiButton import UiButton
 from ui.elements.uiBlock import UiBlock
 from ui.elements.ui3dScene import Ui3DScene
 from ui.uiLayer import UiLayer
-
-from utils.uiHelper import *
+from ui.uiHelper import *
+from ui.uiHelper import *
 from ui.constraintManager import *
+
 from asset import *
 
 from constants import Constants

@@ -57,8 +57,8 @@ class UiLayer:
 
     def __updateMasterElem(self):
         self.masterElem.dim = (0,0,*self.window.dim)
-        self.masterElem.constraintManager.pos = (0,0)
-        self.masterElem.constraintManager.dim = self.window.dim
+        self.masterElem.childConstraintManager.pos = (0,0)
+        self.masterElem.childConstraintManager.dim = self.window.dim
         self.masterElem.setDirtyVertices()
 
     def getMasterElem(self):

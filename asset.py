@@ -17,12 +17,18 @@ from utils.sprite import Sprite
 
 from constants import Constants
 
+import sys
+
 class Assets:
     
     INIT = False
 
     @staticmethod
     def init():
+        # require python 3.10+
+        if sys.version_info < (3,10,0):
+            raise Exception('Python 3.10.0+ required')
+
         if Assets.INIT: return
 
         Assets.KUKA_IIWA14_MODEL = [None]*8
@@ -36,7 +42,7 @@ class Assets:
         Assets.KUKA_IIWA14_MODEL[7] = Assets.loadModelFile('res/models/iiwa14/visual/link_7.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
 
         Assets.GRIPPER = Assets.loadModelFile('res/models/gripper/2F140.stl', createTransformationMatrix(0, 0, 0, 0, 0, 90))
-        Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, -0.925, 0, 0, 0))
+        Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, -0.926, 0, 0, 0))
 
         Assets.TABLES = [None]*3
         Assets.TABLES[0] = Assets.loadModelFile('res/models/Objects/Benchtop_Custom.stl')
@@ -51,6 +57,7 @@ class Assets:
         Assets.COUNTER = Assets.loadModelFile('res/models/Expo/Counter.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
         Assets.TABLE = Assets.loadModelFile('res/models/Expo/RoundTable.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
         Assets.TVSCREEN = Assets.loadModelFile('res/models/Expo/TvScreen.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.KUKA_FLEX = Assets.loadModelFile('res/models/Expo/KukaFlex.stl', np.matmul(createTransformationMatrix(9, -8.4075, -0.89, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))
 
         Assets.AMW_LEFT_TEX = Assets.loadTexture('res/textures/AMW_LEFT.jpg', flipX=True, flipY=True)
         Assets.AMW_RIGHT_TEX = Assets.loadTexture('res/textures/AMW_RIGHT.jpg', flipX=False, flipY=True)
@@ -65,6 +72,11 @@ class Assets:
         Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')
         Assets.CUBE_TEX = Assets.loadTexture('res/textures/cube.jpg', flipY=True)
         
+        Assets.LEFT_ARROW = Assets.loadTexture('res/textures/arrow.png')
+        Assets.UP_ARROW = Assets.loadTexture('res/textures/arrow.png', rot=90)
+        Assets.RIGHT_ARROW = Assets.loadTexture('res/textures/arrow.png', flipX=True)
+        Assets.DOWN_ARROW = Assets.loadTexture('res/textures/arrow.png', rot=270)
+
         Assets.TEXT_SHADER = Assets.linkShaders('res/shader/ui/textureVertex.glsl', 'res/shader/ui/textFragment.glsl')
         Assets.GUI_SHADER = Assets.linkShaders('res/shader/ui/guiVertex.glsl', 'res/shader/ui/guiFragment.glsl')
         Assets.SCREEN_SHADER = Assets.linkShaders('res/shader/ui/screenVertex.glsl', 'res/shader/ui/screenFragment.glsl')
@@ -193,7 +205,8 @@ class Assets:
         elif rot == 270:
             img = img.transpose(Image.ROTATE_270)
         
-        imgData = np.array(list(img.getdata()), np.int8)
+        # imgData = np.array(list(img.getdata()), np.int8)
+        imgData = np.asarray(img)
 
         texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, texture)
@@ -205,7 +218,12 @@ class Assets:
         GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
         GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
         GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, *img.size, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imgData)
+        if imgData.shape[2] == 3:
+            GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, *img.size, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imgData)
+        elif imgData.shape[2] == 4:
+            GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, *img.size, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, imgData)
+        else:
+            raise Exception(f'Unknown image shape: {imgData.shape}')
 
         sprite = Sprite.fromTexture(texture)
         return sprite

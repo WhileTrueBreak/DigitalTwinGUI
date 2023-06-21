@@ -5,14 +5,14 @@ from ui.elements.uiStream import UiStream
 from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiText import UiText
 from ui.elements.uiSlider import UiSlider
+from ui.constraintManager import *
+from ui.uiHelper import *
 
 from connections.mjpegStream import MJPEGStream
 from connections.opcua import *
 
-from utils.uiHelper import *
 from utils.mathHelper import *
 
-from ui.constraintManager import *
 from scenes.scene import *
 
 from asyncua import ua
@@ -175,12 +175,12 @@ class AMWExpo_R3(Scene):
             self.twinTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0.5, 0, 0.5, 0.5))
             self.selecterWrappers[i].addChild(self.liveTextWrapper[i])
             self.selecterWrappers[i].addChild(self.twinTextWrapper[i])
-            self.liveAngleText[i] = UiText(self.window, Constraints.ALIGN_TEXT_PERCENTAGE(0, 0.5))
+            self.liveAngleText[i] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
             self.liveAngleText[i].setFontSize(18)
             self.liveAngleText[i].setFont(Assets.ARIAL_FONT)
             self.liveAngleText[i].setTextSpacing(6)
             self.liveAngleText[i].setTextColor((1, 1, 1))
-            self.twinAngleText[i] = UiText(self.window, Constraints.ALIGN_TEXT_PERCENTAGE(0, 0.5))
+            self.twinAngleText[i] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
             self.twinAngleText[i].setFontSize(18)
             self.twinAngleText[i].setFont(Assets.ARIAL_FONT)
             self.twinAngleText[i].setTextSpacing(6)
@@ -227,105 +227,6 @@ class AMWExpo_R3(Scene):
 
     def __createStreams(self):
         self.armStream = MJPEGStream('http://172.31.1.227:8080/?action=streams')
-
-    def buildPlaneXY(self, x, y, z, dx, dy, vis):
-        if vis==1:
-            vertices_xy = [
-                [x,y,z],[x+dx,y,z],[x,y+dy,z],
-                [x,y+dy,z],[x+dx,y,z],[x+dx,y+dy,z],
-            ]
-        elif vis==2:
-            vertices_xy = [
-                [x,y,z],[x,y+dy,z],[x+dx,y,z],
-                [x+dx,y,z],[x,y+dy,z],[x+dx,y+dy,z], 
-            ]
-        else:
-            vertices_xy = [
-                [x,y,z],[x+dx,y,z],[x,y+dy,z],
-                [x,y+dy,z],[x+dx,y,z],[x+dx,y+dy,z],
-                [x,y,z],[x,y+dy,z],[x+dx,y,z],
-                [x+dx,y,z],[x,y+dy,z],[x+dx,y+dy,z],
-            ]
-        planexy = Model.fromVertices(vertices_xy)[0]
-        plane = self.modelRenderer.addModel(planexy, createTransformationMatrix(0, 0, 0, 0, 0, 0))
-        return plane
-   
-    def buildPlaneXZ(self, x, y, z, dx, dz, vis):
-        if vis==1:
-            vertices_xz = [
-                [x,y,z],[x+dx,y,z],[x,y,z+dz],
-                [x,y,z+dz],[x+dx,y,z],[x+dx,y,z+dz],
-            ]
-        elif vis==2:
-            vertices_xz = [
-                [x,y,z],[x,y,z+dz],[x+dx,y,z],
-                [x+dx,y,z],[x,y,z+dz],[x+dx,y,z+dz],   
-            ]
-        else:
-            vertices_xz = [
-                [x,y,z],[x+dx,y,z],[x,y,z+dz],
-                [x,y,z+dz],[x+dx,y,z],[x+dx,y,z+dz],
-                [x,y,z],[x,y,z+dz],[x+dx,y,z],
-                [x+dx,y,z],[x,y,z+dz],[x+dx,y,z+dz],
-            ]
-        planexz = Model.fromVertices(vertices_xz)[0]
-        plane = self.modelRenderer.addModel(planexz, createTransformationMatrix(0, 0, 0, 0, 0, 0))
-        return plane
-    
-    def buildPlaneYZ(self, x, y, z, dy, dz, vis):
-        if vis==1:
-            vertices_yz = [
-                [x,y,z],[x,y+dy,z],[x,y,z+dz],
-                [x,y,z+dz],[x,y+dy,z],[x,y+dy,z+dz],
-            ]
-        elif vis==2:
-            vertices_yz = [
-                [x,y,z],[x,y,z+dz],[x,y+dy,z],
-                [x,y+dy,z],[x,y,z+dz],[x,y+dy,z+dz],   
-            ]
-        else:
-            vertices_yz = [
-                [x,y,z],[x,y+dy,z],[x,y,z+dz],
-                [x,y,z+dz],[x,y+dy,z],[x,y+dy,z+dz],
-                [x,y,z],[x,y,z+dz],[x,y+dy,z],
-                [x,y+dy,z],[x,y,z+dz],[x,y+dy,z+dz],
-            ]
-        planeyz = Model.fromVertices(vertices_yz)[0] 
-        plane = self.modelRenderer.addModel(planeyz, createTransformationMatrix(0, 0, 0, 0, 0, 0))
-        return plane
-    
-    def buildPlaneFromPoints(self, point1, point2, point3, point4, vis):
-        # Define vertices from the four input points
-        # Visibility options for one way planes
-        if vis==1:
-            vertices = [
-                point1, point2, point3,
-                point3, point4, point1,
-            ]
-        elif vis==2:
-            vertices = [
-                point3, point2, point1,
-                point1, point4, point3,
-            ]            
-        else:
-            vertices = [
-                point1, point2, point3,
-                point3, point4, point1,
-                point3, point2, point1,
-                point1, point4, point3,
-            ]
-        # Create model object from vertices
-        plane = Model.fromVertices(vertices)[0]
-        # Add model object to model renderer and return handle to the model
-        return self.modelRenderer.addModel(plane, createTransformationMatrix(0, 0, 0, 0, 0, 0))
-
-    def buildWallPlan(self, wallplan):
-        for wall in wallplan:
-            point1 = (wall[0][0], wall[0][1], wall[2][0])
-            point2 = (wall[1][0], wall[1][1], wall[2][0])
-            point3 = (wall[1][0], wall[1][1], wall[2][1])
-            point4 = (wall[0][0], wall[0][1], wall[2][1])
-            self.planes.append(self.buildPlaneFromPoints(point1, point2, point3, point4,0))
 
     def __createRoom(self):
                 #FLOOR

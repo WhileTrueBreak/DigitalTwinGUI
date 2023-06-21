@@ -8,6 +8,7 @@ def normalize(v):
        return v
     return v / norm
 
+@functools.lru_cache(maxsize=3)
 def createProjectionMatrix(width, height, FOV, NEAR_PLANE, FAR_PLANE):
     aspectRatio = 1
     if height != 0:
@@ -27,6 +28,7 @@ def createProjectionMatrix(width, height, FOV, NEAR_PLANE, FAR_PLANE):
     projectionMatrix[3][3] = 0
     return projectionMatrix
 
+@functools.lru_cache(maxsize=3)
 def createTransformationMatrix(x, y, z, rotx, roty, rotz):
     rotx = radians(rotx)
     roty = radians(roty)
@@ -56,6 +58,7 @@ def createTransformationMatrix(x, y, z, rotx, roty, rotz):
     tmat[3][3] = 1
     return tmat
 
+@functools.lru_cache(maxsize=3)
 def createViewMatrix(x, y, z, rotx, roty, rotz):
     rrotx = radians(rotx)
     rroty = radians(roty)
@@ -64,6 +67,7 @@ def createViewMatrix(x, y, z, rotx, roty, rotz):
     rot = createTransformationMatrix(0, 0, 0, rotx, roty, rotz)
     return rot.dot(trans)
 
+@functools.lru_cache(maxsize=3)
 def vectorTransform(p1, p2, thickness, upperLimit=10000000):
     vector = p2-p1
     mag = np.linalg.norm(vector)
@@ -84,12 +88,18 @@ def vectorTransform(p1, p2, thickness, upperLimit=10000000):
     scaleTMAT[2,2] = min(mag,upperLimit)
     return rotMat.dot(scaleTMAT)
 
+@functools.lru_cache(maxsize=3)
 def createScaleMatrix(x, y, z):
     mat = np.identity(4)
     mat[0,0] = x
     mat[1,1] = y
     mat[2,2] = z
     return mat
+
+@functools.lru_cache(maxsize=3)
+def solveQuadratic(a, b, c):
+    d = (b**2-4*a*c)**0.5
+    return ((-b+d)/(2*a),(-b-d)/(2*a))
 
 
 

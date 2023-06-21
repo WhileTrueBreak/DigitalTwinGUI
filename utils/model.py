@@ -15,7 +15,7 @@ class Model:
         #     raise Exception(f'Error loading stl: {file}')
         numVertices = len(mesh.vectors) * 3
         vertices = np.zeros((numVertices, 8), dtype='float32')
-        indices = np.zeros(numVertices, dtype='float32')
+        indices = np.arange(numVertices, dtype='float32')
 
         normals = np.cross(mesh.vectors[::, 1] - mesh.vectors[::, 0], mesh.vectors[::, 2] - mesh.vectors[::, 0])
         vectors = np.zeros((normals.shape[0], 4))
@@ -82,14 +82,18 @@ class Model:
     @classmethod
     def fromVertices(cls, vertices, transform=np.identity(4)):
         return [cls(vertices, np.arange(len(vertices)))]
+    
+    @classmethod
+    def fromVertIndex(cls, vertices, indices, transform=np.identity(4)):
+        return [cls(vertices[indices], indices)]
 
     def __init__(self, vertices, indices):
-        self.vertices = vertices
-        self.indices = indices
+        self.vertices = np.array(vertices,dtype='float32')
+        self.indices = np.array(indices,dtype='int32')
         self.createVertexData(self.vertices)
     
     def createVertexData(self, vertices):
-        vertices = np.array(vertices,dtype='float32')
+        if len(vertices[0]) == 8: return
         has_uvs = False
         if len(vertices[0]) == 5:
             has_uvs = True
@@ -105,3 +109,14 @@ class Model:
         self.vertices[::,3:6] = normals
         if has_uvs:
             self.vertices[::,6:8] = uvs
+
+    def generateSubModels(self, maxVerts):
+        maxVerts = maxVerts - (maxVerts%3)
+        total = self.indices.shape[0]
+        models = []
+        start = 0
+        while start < total:
+            asVert = self.vertices[self.indices[start:min(total, start+maxVerts)]]
+            models.append(Model.fromVertices(asVert)[0])
+            start += maxVerts
+        return models

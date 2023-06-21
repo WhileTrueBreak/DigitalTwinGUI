@@ -26,6 +26,8 @@ void main() {
 	}else{
 		color = fColor;
 	}
+
+	// color = vec4(fTexCoords, 1, 1);
 	if(color.a <= 0)discard;
 	picking = uvec3(fUiId+1,fUiId,gl_PrimitiveID);
 }

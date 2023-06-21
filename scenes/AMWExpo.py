@@ -5,11 +5,11 @@ from ui.elements.uiStream import UiStream
 from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiText import UiText
 from ui.elements.uiSlider import UiSlider
+from ui.uiHelper import *
 
 from connections.mjpegStream import MJPEGStream
 from connections.opcua import *
 
-from utils.uiHelper import *
 from utils.mathHelper import *
 
 from ui.constraintManager import *
@@ -174,10 +174,10 @@ class AMWExpo(Scene):
             self.twinTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0.5, 0, 0.5, 0.5))
             self.selecterWrappers[i].addChild(self.liveTextWrapper[i])
             self.selecterWrappers[i].addChild(self.twinTextWrapper[i])
-            self.liveAngleText[i] = UiText(self.window, Constraints.ALIGN_TEXT_PERCENTAGE(0, 0.5))
+            self.liveAngleText[i] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
             self.liveAngleText[i].setFontSize(18)
             self.liveAngleText[i].setTextSpacing(7)
-            self.twinAngleText[i] = UiText(self.window, Constraints.ALIGN_TEXT_PERCENTAGE(0, 0.5))
+            self.twinAngleText[i] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
             self.twinAngleText[i].setFontSize(18)
             self.twinAngleText[i].setTextSpacing(7)
             self.liveTextWrapper[i].addChild(self.liveAngleText[i])
