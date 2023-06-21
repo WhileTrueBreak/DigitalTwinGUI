@@ -90,6 +90,14 @@ class Assets:
         Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf')
         Assets.ARIAL_FONT = Assets.loadFont('res/fonts/ARIALNB.TTF',48*64)
 
+        Assets.UR5_LINK0 = Assets.loadModelFile('res/models/ur5/visual/base.dae')
+        Assets.UR5_LINK1 = Assets.loadModelFile('res/models/ur5/visual/forearm.dae')
+        Assets.UR5_LINK2 = Assets.loadModelFile('res/models/ur5/visual/shoulder.dae')
+        Assets.UR5_LINK3 = Assets.loadModelFile('res/models/ur5/visual/upperarm.dae')
+        Assets.UR5_LINK4 = Assets.loadModelFile('res/models/ur5/visual/wrist1.dae')
+        Assets.UR5_LINK5 = Assets.loadModelFile('res/models/ur5/visual/wrist2.dae')
+        Assets.UR5_LINK6 = Assets.loadModelFile('res/models/ur5/visual/wrist3.dae')
+
         floorVertices = [
             [0,0,0],[1,0,0],[0,1,0],
             [0,1,0],[1,0,0],[1,1,0],
@@ -182,6 +190,8 @@ class Assets:
                 models = Model.fromSTL(file=file, transform=tmat)
             case '.obj':
                 models = Model.fromOBJ(file=file, transform=tmat)
+            case '.dae':
+                models = Model.fromDAE(file=file, transform=tmat)
             case _:
                 raise Exception(f'Unknown file type: {ext}')
         if len(models) > 1:

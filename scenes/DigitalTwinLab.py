@@ -145,6 +145,8 @@ class DigitalTwinLab(Scene):
         self.genericModels.append(base)
         self.arms[base] = arm
 
+        model = GenericModel(self.window, self.modelRenderer, Assets.UR5_LINK0[0], createTransformationMatrix(0,0,0,0,0,0))
+
     def handleUiEvents(self, event):
         [arm.handleEvents(event) for arm in self.arms.values()]
         [model.handleEvents(event) for model in self.genericModels]

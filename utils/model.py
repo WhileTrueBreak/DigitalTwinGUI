@@ -5,6 +5,8 @@ from stl import mesh as stlmesh
 import pywavefront
 import numpy as np
 
+from pyassimp import load
+
 class Model:
 
     @classmethod
@@ -77,6 +79,31 @@ class Model:
             vectors = transform.dot(vectors.T)
             vertices[::,0:3] = vectors.T[::,0:3]
             models.append(cls(vertices, indices))
+        return models
+
+    @classmethod
+    def fromDAE(cls, file, transform=np.identity(4)): 
+        models = []
+        with load(file) as scene:
+            for mesh in scene.meshes:
+                # print(mesh.vertices)
+                if len(mesh.vertices) == 0:
+                    continue
+                vertices = np.zeros((len(mesh.vertices), 8),dtype='float32')
+                indices = np.arange(len(mesh.vertices),dtype='int32')
+                vertices[::, 0:3] = mesh.vertices
+                # print(mesh.normals)
+                if len(mesh.normals) == 0:
+                    models.append(cls(vertices, indices))
+                    continue
+                vertices[::, 3:6] = mesh.normals
+                # print(mesh.texturecoords)
+                if len(mesh.texturecoords) == 0:
+                    models.append(cls(vertices, indices))
+                    continue
+                vertices[::, 6:8] = mesh.texturecoords
+                models.append(cls(vertices, indices))
+
         return models
 
     @classmethod
