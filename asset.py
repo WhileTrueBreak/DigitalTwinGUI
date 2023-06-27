@@ -14,6 +14,7 @@ import time
 from utils.model import *
 from utils.mathHelper import *
 from utils.sprite import Sprite
+from utils.timing import *
 
 from constants import Constants
 
@@ -24,6 +25,7 @@ class Assets:
     INIT = False
 
     @staticmethod
+    @timing
     def init():
         # require python 3.10+
         if sys.version_info < (3,10,0):
@@ -90,6 +92,9 @@ class Assets:
         Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf')
         Assets.ARIAL_FONT = Assets.loadFont('res/fonts/ARIALNB.TTF',48*64)
 
+        Assets.OMNIMOVE = Assets.loadModelFile('res/models/omnimove/KMP200.stl', np.matmul(createTransformationMatrix(0, 0, -0.7, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))
+        Assets.OMNIMOVE_CHARGER = Assets.loadModelFile('res/models/omnimove/KMP200_Charger.stl')
+
         floorVertices = [
             [0,0,0],[1,0,0],[0,1,0],
             [0,1,0],[1,0,0],[1,1,0],
@@ -114,6 +119,7 @@ class Assets:
 
         Assets.INIT = True
     @staticmethod
+    @timing
     def loadFont(fontFile, size=48*64):
         print(f'Loading font: {fontFile}')
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
@@ -141,6 +147,7 @@ class Assets:
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         return characters
     @staticmethod
+    @timing
     def complieShader(shaderFile, shaderType):
         print(f'Compiling shader: {shaderFile}')
         shaderCode = Path(shaderFile).read_text()
@@ -156,6 +163,7 @@ class Assets:
             raise Exception(error_message)
         return shaderRef
     @staticmethod
+    @timing
     def linkShaders(vertexShaderFile, fragmentShaderFile):
         vertRef = Assets.complieShader(vertexShaderFile, GL.GL_VERTEX_SHADER)
         fragRef = Assets.complieShader(fragmentShaderFile, GL.GL_FRAGMENT_SHADER)
@@ -173,6 +181,7 @@ class Assets:
             return
         return programRef
     @staticmethod
+    @timing
     def loadModelFile(file, tmat=np.identity(4)):
         print(f'Loading model: {file}')
         ext = os.path.splitext(file)[1].lower()
@@ -188,9 +197,11 @@ class Assets:
             return models
         return models[0]
     @staticmethod
+    @timing
     def loadModelVertices(vertices):
         return Model.fromVertices(vertices)[0]
     @staticmethod
+    @timing
     def loadTexture(file, flipX=False, flipY=False, rot=0):
         print(f'Loading texture: {file}')
         img = Image.open(file)
@@ -228,6 +239,7 @@ class Assets:
         sprite = Sprite.fromTexture(texture)
         return sprite
     @staticmethod
+    @timing
     def loadVideo(file):
         print(f'Loading video: {file}')
         capture = cv2.VideoCapture(file)

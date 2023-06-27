@@ -3,8 +3,9 @@ from ui.uiRenderer import UiRenderer
 
 from utils.mathHelper import *
 from utils.transform import *
+from utils.timing import *
 
-from modelRenderer import *
+from ui.ui3d.modelRenderer import *
 from asset import *
 
 class Ui3DScene(GlElement):

@@ -19,6 +19,7 @@ from ui.uiHelper import *
 from utils.mathHelper import *
 
 import numpy as np
+import time
 
 class DigitalTwinLab(Scene):
 
@@ -144,6 +145,22 @@ class DigitalTwinLab(Scene):
         arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
         self.genericModels.append(base)
         self.arms[base] = arm
+        
+        base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(11, 4, 0.7, 0, 0, 0))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
+        arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        self.genericModels.append(base)
+        self.arms[base] = arm
+        
+        base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(11, 2, 0.7, 0, 0, 0))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
+        arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        self.genericModels.append(base)
+        self.arms[base] = arm
+
+        # [self.modelRenderer.setColor(model.modelId, (1,1,1,0.5)) for model in self.genericModels]
 
     def handleUiEvents(self, event):
         [arm.handleEvents(event) for arm in self.arms.values()]
@@ -166,7 +183,7 @@ class DigitalTwinLab(Scene):
                 self.panelWrapper.addChild(model.getControlPanel())
         if len(self.panelWrapper.children) == 0:
             self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
-        
+    
     def absUpdate(self, delta):
         self.__updateEnv(delta)
         self.__updateModelPos()
@@ -182,7 +199,8 @@ class DigitalTwinLab(Scene):
     def __updateEnv(self, delta):
         if self.window.selectedUi == self.renderWindow:
             self.camera.moveCamera(delta)
-        self.modelRenderer.setViewMatrix(createViewMatrix(*self.camera.getCameraTransform()))
+        if self.camera.hasMoved():
+            self.modelRenderer.setViewMatrix(createViewMatrix(*self.camera.getCameraTransform()))
         
     def start(self):
         [arm.start() for arm in self.arms.values()]

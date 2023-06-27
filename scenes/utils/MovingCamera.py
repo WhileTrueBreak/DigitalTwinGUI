@@ -8,6 +8,7 @@ class MovingCamera:
         self.window = window
         self.cameraTransform = start
         self.camSpeed = speed
+        self.lastPos = []
 
     def moveCamera(self, delta):
 
@@ -44,7 +45,11 @@ class MovingCamera:
         self.cameraTransform[1] += yawY-deltaPos[1]*cos(radYaw)#*sin(radPitch)
         self.cameraTransform[2] += -deltaPos[2]*sin(radPitch)#+deltaPos[1]*cos(radPitch)
     
+    def hasMoved(self):
+        return not np.array_equal(self.cameraTransform, self.lastPos)
+
     def getCameraTransform(self):
+        self.lastPos = self.cameraTransform.copy()
         return self.cameraTransform
     
     def setCameraTransform(self, T):

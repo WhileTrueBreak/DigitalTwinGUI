@@ -23,6 +23,8 @@ from asset import *
 
 from constants import Constants
 
+from utils.timing import *
+
 import ctypes
 
 class Window():
@@ -192,7 +194,6 @@ class Window():
             self.currentScene.update(self.delta)
         self.uiLayer.update(self.delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-
         self.uiLayer.render()
         return
     

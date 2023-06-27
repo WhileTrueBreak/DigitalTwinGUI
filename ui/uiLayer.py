@@ -1,6 +1,8 @@
 from ui.elements.uiWrapper import UiWrapper
 from ui.uiBatch import UiBatch
 
+from utils.timing import *
+
 class UiLayer:
 
     MAX_BATCH_SIZE = 128

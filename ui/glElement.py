@@ -3,6 +3,8 @@ from ui.constraintManager import *
 from abc import abstractmethod
 import OpenGL.GL as GL
 
+from utils.timing import *
+
 class GlElement:
     def __init__(self, window, constraints, dim=(0,0,0,0)):
         self.window = window
