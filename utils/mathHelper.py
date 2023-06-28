@@ -68,7 +68,6 @@ def createViewMatrix(x, y, z, rotx, roty, rotz):
     rot = createTransformationMatrix(0, 0, 0, rotx, roty, rotz)
     return rot.dot(trans)
 
-@functools.lru_cache(maxsize=3)
 def vectorTransform(p1, p2, thickness, upperLimit=10000000):
     vector = p2-p1
     mag = np.linalg.norm(vector)

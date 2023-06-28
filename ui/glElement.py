@@ -77,8 +77,7 @@ class GlElement:
             else:
                 self.onHeld()
         elif not self.isDefault:
-            if self.isPressed:
-                self.isPressed = False
+            self.isPressed = False
             self.onDefault()
             self.isDefault = True
         self.lastMouseState = self.window.mouseButtons

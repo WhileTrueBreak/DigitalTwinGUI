@@ -6,10 +6,14 @@ import time
 from asset import *
 from utils.timing import *
 
+import traceback
+
 class BatchRenderer:
     MAX_OBJECTS = 1000
     MAX_VERTICES = 600000
     MAX_TEXTURES = 0
+
+    @timing
     def __init__(self, shader, isTransparent=False):
         BatchRenderer.MAX_TEXTURES = min(GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS), 32)
 
@@ -41,7 +45,8 @@ class BatchRenderer:
 
         self.isDirty = False
         self.__initVertices()
-
+    
+    @timing
     def __initVertices(self):
 
         self.vao = GL.glGenVertexArrays(1)
@@ -107,6 +112,7 @@ class BatchRenderer:
 
         return index
 
+    @timing
     def removeModel(self, id):
         self.isAvaliable[id] = True
         # shift vertices
@@ -125,6 +131,7 @@ class BatchRenderer:
         self.isDirty = True
         return
 
+    @timing
     def __updateVertices(self):
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.vertices.nbytes, self.vertices)
@@ -184,7 +191,7 @@ class BatchRenderer:
     def setProjectionMatrix(self, matrix):
         GL.glUseProgram(self.shader)
         GL.glUniformMatrix4fv(self.projectionMatrix, 1, GL.GL_FALSE, matrix)
-        
+      
     def setViewMatrix(self, matrix):
         GL.glUseProgram(self.shader)
         GL.glUniformMatrix4fv(self.viewMatrix, 1, GL.GL_TRUE, matrix)
@@ -279,6 +286,7 @@ class Renderer:
 
         self.__initCompositeLayers()
     
+    @timing
     def __initCompositeLayers(self):
         self.accumClear = np.array([0,0,0,0], dtype='float32')
         self.revealClear = np.array([1,0,0,0], dtype='float32')
@@ -362,6 +370,7 @@ class Renderer:
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 
+    @timing
     def updateCompositeLayers(self):
         textureDim = self.window.dim
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
@@ -429,12 +438,14 @@ class Renderer:
                         f'Try increasing BatchRenderer.MAX_VERTICES to above {len(model.vertices)}')
         return -1
 
+    @timing
     def removeModel(self, id):
         for modelid in self.idDict[id]:
             self.batches[modelid[0]].removeModel(modelid[1])
             self.idDict.pop(modelid)
         self.idDict.pop(id)
     
+    @timing
     def addBatch(self, transparent=False):
         if transparent:
             self.batches.append(BatchRenderer(self.transparentShader, transparent))

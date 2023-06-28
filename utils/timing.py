@@ -1,19 +1,23 @@
 import time
 
 from colorama import init as colorama_init
-from colorama import Fore
-from colorama import Style
+from colorama import Fore, Back, Style
 
 HIGHEST = 0
+LAYER = 0
 
 def timing(func):
     def wrapper(*arg, **kw):
-        global HIGHEST
+        global HIGHEST, LAYER
+        LAYER += 1
         start = time.time_ns()
         out = func(*arg, **kw)
-        fl = len(func.__qualname__)
+        end = time.time_ns()
+        LAYER -= 1
+        fl = len(func.__qualname__)+LAYER*2
         if fl > HIGHEST:
             HIGHEST = fl
-        print(f"{func.__qualname__} time:{' '*(HIGHEST-fl)} {Fore.RED}{int((time.time_ns()-start)/1000)}us{Style.RESET_ALL} to run")
+        tab = f'{Fore.CYAN}|{Style.RESET_ALL} '
+        print(f"{tab*LAYER}{func.__qualname__} time:{' '*(HIGHEST-fl)} {Fore.RED}{int((end-start)/1000)}µs{Style.RESET_ALL}")
         return out
     return wrapper

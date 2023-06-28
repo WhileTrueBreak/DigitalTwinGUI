@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from utils.timing import *
 
 P_X = 0
 P_Y = 1
@@ -36,6 +37,7 @@ class ConstraintManager:
         self.pos = pos
         self.dim = dim
 
+    @timing
     def calcConstraints(self, *constraints):
         constraints = [*constraints]
         if len(set(c.toChange for c in constraints)) != 4:

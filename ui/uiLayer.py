@@ -33,6 +33,7 @@ class UiLayer:
             batch.render()
         return
 
+    @timing
     def __updateRenderers(self):
         self.batches = []
         currentBatch = None
@@ -46,6 +47,7 @@ class UiLayer:
                 currentBatch.addRenderer(renderer)
         self.hasMasterListChanged = False
 
+    @timing
     def __updateMasterList(self):
         self.masterList = []
         queue = [self.masterElem]
@@ -57,6 +59,7 @@ class UiLayer:
         self.masterElem.setCleanComponents()
         self.hasMasterListChanged = True
 
+    @timing
     def __updateMasterElem(self):
         self.masterElem.dim = (0,0,*self.window.dim)
         self.masterElem.childConstraintManager.pos = (0,0)
