@@ -17,6 +17,7 @@ class UiLayer:
 
         self.batches = []
     
+    @timing
     def update(self, delta):
         if self.window.resized:
             for batch in self.batches:
@@ -28,6 +29,7 @@ class UiLayer:
             self.__updateRenderers()
         self.masterElem.update(delta)
 
+    @timing
     def render(self):
         for batch in self.batches:
             batch.render()
