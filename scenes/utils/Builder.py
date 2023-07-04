@@ -1,4 +1,5 @@
 from utils.model import Model
+from utils.timing import timing
 
 class Builder:
 
@@ -61,13 +62,15 @@ class Builder:
         # Add model object to model renderer and return handle to the model
         return plane
 
+    @timing
     def buildWallPlan(wallplan):
         planes = []
+        appendPlane = planes.append
         for wall in wallplan:
             point1 = (wall[0][0], wall[0][1], wall[2][0])
             point2 = (wall[1][0], wall[1][1], wall[2][0])
             point3 = (wall[1][0], wall[1][1], wall[2][1])
             point4 = (wall[0][0], wall[0][1], wall[2][1])
-            planes.append(Builder.buildPlaneFromPoints(point1, point2, point3, point4, vis=Builder.S1|Builder.S2))
+            appendPlane(Builder.buildPlaneFromPoints(point1, point2, point3, point4, vis=Builder.S1|Builder.S2))
         return planes
 
