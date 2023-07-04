@@ -89,6 +89,7 @@ class Window():
         self.uiLayer.getMasterElem().addChild(self.sceneManager.getWrapper())
 
     def update(self):
+        self.resetHovered()
         self.eventHandler()
         self.sceneManager.update(self.delta)
         self.uiLayer.update(self.delta)
@@ -172,6 +173,11 @@ class Window():
     def getWindowScale(self):
         return (self.dim[0]/self.ogdim[0],self.dim[1]/self.ogdim[1])
 
+    def resetHovered(self):
+        self.firstInFrame = True
+
     def getHoveredUI(self):
-        data = self.uiLayer.getScreenSpaceUI(*self.getMousePos())
-        return data
+        if self.firstInFrame:
+            self.hovered = self.uiLayer.getScreenSpaceUI(*self.getMousePos())
+            self.firstInFrame = False
+        return self.hovered

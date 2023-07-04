@@ -29,7 +29,7 @@ class GlElement:
         self.zIndex = 0
 
         self.type = 'nothing'
-
+    
     def update(self, delta):
         if self.isDirtyVertices and self.parent != None:
             self.updateDim()
@@ -41,6 +41,7 @@ class GlElement:
         self.absUpdate(delta)
         return
 
+    @timing
     def updateDim(self):
         if self.constraintManager != None:
             relDim = self.constraintManager.calcConstraints(*self.constraints)

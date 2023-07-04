@@ -206,7 +206,6 @@ class UiBatch:
         GL.glEnable(GL.GL_DEPTH_TEST)
         GL.glClearColor(*clearColor)
 
-    @timing
     def rebuffer(self):
         GL.glBindVertexArray(self.vao)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
@@ -234,7 +233,6 @@ class UiBatch:
             return
         self.textures.append(texture)
     
-    @timing
     def __updateVertexData(self, index):
         renderer = self.uiRenderers[index]
         rendererIndex = index
