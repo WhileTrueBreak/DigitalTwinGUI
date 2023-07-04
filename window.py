@@ -88,7 +88,6 @@ class Window():
         self.sceneManager.createUi()
         self.uiLayer.getMasterElem().addChild(self.sceneManager.getWrapper())
 
-    @timing
     def update(self):
         self.resetHovered()
         self.eventHandler()
@@ -136,7 +135,6 @@ class Window():
         self.dim = pygame.display.get_window_size()
         return
 
-    @timing
     def run(self):
         start = time.time_ns()
         while self.running:

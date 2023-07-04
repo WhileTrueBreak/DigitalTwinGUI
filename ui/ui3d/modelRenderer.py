@@ -9,7 +9,7 @@ from utils.timing import *
 import traceback
 
 class BatchRenderer:
-    MAX_OBJECTS = 1000
+    MAX_OBJECTS = 100
     MAX_VERTICES = 600000
     MAX_TEXTURES = 0
 

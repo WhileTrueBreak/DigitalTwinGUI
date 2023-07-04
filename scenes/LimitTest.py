@@ -27,7 +27,7 @@ class LimitScene(Scene):
         return
     
     def __createModels(self):
-        size = 10
+        size = 100
         for i in range(size): 
             for j in range(size):
                 for k in range(size):

@@ -35,7 +35,6 @@ class SceneManager:
     def createUi(self):
         ...
 
-    @timing
     def update(self, delta):
         if self.currentScene == None: return
         self.currentScene.update(delta)
