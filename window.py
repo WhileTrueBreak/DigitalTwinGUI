@@ -23,6 +23,9 @@ from utils.timing import *
 
 import ctypes
 
+from colorama import init as colorama_init
+from colorama import Fore, Back, Style
+
 class Window():
     
     TAB_HEIGHT = 40
@@ -149,7 +152,7 @@ class Window():
             self.timeCounter += self.delta
             self.frames += 1
             if self.timeCounter >= 1:
-                print(f'frame time: {1000000/self.frames:.0f}us | FPS: {self.frames}')
+                print(f'frame time: {Fore.CYAN}{1000000/self.frames:.0f}us{Style.RESET_ALL} | FPS: {Fore.CYAN}{self.frames}{Style.RESET_ALL}')
                 self.timeCounter -= 1
                 self.frames = 0
         self.sceneManager.stop()

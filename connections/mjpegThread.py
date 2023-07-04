@@ -75,10 +75,10 @@ def MjpegConnection(container, url, stop):
         accum += time_past
         time.sleep(max(0.01, (delay-time_past)/1000000000))
         if accum >= 10000000000:
-            print(f'MJPEG Polling Rate: {int(rate/10)}/s')
+            # print(f'MJPEG Polling Rate: {int(rate/10)}/s')
             accum -= 10000000000
             rate = 0
     if connectionOpen:
         client.stop()
     
-    print(f'mjpeg thread stopped: {url}')
+    # print(f'mjpeg thread stopped: {url}')

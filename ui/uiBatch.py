@@ -267,7 +267,6 @@ class UiBatch:
             self.__genElementIndices(indices, i)
         return indices
     
-    @timing
     def __genElementIndices(self, indices, index):
         indOffset = UiBatch.NUM_VERTICES*index
         indices[index][0] = indOffset + 0

@@ -38,7 +38,7 @@ class Opcua:
             if node in self.nodeDict:
                 return await self.nodeDict[node].set_value(value, type)
             self.nodeDict[node] = self.opcuaClient.get_node(node)
-            print(f'added {node} to dict for {self.__class__.__name__}')
+            # print(f'added {node} to dict for {self.__class__.__name__}')
             return await self.nodeDict[node].set_value(value, type)
         except Exception:
             raise Exception(f'Error setting value')
@@ -48,7 +48,7 @@ class Opcua:
             if node in self.nodeDict:
                 return (await self.nodeDict[node].get_value(), await self.nodeDict[node].read_data_type_as_variant_type())
             self.nodeDict[node] = self.opcuaClient.get_node(node)
-            print(f'added {node} to dict for {self}')
+            # print(f'added {node} to dict for {self}')
             return (await self.nodeDict[node].get_value(), await self.nodeDict[node].read_data_type_as_variant_type())
         except Exception:
             raise Exception(f'Error getting value')

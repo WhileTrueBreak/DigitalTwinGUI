@@ -41,7 +41,6 @@ class GlElement:
         self.absUpdate(delta)
         return
 
-    @timing
     def updateDim(self):
         if self.constraintManager != None:
             relDim = self.constraintManager.calcConstraints(*self.constraints)

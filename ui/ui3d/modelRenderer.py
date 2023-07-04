@@ -85,6 +85,7 @@ class BatchRenderer:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
 
+    @timing
     def addModel(self, model, transformationMatrix):
         transformationMatrix = transformationMatrix.T
         if not True in self.isAvaliable:
@@ -131,7 +132,6 @@ class BatchRenderer:
         self.isDirty = True
         return
 
-    @timing
     def __updateVertices(self):
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
         GL.glBufferSubData(GL.GL_ARRAY_BUFFER, 0, self.vertices.nbytes, self.vertices)
@@ -385,6 +385,7 @@ class Renderer:
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_R8, textureDim[0], textureDim[1], 0, GL.GL_RED, GL.GL_FLOAT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
+    @timing
     def addModel(self, model, matrix):
         if isinstance(model, list):
             return addModels(model, matrix)
@@ -409,6 +410,7 @@ class Renderer:
         submodels = model.generateSubModels(BatchRenderer.MAX_VERTICES)
         return self.addModels(submodels, matrix)
     
+    @timing
     def addModels(self, models, matrix):
         ids = []
         modelId = self.nextId

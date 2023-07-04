@@ -1,5 +1,5 @@
 import time
-import os
+import os, io, sys
 
 from stl import mesh as stlmesh
 import pywavefront
@@ -9,10 +9,15 @@ class Model:
 
     @classmethod
     def fromSTL(cls, file, transform=np.identity(4)):
-        # try:
+        # suppress prints from stlmesh
+        text_trap = io.StringIO()
+        sys.stdout = text_trap
+
         mesh = stlmesh.Mesh.from_file(file)
-        # except Exception:
-        #     raise Exception(f'Error loading stl: {file}')
+
+        # restore stdout
+        sys.stdout = sys.__stdout__
+
         numVertices = len(mesh.vectors) * 3
         vertices = np.zeros((numVertices, 8), dtype='float32')
         indices = np.arange(numVertices, dtype='float32')
@@ -22,7 +27,9 @@ class Model:
         vectors[::, 0:3] = normals
         vectors = transform.dot(vectors.T)
         normals = vectors.T[::, 0:3]
-        normals /= np.sqrt((normals ** 2).sum(-1))[..., np.newaxis]
+        normalMags = np.sqrt((normals ** 2).sum(-1))[..., np.newaxis]
+        # divide where x/0 = 0
+        normals = np.divide(normals, normalMags, out=np.zeros_like(normals), where=normalMags!=0)
         normals = np.repeat(normals, 3, axis=0)
         vertices[::,3:6] = normals
         
