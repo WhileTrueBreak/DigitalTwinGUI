@@ -59,7 +59,7 @@ class Opcua:
         return t
     @staticmethod
     def opcuaConnection(container, host, data, stop):
-        print(f'Opcua receiver thread started: {host}')
+        # print(f'Opcua receiver thread started: {host}')
         start = time.time_ns()
         delay = 1/Opcua.POLLING_RATE*1000000000
         try:
@@ -79,10 +79,10 @@ class Opcua:
             rate += 1
             accum += time.time_ns() - start
             if accum >= 10000000000:
-                print(f'Opcua receiver polling rate: {int(rate/10)}/s')
+                # print(f'Opcua receiver polling rate: {int(rate/10)}/s')
                 accum -= 10000000000
                 rate = 0
-        print(f'Opcua receiver thread stopped: {host}')
+        # print(f'Opcua receiver thread stopped: {host}')
     @staticmethod
     async def OpcuaGetData(container, data, client):
         for d in data:
@@ -94,7 +94,7 @@ class Opcua:
         return t
     @staticmethod
     def opcuaTransmitterConnection(container, host, stop):
-        print(f'Opcua transmitter thread started: {host}')
+        # print(f'Opcua transmitter thread started: {host}')
         try:
             client = Opcua(host)
         except:
@@ -117,10 +117,10 @@ class Opcua:
             rate += 1
             accum += time.time_ns() - start
             if accum >= 10000000000:
-                print(f'Opcua transmitter polling rate: {int(rate/10)}/s')
+                # print(f'Opcua transmitter polling rate: {int(rate/10)}/s')
                 accum -= 10000000000
                 rate = 0
-        print(f'Opcua transmitter thread stopped: {host}')
+        # print(f'Opcua transmitter thread stopped: {host}')
 
 
 

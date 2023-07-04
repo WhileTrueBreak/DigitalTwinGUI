@@ -28,7 +28,7 @@ def createMjpegThread(container, url, stop):
     return t
 
 def MjpegConnection(container, url, stop):
-    print(f'mjpeg thread started: {url}')
+    # print(f'mjpeg thread started: {url}')
     connectionOpen = True
     try:
         urlopen(url, timeout=3)

@@ -37,8 +37,7 @@ class UiLayer:
     def __updateRenderers(self):
         self.batches = []
         currentBatch = None
-        for i in range(len(self.masterList)):
-            elem = self.masterList[i]
+        for i,elem in enumerate(self.masterList):
             for renderer in elem.getRenderers():
                 if currentBatch == None or not currentBatch.hasRoom(renderer):
                     currentBatch = UiBatch(self.window, UiLayer.MAX_BATCH_SIZE)

@@ -17,8 +17,11 @@ window = Window((1200, 800), 'Digital Twin GUI', fullscreen=False, resizeable=Tr
 
 LabScene = DigitalTwinLab(window, 'Digital Twin Lab')
 LabScene.createUi()
+# ltScene = LimitScene(window, 'Limit Test')
+# ltScene.createUi()
 
 window.addScene(LabScene)
+# window.addScene(ltScene)
 
 window.createUi()
 window.run()
