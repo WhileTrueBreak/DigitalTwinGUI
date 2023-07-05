@@ -3,10 +3,6 @@ import nest_asyncio
 
 from window import *
 
-from scenes.KukaScene import *
-from scenes.AMWExpo import *
-from scenes.AMWExpo_R3 import *
-from scenes.LimitTest import *
 from scenes.DigitalTwinLab import *
 
 from asset import *

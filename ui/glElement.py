@@ -30,15 +30,15 @@ class GlElement:
 
         self.type = 'nothing'
     
-    def update(self, delta):
+    def recUpdate(self, delta):
         if self.isDirtyVertices and self.parent != None:
             self.updateDim()
             self.reshape()
             self.isDirtyVertices = False
         for child in self.children:
-            child.update(delta)
+            child.recUpdate(delta)
         self.__actions()
-        self.absUpdate(delta)
+        self.update(delta)
         return
 
     def updateDim(self):
@@ -57,7 +57,7 @@ class GlElement:
     def reshape(self):
         ...
     @abstractmethod
-    def absUpdate(self, delta):
+    def update(self, delta):
         ...
     
     def __actions(self):

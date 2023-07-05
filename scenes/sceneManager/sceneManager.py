@@ -37,7 +37,7 @@ class SceneManager:
 
     def update(self, delta):
         if self.currentScene == None: return
-        self.currentScene.update(delta)
+        self.currentScene.recUpdate(delta)
 
     def stop(self):
         if self.currentScene == None: return

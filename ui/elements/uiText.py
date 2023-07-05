@@ -95,7 +95,7 @@ class UiText(GlElement):
         self.__updateRenderer()
         return
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         self.__updateTextScale()
         self.__updateTextBound()
         return

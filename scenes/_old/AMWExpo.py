@@ -5,7 +5,6 @@ from ui.elements.uiStream import UiStream
 from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiText import UiText
 from ui.elements.uiSlider import UiSlider
-from ui.constraintManager import *
 from ui.uiHelper import *
 
 from connections.mjpegStream import MJPEGStream
@@ -13,6 +12,7 @@ from connections.opcua import *
 
 from utils.mathHelper import *
 
+from ui.constraintManager import *
 from scenes.scene import *
 
 from asyncua import ua
@@ -50,13 +50,13 @@ def T_KUKAiiwa14(q):
     Robot1_T_0_ , Robot1_T_i_ = DH(DH_Robot1)
     return Robot1_T_0_ , Robot1_T_i_
 
-class AMWExpo_R3(Scene):
+class AMWExpo(Scene):
     
     def __init__(self, window, name):
         super().__init__(window, name)
-        self.planes = [] 
+        self.planes = [] #pre allocated walls, can we append??
 
-        self.cameraTransform = [4.2, -3.8, 2.5, -75, 0, -15]
+        self.cameraTransform = [-0.7+5, -0.57+2, 1.5, -70.25, 0, 45]
         self.camSpeed = 2
 
         self.progid = 2
@@ -71,26 +71,26 @@ class AMWExpo_R3(Scene):
         
         self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
-                'ns=23;s=R3d_Joi1', 
-                'ns=23;s=R3d_Joi2', 
-                'ns=23;s=R3d_Joi3', 
-                'ns=23;s=R3d_Joi4', 
-                'ns=23;s=R3d_Joi5', 
-                'ns=23;s=R3d_Joi6', 
-                'ns=23;s=R3d_Joi7'
+                'ns=24;s=R4d_Joi1', 
+                'ns=24;s=R4d_Joi2', 
+                'ns=24;s=R4d_Joi3', 
+                'ns=24;s=R4d_Joi4', 
+                'ns=24;s=R4d_Joi5', 
+                'ns=24;s=R4d_Joi6', 
+                'ns=24;s=R4d_Joi7'
             ], lambda:self.threadStopFlag)
         self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
-                'ns=23;s=R3d_ForX', 
-                'ns=23;s=R3d_ForY', 
-                'ns=23;s=R3d_ForZ' 
+                'ns=24;s=R4d_ForX', 
+                'ns=24;s=R4d_ForY', 
+                'ns=24;s=R4d_ForZ' 
             ], lambda:self.threadStopFlag)
         self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
-                'ns=23;s=R3c_ProgID', 
-                'ns=23;s=R3c_Start',    
-                'ns=23;s=R3f_Ready', 
-                'ns=23;s=R3f_End',  
+                'ns=24;s=R4c_ProgID', 
+                'ns=24;s=R4c_Start',    
+                'ns=24;s=R4f_Ready', 
+                'ns=24;s=R4f_End',  
             ], lambda:self.threadStopFlag)
 
         self.progStartFlag = False
@@ -110,7 +110,7 @@ class AMWExpo_R3(Scene):
             COMPOUND(RELATIVE(T_H, 1, P_H), ABSOLUTE(T_H, -2*padding)),
         ]
         self.renderWindow = Ui3DScene(self.window, constraints)
-        self.renderWindow.setBackgroundColor((150/255, 150/255, 150/255))
+        self.renderWindow.setBackgroundColor((1, 1, 1))
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
 
@@ -123,7 +123,6 @@ class AMWExpo_R3(Scene):
         ]
         self.recenterBtn, self.recenterText = centeredTextButton(self.window, constraints)
         self.recenterText.setText('RE')
-        self.recenterText.setFont(Assets.ARIAL_FONT)
         self.recenterText.setFontSize(20)
         self.recenterText.setTextSpacing(7)
         self.recenterText.setTextColor((1, 1, 1))
@@ -177,20 +176,16 @@ class AMWExpo_R3(Scene):
             self.selecterWrappers[i].addChild(self.twinTextWrapper[i])
             self.liveAngleText[i] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
             self.liveAngleText[i].setFontSize(18)
-            self.liveAngleText[i].setFont(Assets.ARIAL_FONT)
-            self.liveAngleText[i].setTextSpacing(6)
-            self.liveAngleText[i].setTextColor((1, 1, 1))
+            self.liveAngleText[i].setTextSpacing(7)
             self.twinAngleText[i] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
             self.twinAngleText[i].setFontSize(18)
-            self.twinAngleText[i].setFont(Assets.ARIAL_FONT)
-            self.twinAngleText[i].setTextSpacing(6)
-            self.twinAngleText[i].setTextColor((1, 1, 1))
+            self.twinAngleText[i].setTextSpacing(7)
             self.liveTextWrapper[i].addChild(self.liveAngleText[i])
             self.twinTextWrapper[i].addChild(self.twinAngleText[i])
             self.angleSlider[i] = UiSlider(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 1, 0.5))
             self.angleSlider[i].setRange(-pi, pi)
-            self.angleSlider[i].setBaseColor((1,1,1))
-            self.angleSlider[i].setSliderColor((0,109/255,174/255))
+            self.angleSlider[i].setBaseColor((0,0,0))
+            self.angleSlider[i].setSliderColor((0.8,0.8,0.8))
             self.angleSlider[i].setSliderPercentage(0.05)
             self.selecterWrappers[i].addChild(self.angleSlider[i])
         
@@ -203,11 +198,10 @@ class AMWExpo_R3(Scene):
         self.sendBtn, self.sendBtnText = centeredTextButton(self.window, constraints)
         self.sendBtnText.setText('Execute')
         self.sendBtnText.setFontSize(20)
-        self.sendBtnText.setFont(Assets.ARIAL_FONT)
         self.sendBtnText.setTextSpacing(8)
-        self.sendBtn.setDefaultColor((0,109/255,174/255))
-        self.sendBtn.setHoverColor((0,159/255,218/255))
-        self.sendBtn.setPressColor((0,172/255,62/255))
+        self.sendBtn.setDefaultColor((0,0,0))
+        self.sendBtn.setHoverColor((0.1,0.1,0.1))
+        self.sendBtn.setPressColor((0.2,0.2,0.2))
         self.armControlPanel.addChild(self.sendBtn)
         
         constraints = [
@@ -220,13 +214,114 @@ class AMWExpo_R3(Scene):
         self.unlinkBtnText.setText('Unlink')
         self.unlinkBtnText.setFontSize(20)
         self.unlinkBtnText.setTextSpacing(8)
-        self.unlinkBtn.setDefaultColor((0,109/255,174/255))
-        self.unlinkBtn.setHoverColor((0,159/255,218/255))
-        self.unlinkBtn.setPressColor((0,172/255,62/255))
+        self.unlinkBtn.setDefaultColor((0,0,0))
+        self.unlinkBtn.setHoverColor((0.1,0.1,0.1))
+        self.unlinkBtn.setPressColor((0.2,0.2,0.2))
         self.armControlPanel.addChild(self.unlinkBtn)
 
     def __createStreams(self):
-        self.armStream = MJPEGStream('http://172.31.1.227:8080/?action=streams')
+        self.armStream = MJPEGStream('http://172.31.1.177:8080/?action=streams')
+
+    def buildPlaneXY(self, x, y, z, dx, dy, vis):
+        if vis==1:
+            vertices_xy = [
+                [x,y,z],[x+dx,y,z],[x,y+dy,z],
+                [x,y+dy,z],[x+dx,y,z],[x+dx,y+dy,z],
+            ]
+        elif vis==2:
+            vertices_xy = [
+                [x,y,z],[x,y+dy,z],[x+dx,y,z],
+                [x+dx,y,z],[x,y+dy,z],[x+dx,y+dy,z], 
+            ]
+        else:
+            vertices_xy = [
+                [x,y,z],[x+dx,y,z],[x,y+dy,z],
+                [x,y+dy,z],[x+dx,y,z],[x+dx,y+dy,z],
+                [x,y,z],[x,y+dy,z],[x+dx,y,z],
+                [x+dx,y,z],[x,y+dy,z],[x+dx,y+dy,z],
+            ]
+        planexy = Model.fromVertices(vertices_xy)[0]
+        plane = self.modelRenderer.addModel(planexy, createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        return plane
+   
+    def buildPlaneXZ(self, x, y, z, dx, dz, vis):
+        if vis==1:
+            vertices_xz = [
+                [x,y,z],[x+dx,y,z],[x,y,z+dz],
+                [x,y,z+dz],[x+dx,y,z],[x+dx,y,z+dz],
+            ]
+        elif vis==2:
+            vertices_xz = [
+                [x,y,z],[x,y,z+dz],[x+dx,y,z],
+                [x+dx,y,z],[x,y,z+dz],[x+dx,y,z+dz],   
+            ]
+        else:
+            vertices_xz = [
+                [x,y,z],[x+dx,y,z],[x,y,z+dz],
+                [x,y,z+dz],[x+dx,y,z],[x+dx,y,z+dz],
+                [x,y,z],[x,y,z+dz],[x+dx,y,z],
+                [x+dx,y,z],[x,y,z+dz],[x+dx,y,z+dz],
+            ]
+        planexz = Model.fromVertices(vertices_xz)[0]
+        plane = self.modelRenderer.addModel(planexz, createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        return plane
+    
+    def buildPlaneYZ(self, x, y, z, dy, dz, vis):
+        if vis==1:
+            vertices_yz = [
+                [x,y,z],[x,y+dy,z],[x,y,z+dz],
+                [x,y,z+dz],[x,y+dy,z],[x,y+dy,z+dz],
+            ]
+        elif vis==2:
+            vertices_yz = [
+                [x,y,z],[x,y,z+dz],[x,y+dy,z],
+                [x,y+dy,z],[x,y,z+dz],[x,y+dy,z+dz],   
+            ]
+        else:
+            vertices_yz = [
+                [x,y,z],[x,y+dy,z],[x,y,z+dz],
+                [x,y,z+dz],[x,y+dy,z],[x,y+dy,z+dz],
+                [x,y,z],[x,y,z+dz],[x,y+dy,z],
+                [x,y+dy,z],[x,y,z+dz],[x,y+dy,z+dz],
+            ]
+        planeyz = Model.fromVertices(vertices_yz)[0] 
+        plane = self.modelRenderer.addModel(planeyz, createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        return plane
+    
+    def buildPlaneFromPoints(self, point1, point2, point3, point4, vis):
+        # Define vertices from the four input points
+        # Visibility options for one way planes
+        if vis==1:
+            vertices = [
+                point1, point2, point3,
+                point3, point4, point1,
+            ]
+        elif vis==2:
+            vertices = [
+                point3, point2, point1,
+                point1, point4, point3,
+            ]            
+        else:
+            vertices = [
+                point1, point2, point3,
+                point3, point4, point1,
+                point3, point2, point1,
+                point1, point4, point3,
+            ]
+        # Create model object from vertices
+        plane = Model.fromVertices(vertices)[0]
+        # Add model object to model renderer and return handle to the model
+        return self.modelRenderer.addModel(plane, createTransformationMatrix(0, 0, 0, 0, 0, 0))
+
+    def buildWallPlan(self, wallplan):
+        for wall in wallplan:
+            point1 = (wall[0][0], wall[0][1], wall[2][0])
+            point2 = (wall[1][0], wall[1][1], wall[2][0])
+            point3 = (wall[1][0], wall[1][1], wall[2][1])
+            point4 = (wall[0][0], wall[0][1], wall[2][1])
+            self.planes.append(self.buildPlaneFromPoints(point1, point2, point3, point4,0))
+
+
 
     def __createRoom(self):
                 #FLOOR
@@ -266,44 +361,25 @@ class AMWExpo_R3(Scene):
 
         ]
         self.buildWallPlan(wallplan)
-        self.modelRenderer.setColor(self.planes[12], (0, 0, 0, 0.2))
+        self.modelRenderer.setColor(self.planes[12], (0.8, 0.8, 0.8, 1))
 
     def __addFurniture(self):
-        self.screenId0 = self.modelRenderer.addModel(Assets.SCREENSQ, 
-            createTransformationMatrix(0.001, 0, 0, 0, -90, 0).dot(createScaleMatrix(2.5, 2.5, 1)))
-        self.modelRenderer.setTexture(self.screenId0, Assets.AMW_LEFT_TEX.texture)
-        self.modelRenderer.setColor(self.screenId0, (1,1,1,1))
-        self.screenId1 = self.modelRenderer.addModel(Assets.SCREENSQ, 
-            createTransformationMatrix(5.999, 0, 0, 0, -90, 0).dot(createScaleMatrix(2.5, 2.5, 1)))
-        self.modelRenderer.setTexture(self.screenId1, Assets.AMW_RIGHT_TEX.texture)
-        self.modelRenderer.setColor(self.screenId1, (1,1,1,1))
-        self.screenId2 = self.modelRenderer.addModel(Assets.SCREENSQ, 
-            createTransformationMatrix(0, 2.499, 0, -90, 0, -90).dot(createScaleMatrix(2.5, 6, 1)))
-        self.modelRenderer.setTexture(self.screenId2, Assets.AMW_MID_TEX.texture)
-        self.modelRenderer.setColor(self.screenId2, (1,1,1,1))
-
-        self.screenId3 = self.modelRenderer.addModel(Assets.SCREENSQ, 
-            createTransformationMatrix(0.43, 1.4, 1.35, -90, -45, -90).dot(createScaleMatrix((1080/4000)*1.8, (1980/4000)*1.8, 1)))
-        self.modelRenderer.setTexture(self.screenId3, self.armStream.texture)
-        self.modelRenderer.setColor(self.screenId3, (1,1,1,1))
+        self.screenId = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(0.01, 0.2, 1, 0, -90, 0))
+        self.modelRenderer.setTexture(self.screenId, Assets.AMW_LEFT_TEX.texture)
+        self.modelRenderer.setColor(self.screenId, (1,1,1,1))
 
         self.benches = [0]*1
         self.benches[0] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(1, 1, 0.93, 0, 0, 0))
-        self.modelRenderer.setColor(self.benches[0], (0,109/255,174/255,1))
 
         self.barstool1 = self.modelRenderer.addModel(Assets.BAR_STOOL, createTransformationMatrix(1.5, 2, 0, 0, 0, 0))
-        self.modelRenderer.setColor(self.barstool1, (121/255,85/255,73/255,1))
         self.barstool2 = self.modelRenderer.addModel(Assets.BAR_STOOL, createTransformationMatrix(2.5, 2, 0, 0, 0, 0))
-        self.modelRenderer.setColor(self.barstool2, (121/255,85/255,73/255,1))
+        # self.modelRenderer.setColor(self.barstool, (0,1,1,1))
         self.counter = self.modelRenderer.addModel(Assets.COUNTER, createTransformationMatrix(4, 0.5, 0, 0, 0, 0))
-        self.modelRenderer.setColor(self.counter, (0,109/255,174/255,1))
+        # self.modelRenderer.setColor(self.counter, (1,0,1,1))
         
         self.table = self.modelRenderer.addModel(Assets.TABLE, createTransformationMatrix(2, 2, 0, 0, 0, 0))
-        self.modelRenderer.setColor(self.table, (121/255,85/255,73/255,1))
         self.screenTV1 = self.modelRenderer.addModel(Assets.TVSCREEN, createTransformationMatrix(0.5, 2, 0, 0, 0, 90))
-        self.modelRenderer.setColor(self.screenTV1, (0.2,0.2,0.2,1))
         self.screenTV2 = self.modelRenderer.addModel(Assets.TVSCREEN, createTransformationMatrix(5.5, 2, 0, 0, 0, 0))
-        self.modelRenderer.setColor(self.screenTV2, (0.2,0.2,0.2,1))
 
     def __addRobot(self):
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14([0,0,0,pi/2,0,0,0])
@@ -333,8 +409,6 @@ class AMWExpo_R3(Scene):
         self.forceVectorId = self.modelRenderer.addModel(Assets.POLE, np.identity(4))
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.8))
 
-
-
     def handleUiEvents(self, event):
         if event['action'] == 'release':
             if event['obj'] == self.recenterBtn:
@@ -342,8 +416,8 @@ class AMWExpo_R3(Scene):
             if event['obj'] == self.sendBtn:
                 self.sendBtn.lock
                 for i in range(len(self.twinJoints)):
-                    self.opcuaTransmitterContainer.setValue(f'ns=23;s=R3c_Joi{i+1}', self.twinJoints[i]*180/pi, ua.VariantType.Double)
-                self.opcuaTransmitterContainer.setValue(f'ns=23;s=R3c_ProgID', self.progid, ua.VariantType.Int32)
+                    self.opcuaTransmitterContainer.setValue(f'ns=24;s=R4c_Joi{i+1}', self.twinJoints[i]*180/pi, ua.VariantType.Double)
+                self.opcuaTransmitterContainer.setValue(f'ns=24;s=R4c_ProgID', self.progid, ua.VariantType.Int32)
                 self.progStartFlag = True
             if event['obj'] == self.unlinkBtn:
                 self.matchLive = not self.matchLive
@@ -363,7 +437,7 @@ class AMWExpo_R3(Scene):
         else:
             self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)))
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         self.__moveCamera(delta)
         self.__updateStreams(delta)
         self.__updateJoints()
@@ -376,7 +450,7 @@ class AMWExpo_R3(Scene):
         self.armStream.updateImage(delta)
     
     def __updateProgram(self):
-        if not self.opcuaReceiverContainer.getValue('ns=23;s=R3f_Ready', default=False)[0]:
+        if not self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
             self.sendBtn.lock()
         if self.progStartFlag:
             self.sendBtn.lock()
@@ -385,12 +459,12 @@ class AMWExpo_R3(Scene):
             if self.__isTransmitClear():
                 self.executingFlag = True
                 self.progStartFlag = False
-                self.opcuaTransmitterContainer.setValue('ns=23;s=R3c_Start', True, ua.VariantType.Boolean)
+                self.opcuaTransmitterContainer.setValue('ns=24;s=R4c_Start', True, ua.VariantType.Boolean)
         elif self.executingFlag:
             self.sendBtn.lock()
             self.unlinkBtn.lock()
             self.sendBtnText.setText('Executing')
-            if self.opcuaReceiverContainer.getValue('ns=23;s=R3c_ProgID', default=self.progid)[0] == 0:
+            if self.opcuaReceiverContainer.getValue('ns=24;s=R4c_ProgID', default=self.progid)[0] == 0:
                 self.doneFlag = True
                 self.executingFlag = False
         elif self.doneFlag:
@@ -401,7 +475,7 @@ class AMWExpo_R3(Scene):
             self.unlinkBtnText.setText('Unlink')
             self.sendBtnText.setText('Execute')
             self.__updateTwinColor()
-        elif self.opcuaReceiverContainer.getValue('ns=23;s=R3f_Ready', default=False)[0]:
+        elif self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
             self.sendBtn.unlock()
 
     def __updateGuiText(self):
@@ -416,14 +490,14 @@ class AMWExpo_R3(Scene):
 
     def __updateJoints(self):
         for i in range(7):
-            if not self.opcuaReceiverContainer.hasUpdated(f'ns=23;s=R3d_Joi{i+1}'): continue
-            self.jointsRad[i] = radians(self.opcuaReceiverContainer.getValue(f'ns=23;s=R3d_Joi{i+1}', default=0)[0])
-        if self.opcuaReceiverContainer.hasUpdated('ns=23;s=R3d_ForX'):
-            self.forceVector[0] = self.opcuaReceiverContainer.getValue('ns=23;s=R3d_ForX', default=0)[0]
-        if self.opcuaReceiverContainer.hasUpdated('ns=23;s=R3d_ForY'):
-            self.forceVector[1] = self.opcuaReceiverContainer.getValue('ns=23;s=R3d_ForY', default=0)[0]
-        if self.opcuaReceiverContainer.hasUpdated('ns=23;s=R3d_ForZ'):
-            self.forceVector[2] = self.opcuaReceiverContainer.getValue('ns=23;s=R3d_ForZ', default=0)[0]
+            if not self.opcuaReceiverContainer.hasUpdated(f'ns=24;s=R4d_Joi{i+1}'): continue
+            self.jointsRad[i] = radians(self.opcuaReceiverContainer.getValue(f'ns=24;s=R4d_Joi{i+1}', default=0)[0])
+        if self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForX'):
+            self.forceVector[0] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForX', default=0)[0]
+        if self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForY'):
+            self.forceVector[1] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForY', default=0)[0]
+        if self.opcuaReceiverContainer.hasUpdated('ns=24;s=R4d_ForZ'):
+            self.forceVector[2] = self.opcuaReceiverContainer.getValue('ns=24;s=R4d_ForZ', default=0)[0]
         if self.matchLive:
             self.twinJoints = self.jointsRad.copy()
         Robot1_T_0_ , Robot1_T_i_ = T_KUKAiiwa14(self.jointsRad)
@@ -511,28 +585,28 @@ class AMWExpo_R3(Scene):
         if not self.dataThread.is_alive():
             self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
                 [
-                    'ns=23;s=R3d_Joi1', 
-                    'ns=23;s=R3d_Joi2', 
-                    'ns=23;s=R3d_Joi3', 
-                    'ns=23;s=R3d_Joi4', 
-                    'ns=23;s=R3d_Joi5', 
-                    'ns=23;s=R3d_Joi6', 
-                    'ns=23;s=R3d_Joi7'
+                    'ns=24;s=R4d_Joi1', 
+                    'ns=24;s=R4d_Joi2', 
+                    'ns=24;s=R4d_Joi3', 
+                    'ns=24;s=R4d_Joi4', 
+                    'ns=24;s=R4d_Joi5', 
+                    'ns=24;s=R4d_Joi6', 
+                    'ns=24;s=R4d_Joi7'
                 ], lambda:self.threadStopFlag)
         if not self.forceThread.is_alive():
             self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
                 [
-                    'ns=23;s=R3d_ForX', 
-                    'ns=23;s=R3d_ForY', 
-                    'ns=23;s=R3d_ForZ' 
+                    'ns=24;s=R4d_ForX', 
+                    'ns=24;s=R4d_ForY', 
+                    'ns=24;s=R4d_ForZ' 
                 ], lambda:self.threadStopFlag)
         if not self.progControlThread.is_alive():
             self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
             [
-                'ns=23;s=R3c_ProgID', 
-                'ns=23;s=R3c_Start',    
-                'ns=23;s=R3f_Ready', 
-                'ns=23;s=R3f_End',  
+                'ns=24;s=R4c_ProgID', 
+                'ns=24;s=R4c_Start',    
+                'ns=24;s=R4f_Ready', 
+                'ns=24;s=R4f_End',  
             ], lambda:self.threadStopFlag)
         if not self.transmitter.is_alive():
             self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/', lambda:self.threadStopFlag)
@@ -545,13 +619,13 @@ class AMWExpo_R3(Scene):
 
     def __isTransmitClear(self):
         for i in range(len(self.twinJoints)):
-            if self.opcuaTransmitterContainer.hasUpdated(f'ns=23;s=R3c_Joi{i+1}'):
+            if self.opcuaTransmitterContainer.hasUpdated(f'ns=24;s=R4c_Joi{i+1}'):
                 return False
-        if self.opcuaTransmitterContainer.hasUpdated(f'ns=23;s=R3c_ProgID'):
+        if self.opcuaTransmitterContainer.hasUpdated(f'ns=24;s=R4c_ProgID'):
             return False
-        if self.opcuaReceiverContainer.getValue('ns=23;s=R3c_ProgID', default=0)[0] != self.progid:
+        if self.opcuaReceiverContainer.getValue('ns=24;s=R4c_ProgID', default=0)[0] != self.progid:
             return False
-        if not self.opcuaReceiverContainer.getValue('ns=23;s=R3f_Ready', default=False)[0]:
+        if not self.opcuaReceiverContainer.getValue('ns=24;s=R4f_Ready', default=False)[0]:
             return False
         return True
 

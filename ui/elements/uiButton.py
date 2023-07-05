@@ -31,7 +31,7 @@ class UiButton(GlElement):
         self.renderer.setDirtyVertex()
         return
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         return
 
     def __setColor(self, color):

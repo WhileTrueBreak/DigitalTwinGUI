@@ -198,7 +198,7 @@ class DigitalTwinLab(Scene):
         if len(self.panelWrapper.children) == 0:
             self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
     
-    def absUpdate(self, delta):
+    def update(self, delta):
         self.__updateEnv(delta)
         self.__updateModelPos()
         [arm.update() for arm in self.arms.values()]

@@ -222,7 +222,7 @@ class KukaScene(Scene):
         else:
             self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*padding)))
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         self.__moveCamera(delta)
         self.__updateStreams(delta)
         self.kukaTwin.update()

@@ -106,7 +106,7 @@ class LimitScene(Scene):
     def handleUiEvents(self, event):
         return
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         self.__moveCamera(delta)
         self.modelRenderer.setViewMatrix(createViewMatrix(*self.cameraTransform))
         return

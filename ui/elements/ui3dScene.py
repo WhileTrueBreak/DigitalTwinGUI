@@ -44,7 +44,7 @@ class Ui3DScene(GlElement):
         self.modelRenderer.updateCompositeLayers()
         return
     
-    def absUpdate(self, delta):
+    def update(self, delta):
         GL.glEnable(GL.GL_CULL_FACE)
         GL.glEnable(GL.GL_DEPTH_TEST)
         # GL.glViewport(int(self.dim[0]), int(self.window.dim[1]-self.dim[3]-self.dim[1]), int(self.dim[2]), int(self.dim[3]))

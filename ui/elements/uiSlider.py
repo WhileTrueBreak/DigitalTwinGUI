@@ -44,7 +44,7 @@ class UiSlider(GlElement):
         self.sliderRenderer.setDirtyVertex()
         return
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         return
 
     def setBaseColor(self, color):

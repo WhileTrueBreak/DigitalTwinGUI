@@ -26,7 +26,7 @@ class UiLayer:
             self.__updateMasterList()
         if self.hasMasterListChanged:
             self.__updateRenderers()
-        self.masterElem.update(delta)
+        self.masterElem.recUpdate(delta)
 
     def render(self):
         for batch in self.batches:
