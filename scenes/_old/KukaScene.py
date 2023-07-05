@@ -122,9 +122,9 @@ class KukaScene(Scene):
 
     def __addFurniture(self):
         self.benches = [0]*5
-        self.benches[0] = self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(7-0.4, 0.8+1.05, 0.85, 0, 0, 0))
-        self.benches[1] = self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(7-1.05, 0.4, 0.85, 0, 0, 90))
-        self.benches[2] = self.modelRenderer.addModel(Assets.TABLES[2], createTransformationMatrix(7-0.9, 0.8+2.1+0.9, 0.85, 0, 0, 0))
+        self.benches[0] = self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(7-0.4, 0.8+1.05, 0.85, 0, 0, 0))
+        self.benches[1] = self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(7-1.05, 0.4, 0.85, 0, 0, 90))
+        self.benches[2] = self.modelRenderer.addModel(Assets.TABLE_SQUARE, createTransformationMatrix(7-0.9, 0.8+2.1+0.9, 0.85, 0, 0, 0))
         self.benches[3] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(7-0.9-0.7, 0.8+2.1+0.9-1.6, 0.85+0.06625, 0, 0, 0))
         self.benches[3] = self.modelRenderer.addModel(Assets.KUKA_BASE, createTransformationMatrix(7-1, 0.8+2.1+1.8+0.6, 0.85+0.06625, 0, 0, 0))
 

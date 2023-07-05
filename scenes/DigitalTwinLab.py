@@ -28,7 +28,6 @@ class DigitalTwinLab(Scene):
     def __init__(self, window, name):
         super().__init__(window, name)
         self.camera = MovingCamera(self.window, [12, 3, 1.5, -90, 0, -50], 1)
-
     @timing
     def createUi(self):
         self.renderWindow = Ui3DScene(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0, 0, 1, 1, DigitalTwinLab.UI_PADDING))
@@ -172,9 +171,9 @@ class DigitalTwinLab(Scene):
         self.shelves.append(self.modelRenderer.addModel(Assets.SHELF, createTransformationMatrix(10.75,7,0,0,0,-90)))
 
         self.tables = []
-        self.tables.append(self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(2.5,7-1.05,0.85,0,0,0)))
-        self.tables.append(self.modelRenderer.addModel(Assets.TABLES[2], createTransformationMatrix(4.8,7-0.9,0.85,0,0,0)))
-        self.tables.append(self.modelRenderer.addModel(Assets.TABLES[1], createTransformationMatrix(6.8,7-1.05,0.85,0,0,0)))
+        self.tables.append(self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(2.5,7-1.05,0.85,0,0,0)))
+        self.tables.append(self.modelRenderer.addModel(Assets.TABLE_SQUARE, createTransformationMatrix(4.8,7-0.9,0.85,0,0,0)))
+        self.tables.append(self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(6.8,7-1.05,0.85,0,0,0)))
 
     def handleUiEvents(self, event):
         [arm.handleEvents(event) for arm in self.arms.values()]
