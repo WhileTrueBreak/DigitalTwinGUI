@@ -14,16 +14,21 @@ import time
 from utils.model import *
 from utils.mathHelper import *
 from utils.sprite import Sprite
+from utils.timing import *
 
 from constants import Constants
 
 import sys
+
+from colorama import init as colorama_init
+from colorama import Fore, Back, Style
 
 class Assets:
     
     INIT = False
 
     @staticmethod
+    @timing
     def init():
         # require python 3.10+
         if sys.version_info < (3,10,0):
@@ -98,6 +103,9 @@ class Assets:
         Assets.UR5_LINK5 = Assets.loadModelFile('res/models/ur5/visual/wrist2.dae')
         Assets.UR5_LINK6 = Assets.loadModelFile('res/models/ur5/visual/wrist3.dae')
 
+        Assets.OMNIMOVE = Assets.loadModelFile('res/models/omnimove/KMP200.stl', np.matmul(createTransformationMatrix(0, 0, -0.7, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))
+        Assets.OMNIMOVE_CHARGER = Assets.loadModelFile('res/models/omnimove/KMP200_Charger.stl')
+
         floorVertices = [
             [0,0,0],[1,0,0],[0,1,0],
             [0,1,0],[1,0,0],[1,1,0],
@@ -122,8 +130,9 @@ class Assets:
 
         Assets.INIT = True
     @staticmethod
+    @timing
     def loadFont(fontFile, size=48*64):
-        print(f'Loading font: {fontFile}')
+        print(f'Loading font: {Fore.LIGHTMAGENTA_EX}{fontFile}{Style.RESET_ALL}')
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
         characters = {}
         face = freetype.Face(fontFile)
@@ -149,8 +158,9 @@ class Assets:
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         return characters
     @staticmethod
+    @timing
     def complieShader(shaderFile, shaderType):
-        print(f'Compiling shader: {shaderFile}')
+        print(f'Compiling shader: {Fore.LIGHTMAGENTA_EX}{shaderFile}{Style.RESET_ALL}')
         shaderCode = Path(shaderFile).read_text()
         shaderCode = shaderCode.replace('%max_textures%', str(Constants.MAX_TEXTURE_SLOTS))
         shaderRef = GL.glCreateShader(shaderType)
@@ -164,10 +174,11 @@ class Assets:
             raise Exception(error_message)
         return shaderRef
     @staticmethod
+    @timing
     def linkShaders(vertexShaderFile, fragmentShaderFile):
         vertRef = Assets.complieShader(vertexShaderFile, GL.GL_VERTEX_SHADER)
         fragRef = Assets.complieShader(fragmentShaderFile, GL.GL_FRAGMENT_SHADER)
-        print(f'Linking shader: {vertexShaderFile} & {fragmentShaderFile}')
+        print(f'Linking shader: {Fore.LIGHTMAGENTA_EX}{vertexShaderFile}{Style.RESET_ALL} & {Fore.LIGHTMAGENTA_EX}{fragmentShaderFile}{Style.RESET_ALL}')
         programRef = GL.glCreateProgram()
         GL.glAttachShader(programRef, vertRef)
         GL.glAttachShader(programRef, fragRef)
@@ -181,8 +192,9 @@ class Assets:
             return
         return programRef
     @staticmethod
+    @timing
     def loadModelFile(file, tmat=np.identity(4)):
-        print(f'Loading model: {file}')
+        print(f'Loading model: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
         ext = os.path.splitext(file)[1].lower()
         models = None
         match ext:
@@ -198,11 +210,13 @@ class Assets:
             return models
         return models[0]
     @staticmethod
+    @timing
     def loadModelVertices(vertices):
         return Model.fromVertices(vertices)[0]
     @staticmethod
+    @timing
     def loadTexture(file, flipX=False, flipY=False, rot=0):
-        print(f'Loading texture: {file}')
+        print(f'Loading texture: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
         img = Image.open(file)
         if flipX:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)
@@ -238,8 +252,9 @@ class Assets:
         sprite = Sprite.fromTexture(texture)
         return sprite
     @staticmethod
+    @timing
     def loadVideo(file):
-        print(f'Loading video: {file}')
+        print(f'Loading video: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
         capture = cv2.VideoCapture(file)
         return capture
 

@@ -3,6 +3,8 @@ from ui.constraintManager import *
 from abc import abstractmethod
 import OpenGL.GL as GL
 
+from utils.timing import *
+
 class GlElement:
     def __init__(self, window, constraints, dim=(0,0,0,0)):
         self.window = window
@@ -27,16 +29,16 @@ class GlElement:
         self.zIndex = 0
 
         self.type = 'nothing'
-
-    def update(self, delta):
+    
+    def recUpdate(self, delta):
         if self.isDirtyVertices and self.parent != None:
             self.updateDim()
             self.reshape()
             self.isDirtyVertices = False
         for child in self.children:
-            child.update(delta)
+            child.recUpdate(delta)
         self.__actions()
-        self.absUpdate(delta)
+        self.update(delta)
         return
 
     def updateDim(self):
@@ -55,7 +57,7 @@ class GlElement:
     def reshape(self):
         ...
     @abstractmethod
-    def absUpdate(self, delta):
+    def update(self, delta):
         ...
     
     def __actions(self):
@@ -75,8 +77,7 @@ class GlElement:
             else:
                 self.onHeld()
         elif not self.isDefault:
-            if self.isPressed:
-                self.isPressed = False
+            self.isPressed = False
             self.onDefault()
             self.isDefault = True
         self.lastMouseState = self.window.mouseButtons

@@ -4,13 +4,22 @@ import ctypes
 import time
 
 from asset import *
+from utils.timing import *
+
+import traceback
 
 class BatchRenderer:
-    MAX_OBJECTS = 10000
-    MAX_VERTICES = 400000
+    MAX_OBJECTS = 100
+    MAX_VERTICES = 600000
     MAX_TEXTURES = 0
-    def __init__(self, isTransparent=False):
+
+    @timing
+    def __init__(self, shader, isTransparent=False):
         BatchRenderer.MAX_TEXTURES = min(GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS), 32)
+
+        self.shader = shader
+        self.projectionMatrix = GL.glGetUniformLocation(self.shader, 'projectionMatrix')
+        self.viewMatrix = GL.glGetUniformLocation(self.shader, 'viewMatrix')
 
         self.vertexSize = 15
 
@@ -36,7 +45,8 @@ class BatchRenderer:
 
         self.isDirty = False
         self.__initVertices()
-
+    
+    @timing
     def __initVertices(self):
 
         self.vao = GL.glGenVertexArrays(1)
@@ -75,6 +85,7 @@ class BatchRenderer:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
 
+    @timing
     def addModel(self, model, transformationMatrix):
         transformationMatrix = transformationMatrix.T
         if not True in self.isAvaliable:
@@ -102,6 +113,7 @@ class BatchRenderer:
 
         return index
 
+    @timing
     def removeModel(self, id):
         self.isAvaliable[id] = True
         # shift vertices
@@ -138,6 +150,7 @@ class BatchRenderer:
         self.isDirty = False
 
     def render(self):
+        # print(f"trans:{self.isTransparent} | dirty:{self.isDirty} | size:{self.currentIndex} | tex:{len(self.textures)}")
 
         if self.isDirty:
             self.__updateVertices()
@@ -175,15 +188,13 @@ class BatchRenderer:
             GL.glActiveTexture(GL.GL_TEXTURE0 + i)
             GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
-    def setProjectionMatrix(self, shader, matrix):
-        GL.glUseProgram(shader)
-        projectionMatrix = GL.glGetUniformLocation(shader, 'projectionMatrix')
-        GL.glUniformMatrix4fv(projectionMatrix, 1, GL.GL_FALSE, matrix)
-        
-    def setViewMatrix(self, shader, matrix):
-        GL.glUseProgram(shader)
-        viewMatrix = GL.glGetUniformLocation(shader, 'viewMatrix')
-        GL.glUniformMatrix4fv(viewMatrix, 1, GL.GL_TRUE, matrix)
+    def setProjectionMatrix(self, matrix):
+        GL.glUseProgram(self.shader)
+        GL.glUniformMatrix4fv(self.projectionMatrix, 1, GL.GL_FALSE, matrix)
+      
+    def setViewMatrix(self, matrix):
+        GL.glUseProgram(self.shader)
+        GL.glUniformMatrix4fv(self.viewMatrix, 1, GL.GL_TRUE, matrix)
     
     def setTransformMatrix(self, id, matrix):
         self.transformationMatrices[id] = matrix.T 
@@ -192,6 +203,7 @@ class BatchRenderer:
         GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.ssbo)
     
     def setColor(self, id, color):
+        if np.array_equal(self.colors[id], color): return
         lower = self.modelRange[id][0]
         upper = self.modelRange[id][1]
         self.colors[id] = color
@@ -218,6 +230,7 @@ class BatchRenderer:
         
         if id in self.textureDict:
             texId = self.texModelMap.index(self.textureDict[id])
+            if self.textures[texId] == tex: return True
             self.textures[texId] = tex
         else:
             self.textureDict[id] = self.models[id]
@@ -273,6 +286,7 @@ class Renderer:
 
         self.__initCompositeLayers()
     
+    @timing
     def __initCompositeLayers(self):
         self.accumClear = np.array([0,0,0,0], dtype='float32')
         self.revealClear = np.array([1,0,0,0], dtype='float32')
@@ -356,6 +370,7 @@ class Renderer:
 
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 
+    @timing
     def updateCompositeLayers(self):
         textureDim = self.window.dim
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
@@ -370,7 +385,10 @@ class Renderer:
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_R8, textureDim[0], textureDim[1], 0, GL.GL_RED, GL.GL_FLOAT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
+    @timing
     def addModel(self, model, matrix):
+        if isinstance(model, list):
+            return addModels(model, matrix)
         for i in range(len(self.batches)):
             id = self.batches[i].addModel(model, matrix)
             if id == -1: continue
@@ -388,68 +406,70 @@ class Renderer:
             self.idDict[(len(self.batches) - 1, id)] = modelId
             return modelId
 
-        # add each submodel seperately
+        # add submodels
         submodels = model.generateSubModels(BatchRenderer.MAX_VERTICES)
+        return self.addModels(submodels, matrix)
+    
+    @timing
+    def addModels(self, models, matrix):
         ids = []
         modelId = self.nextId
         self.nextId += 1
-        while len(submodels) != 0:
+        while len(models) != 0:
             isAdded = False
             for i in range(len(self.batches)):
-                id = self.batches[i].addModel(submodels[0], matrix)
+                id = self.batches[i].addModel(models[0], matrix)
                 if id == -1: continue
                 self.idDict[(i, id)] = modelId
                 ids.append((i, id))
                 isAdded = True
             if isAdded:
-                submodels.pop(0)
+                models.pop(0)
                 continue
             self.addBatch()
-            id = self.batches[-1].addModel(submodels[0], matrix)
+            id = self.batches[-1].addModel(models[0], matrix)
             if id == -1:
                 raise Exception(f'Submodel could not be added to model renderer')
             self.idDict[(len(self.batches) - 1, id)] = modelId
             ids.append((len(self.batches) - 1, id))
-            submodels.pop(0)
+            models.pop(0)
             continue
         self.idDict[modelId] = ids
         return modelId
-
         raise Exception(f'Model could not be added to model renderer\n',
                         f'Try increasing BatchRenderer.MAX_VERTICES to above {len(model.vertices)}')
         return -1
-    
+
+    @timing
     def removeModel(self, id):
         for modelid in self.idDict[id]:
             self.batches[modelid[0]].removeModel(modelid[1])
             self.idDict.pop(modelid)
         self.idDict.pop(id)
     
+    @timing
     def addBatch(self, transparent=False):
-        self.batches.append(BatchRenderer(transparent))
-        shader = self.opaqueShader
         if transparent:
+            self.batches.append(BatchRenderer(self.transparentShader, transparent))
             shader = self.transparentShader
             self.transparentBatch.append(self.batches[-1])
         else:
+            self.batches.append(BatchRenderer(self.opaqueShader, transparent))
+            shader = self.opaqueShader
             self.solidBatch.append(self.batches[-1])
-        self.batches[-1].setProjectionMatrix(shader, self.projectionMatrix)
-        self.batches[-1].setViewMatrix(shader, self.viewMatrix)
+        self.batches[-1].setProjectionMatrix(self.projectionMatrix)
+        self.batches[-1].setViewMatrix(self.viewMatrix)
 
     def setProjectionMatrix(self, matrix):
         self.projectionMatrix = matrix
-        for batch in self.solidBatch:
-            batch.setProjectionMatrix(self.opaqueShader, matrix)
-        for batch in self.transparentBatch:
-            batch.setProjectionMatrix(self.transparentShader, matrix)
+        for batch in self.batches:
+            batch.setProjectionMatrix(matrix)
     
     def setViewMatrix(self, matrix):
         self.viewMatrix = matrix
-        for batch in self.solidBatch:
-            batch.setViewMatrix(self.opaqueShader, matrix)
-        for batch in self.transparentBatch:
-            batch.setViewMatrix(self.transparentShader, matrix)
-    
+        for batch in self.batches:
+            batch.setViewMatrix(matrix)
+
     def setTransformMatrix(self, id, matrix):
         for modelid in self.idDict[id]: 
             self.batches[modelid[0]].setTransformMatrix(modelid[1], matrix)

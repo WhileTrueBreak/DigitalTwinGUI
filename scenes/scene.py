@@ -12,7 +12,7 @@ class Scene:
         self.name = name
 
         self.dim = self.window.screen.get_size()
-        self.sceneWrapper = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0, 0))
+        self.sceneWrapper = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
     @abstractmethod
     def createUi(self):
         ...
@@ -20,7 +20,7 @@ class Scene:
     def handleUiEvents(self, event):
         ...
     @abstractmethod
-    def absUpdate(self, delta):
+    def update(self, delta):
         ...
     @abstractmethod
     def start(self):
@@ -33,6 +33,6 @@ class Scene:
         self.handleUiEvents(event)
         return
     
-    def update(self, delta):
-        self.absUpdate(delta)
+    def recUpdate(self, delta):
+        self.update(delta)
         return

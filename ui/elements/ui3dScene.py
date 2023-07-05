@@ -4,7 +4,9 @@ from ui.ui3d.modelRenderer import *
 
 from utils.mathHelper import *
 from utils.transform import *
+from utils.timing import *
 
+from ui.ui3d.modelRenderer import *
 from asset import *
 
 class Ui3DScene(GlElement):
@@ -42,8 +44,8 @@ class Ui3DScene(GlElement):
         self.modelRenderer.setProjectionMatrix(createProjectionMatrix(self.dim[2], self.dim[3], self.FOV, self.NEAR_PLANE, self.FAR_PLANE))
         self.modelRenderer.updateCompositeLayers()
         return
-
-    def absUpdate(self, delta):
+    
+    def update(self, delta):
         GL.glEnable(GL.GL_CULL_FACE)
         GL.glEnable(GL.GL_DEPTH_TEST)
         # GL.glViewport(int(self.dim[0]), int(self.window.dim[1]-self.dim[3]-self.dim[1]), int(self.dim[2]), int(self.dim[3]))

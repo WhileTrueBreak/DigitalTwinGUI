@@ -1,6 +1,8 @@
 from ui.elements.uiWrapper import UiWrapper
 from ui.uiBatch import UiBatch
 
+from utils.timing import *
+
 class UiLayer:
 
     MAX_BATCH_SIZE = 128
@@ -24,18 +26,18 @@ class UiLayer:
             self.__updateMasterList()
         if self.hasMasterListChanged:
             self.__updateRenderers()
-        self.masterElem.update(delta)
+        self.masterElem.recUpdate(delta)
 
     def render(self):
         for batch in self.batches:
             batch.render()
         return
 
+    @timing
     def __updateRenderers(self):
         self.batches = []
         currentBatch = None
-        for i in range(len(self.masterList)):
-            elem = self.masterList[i]
+        for i,elem in enumerate(self.masterList):
             for renderer in elem.getRenderers():
                 if currentBatch == None or not currentBatch.hasRoom(renderer):
                     currentBatch = UiBatch(self.window, UiLayer.MAX_BATCH_SIZE)
@@ -44,6 +46,7 @@ class UiLayer:
                 currentBatch.addRenderer(renderer)
         self.hasMasterListChanged = False
 
+    @timing
     def __updateMasterList(self):
         self.masterList = []
         queue = [self.masterElem]
@@ -55,6 +58,7 @@ class UiLayer:
         self.masterElem.setCleanComponents()
         self.hasMasterListChanged = True
 
+    @timing
     def __updateMasterElem(self):
         self.masterElem.dim = (0,0,*self.window.dim)
         self.masterElem.childConstraintManager.pos = (0,0)

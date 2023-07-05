@@ -28,7 +28,7 @@ class UiStream(GlElement):
         self.renderer.getTransform().setSize((self.openGLDim[2:4]))
         self.renderer.setDirtyVertex()
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         self.updateImage(delta)
         return
 

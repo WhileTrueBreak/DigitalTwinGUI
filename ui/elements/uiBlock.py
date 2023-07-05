@@ -28,7 +28,7 @@ class UiBlock(GlElement):
         self.renderer.setDirtyVertex()
         return
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         return
 
     def setColor(self, color):

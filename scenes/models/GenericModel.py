@@ -28,6 +28,7 @@ class GenericModel(IModel):
         self.__createUi()
         return
 
+    @timing
     def __createUi(self):
         self.pages = Pages(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
         self.pages.addPage()

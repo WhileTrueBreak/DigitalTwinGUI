@@ -5,6 +5,7 @@ from ui.uiRenderer import *
 
 from utils.transform import *
 from utils.sprite import *
+from utils.timing import *
 
 from asset import *
 
@@ -94,7 +95,7 @@ class UiText(GlElement):
         self.__updateRenderer()
         return
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         self.__updateTextScale()
         self.__updateTextBound()
         return

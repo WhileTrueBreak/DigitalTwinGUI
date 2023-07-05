@@ -14,6 +14,8 @@ from connections.opcuaTransmitter import OpcuaTransmitter
 
 from asset import *
 
+from utils.timing import *
+
 import numpy as np
 from asyncua import ua
 
@@ -31,9 +33,16 @@ class KukaRobot(IModel):
         self.colors = np.zeros((8,4), dtype='float32')
         self.isLinkedOpcua = True
         self.attach = np.identity(4)
+
+        self.lastTmats = {}
+        self.lastLinkTmats = None
+        self.lastJoints = [0,0,0,0,0,0,-1]
+        self.forceVectorEndpoint = None
+
         self.__loadModel()
         self.__setupConnections()
     
+    @timing
     def __loadModel(self):
         self.modelKukaIds = []
         Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
@@ -48,10 +57,14 @@ class KukaRobot(IModel):
         if self.hasForceVector:
             self.forceVectorId = self.modelRenderer.addModel(Assets.POLE, np.identity(4))
             self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
+        for id in self.modelKukaIds:
+            self.lastTmats[id] = None
+        self.lastLinkTmats = Robot1_T_0_.copy()
     
     def __getNodeName(self, name):
         return f'ns={self.nodeId};s={self.robotId}{name}'
 
+    @timing
     def __setupConnections(self):
         self.opcuaReceiverContainer = OpcuaContainer()
         self.jointReceiver = OpcuaReceiver([
@@ -86,15 +99,24 @@ class KukaRobot(IModel):
             self.forceVector[2] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForZ'), default=0)[0]
 
     def __updateJoints(self):
-        Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
+        Robot1_T_0_ = self.lastLinkTmats.copy()
+        if not np.array_equal(self.lastJoints, self.joints):
+            Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
+            self.lastLinkTmats = Robot1_T_0_.copy()
+            self.lastJoints = self.joints.copy()
+        
         for i,id in enumerate(self.modelKukaIds):
             mat = Robot1_T_0_[min(i, len(Robot1_T_0_)-1)].copy()
             mat = np.matmul(self.tmat, mat)
             mat = np.matmul(self.attach, mat)
+            if np.array_equal(mat, self.lastTmats[id]):
+                continue
             self.modelRenderer.setTransformMatrix(id, mat)
-        self.__updateForceVector(Robot1_T_0_[-1])
+            self.lastTmats[id] = mat.copy()
+        self.forceVectorEndpoint = Robot1_T_0_[-1]
+        self.__updateForceVector(self.forceVectorEndpoint)
     
-    def __updateForceVector(self, mat):
+    def __updateForceVector(self, transform):
         if not self.hasForceVector or self.forceVectorId == None: return
         if not self.isLinkedOpcua:
             self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0))
@@ -104,6 +126,7 @@ class KukaRobot(IModel):
             self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0))
             return
         forceTransform = vectorTransform(transform[:3,3], transform[:3,3]+2*self.forceVector, 1, upperLimit=100)
+        forceTransform = np.matmul(self.tmat, forceTransform)
         forceTransform = np.matmul(self.attach, forceTransform)
         self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
         self.modelRenderer.setTransformMatrix(self.forceVectorId, forceTransform)
@@ -171,7 +194,7 @@ class KukaRobot(IModel):
         return modelId in self.modelKukaIds
 
     def getColors(self):
-        return [self.modelRenderer.getData(i)['color'] for i in self.modelKukaIds]
+        return [self.modelRenderer.getData(i)[0]['color'] for i in self.modelKukaIds]
 
     def setPos(self, tmat):
         self.tmat = tmat
@@ -218,6 +241,7 @@ class KukaRobotTwin:
                 ], self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/')
         self.transmitter = OpcuaTransmitter(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/')
 
+    @timing
     def __createUi(self):
         self.pages = Pages(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
         self.pages.addPage()

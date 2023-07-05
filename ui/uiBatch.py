@@ -2,6 +2,8 @@ from asset import Assets
 
 from constants import Constants
 
+from utils.timing import *
+
 import OpenGL.GL as GL
 
 import numpy as np
@@ -43,6 +45,7 @@ class UiBatch:
         self.__initFrame()
         self.__initVertices()
 
+    @timing
     def __initFrame(self):
 
         self.colorClear = np.array([0,0,0,0], dtype='float32')
@@ -80,6 +83,7 @@ class UiBatch:
         GL.glDrawBuffers(self.renderDrawBuffers)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 
+    @timing
     def __initVertices(self):
         self.quadVertices = np.array([
             [-1,-1,-1, 0, 0],
@@ -127,6 +131,7 @@ class UiBatch:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
     
+    @timing
     def updateFrame(self):
         textureDim = self.window.dim
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.screenTexture)
@@ -213,6 +218,7 @@ class UiBatch:
         
         self.rebufferData = False
 
+    @timing
     def addRenderer(self, renderer):
         index = self.numRenderers
         self.numRenderers += 1
@@ -254,6 +260,7 @@ class UiBatch:
         self.textureIds[rendererIndex] = -1 if renderer.getTexture() == None else self.textures.index(renderer.getTexture())
         self.rebuffer()
     
+    @timing
     def __genDefaultIndices(self):
         indices = np.zeros((self.maxRenderers, UiBatch.NUM_ELEMENTS), dtype='int32')
         for i in range(self.maxRenderers):

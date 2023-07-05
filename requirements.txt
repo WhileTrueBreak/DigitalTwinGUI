@@ -1,1 +1,14 @@
 pyassimp
+numpy-stl
+PyOpenGL
+freetype-py
+py-mjpeg
+Pillow
+pygame
+vectors
+asyncua
+asyncio
+nest-asyncio
+pywavefront
+opencv-python
+colorama

@@ -8,5 +8,5 @@ class UiWrapper(GlElement):
     def reshape(self):
         return
 
-    def absUpdate(self, delta):
+    def update(self, delta):
         return
