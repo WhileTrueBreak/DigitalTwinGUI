@@ -91,6 +91,7 @@ class Window():
         self.sceneManager.createUi()
         self.uiLayer.getMasterElem().addChild(self.sceneManager.getWrapper())
 
+    @timing
     def update(self):
         self.resetHovered()
         self.eventHandler()

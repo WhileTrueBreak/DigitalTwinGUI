@@ -1,5 +1,7 @@
 from asset import *
 
+from connections.mjpegStream import MJPEGStream
+
 from scenes.scene import Scene
 from scenes.models.GenericModel import GenericModel
 from scenes.models.kukaRobot import KukaRobotTwin
@@ -44,6 +46,7 @@ class DigitalTwinLab(Scene):
         return
     
     def __createRoom(self):
+        roomColor = (0.9,0.9,0.9,1)
         plan = [
             #right
             [(0,0),(0,1.1),(0,2.4)],
@@ -110,7 +113,7 @@ class DigitalTwinLab(Scene):
             [(15.43,2.75),(15.43,2.9),(0,2.4)]]
         for plane in Builder.buildWallPlan(plan):
             mid = self.modelRenderer.addModel(plane, np.identity(4))
-            self.modelRenderer.setColor(mid, (1,1,1,1))
+            self.modelRenderer.setColor(mid, roomColor)
         
         xyPlanes = [
             (0, 0, 2.4, 15.3, 1.1, Builder.S2),
@@ -123,10 +126,10 @@ class DigitalTwinLab(Scene):
             (15.43, 1, 2.4, 2.53, 6, Builder.S2)]
         for plane in xyPlanes:
             mid = self.modelRenderer.addModel(Builder.buildPlaneXY(*plane[0:5], vis=plane[5]), np.identity(4))
-            self.modelRenderer.setColor(mid, (1,1,1,1))
+            self.modelRenderer.setColor(mid, roomColor)
 
         mid = self.modelRenderer.addModel(Builder.buildPlaneXZ(0, 1.1, 2.4, 15.3, 0.7, vis=Builder.S2), np.identity(4))
-        self.modelRenderer.setColor(mid, (1,1,1,1))
+        self.modelRenderer.setColor(mid, roomColor)
         return
 
     def __addRobots(self):
@@ -134,34 +137,34 @@ class DigitalTwinLab(Scene):
         self.arms = {}
 
         base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(5, 4.9, 0.89, 0, 0, 180))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 21, 'R1', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=False)
         arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
         self.genericModels.append(base)
         self.arms[base] = arm
 
-        base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(8.5, 0.75, 0.89, 0, 0, 90))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(2.5, 3, 0.89, 0, 0, 180))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 22, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
         self.genericModels.append(base)
         self.arms[base] = arm
         
-        base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(13, 3, 0.7, 0, 0, 180))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 23, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
-        arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
-        arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
-        self.genericModels.append(base)
-        self.arms[base] = arm
+        # base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(6.2, 5.2, 0.7, 0, 0, -90))
+        # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
+        # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        # self.genericModels.append(base)
+        # self.arms[base] = arm
         
-        base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(11, 3, 0.7, 0, 0, 0))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
-        arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
-        arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
-        self.genericModels.append(base)
-        self.arms[base] = arm
+        # base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(11, 3, 0.7, 0, 0, 0))
+        # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
+        # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        # self.genericModels.append(base)
+        # self.arms[base] = arm
 
-        # [self.modelRenderer.setColor(model.modelId, (1,1,1,0.5)) for model in self.genericModels]
+        [self.modelRenderer.setColor(model.modelId, (0.9,1.0,1.0,1.0)) for model in self.genericModels]
 
     def __addFurniture(self): 
         self.shelves = []
@@ -173,7 +176,11 @@ class DigitalTwinLab(Scene):
         self.tables = []
         self.tables.append(self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(2.5,7-1.05,0.85,0,0,0)))
         self.tables.append(self.modelRenderer.addModel(Assets.TABLE_SQUARE, createTransformationMatrix(4.8,7-0.9,0.85,0,0,0)))
-        self.tables.append(self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(6.8,7-1.05,0.85,0,0,0)))
+        self.tables.append(self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(8.7,7-1.05,0.85,0,0,0)))
+
+        self.screenStream = MJPEGStream('http://172.31.1.177:8080/?action=streams')
+        self.screen = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(5.8,6.9,1,90,0,90))
+        self.modelRenderer.setTexture(self.screen, self.screenStream.texture)
 
     def handleUiEvents(self, event):
         [arm.handleEvents(event) for arm in self.arms.values()]
@@ -200,6 +207,7 @@ class DigitalTwinLab(Scene):
     def update(self, delta):
         self.__updateEnv(delta)
         self.__updateModelPos()
+        self.screenStream.updateImage(delta)
         [arm.update() for arm in self.arms.values()]
         [model.update() for model in self.genericModels]
         return
@@ -217,9 +225,11 @@ class DigitalTwinLab(Scene):
         
     def start(self):
         [arm.start() for arm in self.arms.values()]
+        self.screenStream.start()
         return
         
     def stop(self):
+        self.screenStream.stop()
         [arm.stop() for arm in self.arms.values()]
         return
 
