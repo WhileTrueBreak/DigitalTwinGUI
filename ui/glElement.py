@@ -59,7 +59,7 @@ class GlElement:
     @abstractmethod
     def update(self, delta):
         ...
-    @timing
+    # @timing
     def __actions(self):
         mousePos = self.window.mousePos
         self.isDefault = False

@@ -68,6 +68,7 @@ class UiLayer:
     def getMasterElem(self):
         return self.masterElem
 
+    # @timing
     def getScreenSpaceUI(self, x, y):
         data = (0,0,0)
         for batch in self.batches:

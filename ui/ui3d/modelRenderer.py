@@ -85,7 +85,6 @@ class BatchRenderer:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         GL.glBindVertexArray(0)
 
-    @timing
     def addModel(self, model, transformationMatrix):
         transformationMatrix = transformationMatrix.T
         if not True in self.isAvaliable:

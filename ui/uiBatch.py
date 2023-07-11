@@ -284,6 +284,7 @@ class UiBatch:
             return False
         return True
 
+    # @timing
     def getScreenSpaceUI(self, x, y):
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.renderFBO)
         GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT1)

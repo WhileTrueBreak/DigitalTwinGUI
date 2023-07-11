@@ -150,12 +150,12 @@ class DigitalTwinLab(Scene):
         self.genericModels.append(base)
         self.arms[base] = arm
         
-        # base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(6.2, 5.2, 0.7, 0, 0, -90))
-        # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
-        # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
-        # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
-        # self.genericModels.append(base)
-        # self.arms[base] = arm
+        base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(6.2, 5.2, 0.7, 0, 0, -90))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
+        arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        self.genericModels.append(base)
+        self.arms[base] = arm
         
         # base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(11, 3, 0.7, 0, 0, 0))
         # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
