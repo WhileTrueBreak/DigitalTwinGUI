@@ -16,7 +16,7 @@ flat in uint fUiId;
 flat in uint fRId;
 
 layout (location = 0) out vec4 color;
-layout (location = 1) out uvec3 picking;
+layout (location = 1) out uint picking;
 
 void main() {
 	if(fColor.a <= 0)discard;
@@ -29,5 +29,5 @@ void main() {
 
 	// color = vec4(fTexCoords, 1, 1);
 	if(color.a <= 0)discard;
-	picking = uvec3(fUiId+1,fUiId,gl_PrimitiveID);
+	picking = fUiId+1;
 }

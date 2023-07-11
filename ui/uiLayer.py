@@ -70,15 +70,15 @@ class UiLayer:
 
     # @timing
     def getScreenSpaceUI(self, x, y):
-        data = (0,0,0)
+        data = 0
         for batch in self.batches:
             d = batch.getScreenSpaceUI(x, y)
-            if d[0] == 0:
+            if d == 0:
                 continue
             data = d
-        if (data[0]-1) == -1:
+        if data == 0:
             return None
-        element = self.masterList[data[0]-1]
+        element = self.masterList[data-1]
         while element.getLinkedElement() != element:
             element = element.getLinkedElement()
         return element

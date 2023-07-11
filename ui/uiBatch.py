@@ -64,7 +64,7 @@ class UiBatch:
 
         self.pickingTexture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB16UI, textureDim[0], textureDim[1], 0, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_R16UI, textureDim[0], textureDim[1], 0, GL.GL_RED_INTEGER, GL.GL_UNSIGNED_INT, None)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
@@ -284,11 +284,11 @@ class UiBatch:
             return False
         return True
 
-    # @timing
+    @timing
     def getScreenSpaceUI(self, x, y):
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.renderFBO)
         GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT1)
-        data = GL.glReadPixels(x, self.window.dim[1]-y, 1, 1, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
+        data = GL.glReadPixels(x, self.window.dim[1]-y, 1, 1, GL.GL_RED_INTEGER, GL.GL_UNSIGNED_INT, None)
         GL.glReadBuffer(GL.GL_NONE)
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
         return data[0][0]
