@@ -9,7 +9,7 @@ from utils.timing import *
 import traceback
 
 class BatchRenderer:
-    MAX_OBJECTS = 100
+    MAX_OBJECTS = 1000
     MAX_VERTICES = 600000
     MAX_TEXTURES = 0
 
@@ -549,6 +549,7 @@ class Renderer:
             self.idDict[(batchId, objId)] = id
 
     def render(self):
+        print([i.models for i in self.batches])
 
         # remember previous values
         depthFunc = GL.glGetIntegerv(GL.GL_DEPTH_FUNC)
