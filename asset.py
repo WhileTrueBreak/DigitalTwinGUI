@@ -95,7 +95,7 @@ class Assets:
 
         Assets.UR5_LINK0 = Assets.loadModelFile('res/models/ur5/collision/base.stl')
         Assets.UR5_LINK1 = Assets.loadModelFile('res/models/ur5/collision/forearm.stl')
-        Assets.UR5_LINK2 = Assets.loadvisualModelFile('res/models/ur5/collision/shoulder.stl')
+        Assets.UR5_LINK2 = Assets.loadModelFile('res/models/ur5/collision/shoulder.stl')
         Assets.UR5_LINK3 = Assets.loadModelFile('res/models/ur5/collision/upperarm.stl')
         Assets.UR5_LINK4 = Assets.loadModelFile('res/models/ur5/collision/wrist1.stl')
         Assets.UR5_LINK5 = Assets.loadModelFile('res/models/ur5/collision/wrist2.stl')

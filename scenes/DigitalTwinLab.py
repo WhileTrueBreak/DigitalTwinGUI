@@ -182,7 +182,7 @@ class DigitalTwinLab(Scene):
         self.screen = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(5.8,6.9,1,90,0,90))
         self.modelRenderer.setTexture(self.screen, self.screenStream.texture)
 
-        model = GenericModel(self.window, self.modelRenderer, Assets.UR5_LINK0[0], createTransformationMatrix(0,0,0,0,0,0))
+        model = GenericModel(self.window, self.modelRenderer, Assets.UR5_LINK0, createTransformationMatrix(0,0,0,0,0,0))
 
     def handleUiEvents(self, event):
         [arm.handleEvents(event) for arm in self.arms.values()]
