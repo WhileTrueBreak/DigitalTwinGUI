@@ -23,7 +23,6 @@ from utils.timing import *
 
 import ctypes
 
-from colorama import init as colorama_init
 from colorama import Fore, Back, Style
 
 class Window():
@@ -91,6 +90,7 @@ class Window():
         self.sceneManager.createUi()
         self.uiLayer.getMasterElem().addChild(self.sceneManager.getWrapper())
 
+    # @timing
     def update(self):
         self.resetHovered()
         self.eventHandler()

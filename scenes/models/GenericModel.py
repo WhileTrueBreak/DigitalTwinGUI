@@ -17,6 +17,7 @@ import numpy as np
 
 class GenericModel(IModel):
 
+    @timing
     def __init__(self, window, renderer, model, transform):
         self.window = window
         self.renderer = renderer

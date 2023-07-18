@@ -1,6 +1,7 @@
 from ui.glElement import GlElement
 from ui.uiRenderer import UiRenderer
 from utils.transform import Transform
+from utils.timing import *
 
 from asset import *
 
@@ -85,30 +86,3 @@ class UiSlider(GlElement):
         self.currentLoc = start/sliderrange
         self.currentLoc = max(0, min(1, self.currentLoc))
         self.reshape()
-
-    # def __genVertices(self):
-    #     vertices = np.zeros((12, 5), dtype='float32')
-    #     sliderw = self.openGLDim[2]*self.sliderWidth
-    #     sliderrange = self.openGLDim[2]-sliderw
-    #     leftw = sliderrange*self.currentLoc
-    #     sliderx = self.openGLDim[0]+leftw
-    #     rightw = sliderrange*(1-self.currentLoc)#+sliderw
-    #     rigthx = sliderx+sliderw
-
-    #     vertices[0] = [self.openGLDim[0], self.openGLDim[1], *self.baseColor]
-    #     vertices[1] = [self.openGLDim[0]+leftw, self.openGLDim[1], *self.baseColor]
-    #     vertices[2] = [self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3], *self.baseColor]
-    #     vertices[3] = [self.openGLDim[0]+leftw, self.openGLDim[1]+self.openGLDim[3], *self.baseColor]
-
-    #     vertices[4] = [rigthx, self.openGLDim[1], *self.baseColor]
-    #     vertices[5] = [rigthx+rightw, self.openGLDim[1], *self.baseColor]
-    #     vertices[6] = [rigthx, self.openGLDim[1]+self.openGLDim[3], *self.baseColor]
-    #     vertices[7] = [rigthx+rightw, self.openGLDim[1]+self.openGLDim[3], *self.baseColor]
-
-    #     vertices[8] = [sliderx, self.openGLDim[1], *self.sliderColor]
-    #     vertices[9] = [sliderx+sliderw, self.openGLDim[1], *self.sliderColor]
-    #     vertices[10] = [sliderx, self.openGLDim[1]+self.openGLDim[3], *self.sliderColor]
-    #     vertices[11] = [sliderx+sliderw, self.openGLDim[1]+self.openGLDim[3], *self.sliderColor]
-
-    #     return vertices
-

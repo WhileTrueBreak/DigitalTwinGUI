@@ -20,7 +20,6 @@ from constants import Constants
 
 import sys
 
-from colorama import init as colorama_init
 from colorama import Fore, Back, Style
 
 class Assets:
@@ -49,10 +48,9 @@ class Assets:
         Assets.GRIPPER = Assets.loadModelFile('res/models/gripper/2F140.stl', createTransformationMatrix(0, 0, 0, 0, 0, 90))
         Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, -0.926, 0, 0, 0))
 
-        Assets.TABLES = [None]*3
-        Assets.TABLES[0] = Assets.loadModelFile('res/models/Objects/Benchtop_Custom.stl')
-        Assets.TABLES[1] = Assets.loadModelFile('res/models/Objects/Benchtop_Rectangle.STL')
-        Assets.TABLES[2] = Assets.loadModelFile('res/models/Objects/Benchtop_Square.STL')
+        Assets.TABLE_CUSTOM = Assets.loadModelFile('res/models/Objects/Benchtop_Custom.stl')
+        Assets.TABLE_RECT = Assets.loadModelFile('res/models/Objects/Benchtop_Rectangle.STL')
+        Assets.TABLE_SQUARE = Assets.loadModelFile('res/models/Objects/Benchtop_Square.STL')
 
         Assets.TUBE_INSIDE = Assets.loadModelFile('res/models/tube/tube_inside.stl', createTransformationMatrix(0,0,0,0,90,0))
         Assets.TUBE_OUTSIDE = Assets.loadModelFile('res/models/tube/tube_outside.stl', createTransformationMatrix(0,0,0,0,90,0))
