@@ -78,6 +78,9 @@ class UiLayer:
             data = d
         if data == 0:
             return None
+        if data >= len(self.masterList) or data < 0:
+            print(f'Error: invalid {data}') 
+            return None
         element = self.masterList[data-1]
         while element.getLinkedElement() != element:
             element = element.getLinkedElement()
