@@ -10,14 +10,14 @@ import traceback
 
 class BatchRenderer:
     # MAX_OBJECTS = 1000
-    MAX_VERTICES = 600000
+    MAX_VERTICES = 1000000
     MAX_TEXTURES = 0
     MAX_SSBO_SIZE = 0
 
     @timing
     def __init__(self, shader, isTransparent=False):
         BatchRenderer.MAX_TEXTURES = min(GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS), 32)
-        BatchRenderer.MAX_SSBO_SIZE = min(GL.glGetIntegerv(GL.GL_MAX_SHADER_STORAGE_BLOCK_SIZE)//64, BatchRenderer.MAX_VERTICES//3)
+        BatchRenderer.MAX_SSBO_SIZE = min(GL.glGetIntegerv(GL.GL_MAX_SHADER_STORAGE_BLOCK_SIZE)//64, 2**16-2)
 
         self.shader = shader
         self.projectionMatrix = GL.glGetUniformLocation(self.shader, 'projectionMatrix')
