@@ -212,7 +212,8 @@ class BatchRenderer:
         self.transformationMatrices[id] = matrix.T 
         data = np.concatenate(self.transformationMatrices, axis=0).astype(np.float32)
         GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssbo)
-        GL.glBufferSubData(GL.GL_SHADER_STORAGE_BUFFER, 0, data.nbytes, data)
+        mat = self.transformationMatrices[id]
+        GL.glBufferSubData(GL.GL_SHADER_STORAGE_BUFFER, mat.nbytes*id, mat.nbytes, mat)
         
         # GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssbo)
         # GL.glBufferData(GL.GL_SHADER_STORAGE_BUFFER, self.transformationMatrices, GL.GL_DYNAMIC_DRAW)
