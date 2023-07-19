@@ -209,7 +209,7 @@ class DigitalTwinLab(Scene):
         self.__updateModelPos()
         self.screenStream.updateImage(delta)
         [arm.update() for arm in self.arms.values()]
-        [model.update() for model in self.genericModels]
+        [model.update(delta) for model in self.genericModels]
         return
     
     def __updateModelPos(self):

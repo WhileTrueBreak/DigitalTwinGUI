@@ -80,25 +80,25 @@ class GenericModel(IModel):
         wrapper.addChildren(*self.rbuttons)
         return
 
-    def update(self):
-        self.__pollMove()
+    def update(self, delta):
+        self.__pollMove(delta)
         return
     
     def __updateTranforms(self):
         self.renderer.setTransformMatrix(self.modelId, np.matmul(self.attach, self.transform))
         return
 
-    def __pollMove(self):
+    def __pollMove(self, delta):
         for i in range(4):
             if not self.tbuttons[i].isPressed: continue
-            self.__translate(i)
+            self.__translate(i, delta)
         if self.rbuttons[0].isPressed:
-            self.__rotate(-1)
+            self.__rotate(-10*delta)
         if self.rbuttons[1].isPressed:
-            self.__rotate(1)
+            self.__rotate(10*delta)
 
-    def __translate(self, index):
-        d = 0.01
+    def __translate(self, index, delta):
+        d = 0.1*delta
         m = {0:(-d,0),1:(0,d),2:(0,-d),3:(d,0)}
         x,y,z = self.getPos()
         self.setPos((x+m[index][0], y+m[index][1], z))
