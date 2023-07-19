@@ -210,7 +210,7 @@ class BatchRenderer:
     
     def setTransformMatrix(self, id, matrix):
         self.transformationMatrices[id] = matrix.T 
-        data = np.concatenate(self.transformationMatrices, axis=0).astype(np.float32)
+        # data = np.concatenate(self.transformationMatrices, axis=0).astype(np.float32)
         GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssbo)
         mat = self.transformationMatrices[id]
         GL.glBufferSubData(GL.GL_SHADER_STORAGE_BUFFER, mat.nbytes*id, mat.nbytes, mat)
