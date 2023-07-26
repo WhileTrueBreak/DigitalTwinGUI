@@ -3,10 +3,10 @@ from asset import *
 from connections.mjpegStream import MJPEGStream
 
 from scenes.scene import Scene
-from scenes.models.GenericModel import GenericModel
+from scenes.models.genericModel import GenericModel
 from scenes.models.kukaRobot import KukaRobotTwin
-from scenes.utils.MovingCamera import MovingCamera
-from scenes.utils.Builder import Builder
+from scenes.utils.movingCamera import MovingCamera
+from scenes.utils.builder import Builder
 
 from ui.elements.uiButton import UiButton
 from ui.elements.uiWrapper import UiWrapper

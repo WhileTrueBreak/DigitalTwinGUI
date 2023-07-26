@@ -3,7 +3,7 @@ import nest_asyncio
 
 from window import *
 
-from scenes.DigitalTwinLab import *
+from scenes.digitalTwinLab import *
 from scenes.testScene import *
 
 from asset import *
