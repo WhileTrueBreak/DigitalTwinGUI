@@ -39,6 +39,9 @@ class KukaRobot(IModel):
         self.lastJoints = [0,0,0,0,0,0,-1]
         self.forceVectorEndpoint = None
 
+        self.lastForceColor = ()
+        self.lastFoceMat = None
+
         self.__loadModel()
         self.__setupConnections()
     
@@ -109,10 +112,10 @@ class KukaRobot(IModel):
             mat = Robot1_T_0_[min(i, len(Robot1_T_0_)-1)].copy()
             mat = np.matmul(self.tmat, mat)
             mat = np.matmul(self.attach, mat)
-            if np.array_equal(mat, self.lastTmats[id]):
+            if hash(bytes(mat)) == self.lastTmats[id]:
                 continue
             self.modelRenderer.setTransformMatrix(id, mat)
-            self.lastTmats[id] = mat.copy()
+            self.lastTmats[id] = hash(bytes(mat.copy()))
         self.forceVectorEndpoint = Robot1_T_0_[-1]
         self.__updateForceVector(self.forceVectorEndpoint)
     
@@ -123,13 +126,19 @@ class KukaRobot(IModel):
             return
         forceMag = np.linalg.norm(self.forceVector)
         if forceMag < 3.5:
-            self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0))
+            if self.lastForceColor != (0,0,0,0):
+                self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0))
+                self.lastForceColor = (0,0,0,0)
             return
         forceTransform = vectorTransform(transform[:3,3], transform[:3,3]+2*self.forceVector, 1, upperLimit=100)
         forceTransform = np.matmul(self.tmat, forceTransform)
         forceTransform = np.matmul(self.attach, forceTransform)
-        self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
-        self.modelRenderer.setTransformMatrix(self.forceVectorId, forceTransform)
+        if self.lastForceColor != (0,0,0,0.7):
+            self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
+            self.lastForceColor = (0,0,0,0.7)
+        if self.lastFoceMat != hash(bytes(forceTransform)):
+            self.modelRenderer.setTransformMatrix(self.forceVectorId, forceTransform)
+            self.lastFoceMat = hash(bytes(forceTransform))
 
     def start(self):
         if not self.isLinkedOpcua:return
