@@ -15,6 +15,7 @@ from utils.model import *
 from utils.mathHelper import *
 from utils.sprite import Sprite
 from utils.timing import *
+from utils.characterSlot import CharacterSlot
 
 from constants import Constants
 
@@ -245,19 +246,3 @@ class Assets:
         print(f'Loading video: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
         capture = cv2.VideoCapture(file)
         return capture
-
-class CharacterSlot:
-    def __init__(self, texture, glyph):
-        self.texture = texture
-        self.ascender  = max(0, glyph.bitmap_top)
-        self.descender = max(0, glyph.bitmap.rows-glyph.bitmap_top)
-        self.textureSize = (max(0, glyph.bitmap.width), self.ascender + self.descender)
-
-        if isinstance(glyph, freetype.GlyphSlot):
-            self.bearing = (glyph.bitmap_left, glyph.bitmap_top)
-            self.advance = glyph.advance.x
-        elif isinstance(glyph, freetype.BitmapGlyph):
-            self.bearing = (glyph.left, glyph.top)
-            self.advance = None
-        else:
-            raise RuntimeError('unknown glyph type')

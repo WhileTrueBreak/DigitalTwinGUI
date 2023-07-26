@@ -19,7 +19,7 @@ class UiText(GlElement):
         self.type = 'text'
         
         self.dirtyText = True
-        self.font = Assets.FIRACODE_FONT
+        self.font = Assets.MONACO_FONT
         self.text = 'default'
         self.fontSize = 48
         self.textSpacing = 10
