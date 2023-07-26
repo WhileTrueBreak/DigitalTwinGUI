@@ -25,7 +25,7 @@ class OpcuaContainer:
 
 class Opcua:
 
-    POLLING_RATE = 48
+    MAX_POLLING_RATE = 30
 
     def __init__(self, host):
         self.OpcUaHost = host #'oct.tpc://172.31.1.236:4840/server/'
@@ -61,7 +61,7 @@ class Opcua:
     def opcuaConnection(container, host, data, stop):
         # print(f'Opcua receiver thread started: {host}')
         start = time.time_ns()
-        delay = 1/Opcua.POLLING_RATE*1000000000
+        delay = 1/Opcua.MAX_POLLING_RATE*1000000000
         try:
             client = Opcua(host)
         except:
@@ -75,11 +75,11 @@ class Opcua:
             except:
                 return
             time_past = time.time_ns() - start
-            time.sleep(max(0.01, (delay-time_past)/1000000000))
+            time.sleep(max(0, (delay-time_past)/1000000000))
             rate += 1
             accum += time.time_ns() - start
             if accum >= 10000000000:
-                # print(f'Opcua receiver polling rate: {int(rate/10)}/s')
+                print(f'Opcua receiver polling rate: {int(rate/10)}/s')
                 accum -= 10000000000
                 rate = 0
         # print(f'Opcua receiver thread stopped: {host}')
@@ -100,7 +100,7 @@ class Opcua:
         except:
             stop = lambda:True
         start = time.time_ns()
-        delay = 1/Opcua.POLLING_RATE*1000000000
+        delay = 1/Opcua.MAX_POLLING_RATE*1000000000
         rate = 0
         accum = 0
         while not stop():
@@ -113,11 +113,11 @@ class Opcua:
             except:
                 return
             time_past = time.time_ns() - start
-            time.sleep(max(0.01, (delay-time_past)/1000000000))
+            time.sleep(max(0, (delay-time_past)/1000000000))
             rate += 1
             accum += time.time_ns() - start
             if accum >= 10000000000:
-                # print(f'Opcua transmitter polling rate: {int(rate/10)}/s')
+                print(f'Opcua transmitter polling rate: {int(rate/10)}/s')
                 accum -= 10000000000
                 rate = 0
         # print(f'Opcua transmitter thread stopped: {host}')
