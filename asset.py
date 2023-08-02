@@ -74,6 +74,8 @@ class Assets:
         Assets.SHELF = Assets.loadModelFile('res/models/Objects/Shelving1.stl', createTransformationMatrix(0, 0, 0, 90, 0, 0))
 
         Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')
+        Assets.HAMSTER = Assets.loadVideo('res/videos/hamster.gif')
+
         Assets.CUBE_TEX = Assets.loadTexture('res/textures/cube.jpg', flipY=True)
         
         Assets.LEFT_ARROW = Assets.loadTexture('res/textures/arrow.png')

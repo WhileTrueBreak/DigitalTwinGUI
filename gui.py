@@ -7,9 +7,9 @@ from scenes.digitalTwinLab import *
 
 from asset import *
 
-from colorama import init as colorama_init
+import colorama
 
-colorama_init(convert=True)
+colorama.init(convert=True)
 nest_asyncio.apply()
 
 if __name__ == "__main__":
