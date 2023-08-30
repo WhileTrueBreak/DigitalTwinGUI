@@ -20,7 +20,6 @@ class VideoPlayer:
         height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         return cls(cap, fps, width, height)
         
-
     def __init__(self, capture, fps, width, height):
         self.cap = capture
         self.fps = fps
@@ -31,8 +30,7 @@ class VideoPlayer:
         self.delta = 0
 
         self.__initTexture()
-
-    
+ 
     def __initTexture(self):
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)

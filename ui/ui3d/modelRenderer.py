@@ -16,7 +16,7 @@ class BatchRenderer:
 
     @timing
     def __init__(self, shader, isTransparent=False):
-        BatchRenderer.MAX_TEXTURES = min(GL.glGetIntegerv(GL.GL_MAX_TEXTURE_IMAGE_UNITS), 32)
+        BatchRenderer.MAX_TEXTURES = Constants.MAX_TEXTURE_SLOTS
         BatchRenderer.MAX_SSBO_SIZE = min(GL.glGetIntegerv(GL.GL_MAX_SHADER_STORAGE_BLOCK_SIZE)//64, 2**16-2)
 
         self.shader = shader
@@ -41,7 +41,7 @@ class BatchRenderer:
 
         self.textureDict = {}
         self.texModelMap = []
-        self.textures = []
+        self.textures = []  
         
         self.currentIndex = 0
 

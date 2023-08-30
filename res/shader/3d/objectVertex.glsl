@@ -17,8 +17,8 @@ layout (location = 5) in float texIndex;
 layout (location = 6) in float index;
 
 flat out uint objIndex;
+flat out int texId;
 out float shade;
-out float texId;
 out vec2 texCoord;
 out vec4 color;
 
@@ -30,7 +30,7 @@ void main() {
   int matIndex = int(tmatIndex);
 
   objIndex = uint(index);
-  texId = texIndex;
+  texId = int(texIndex);
   texCoord = uv;
 
   vec3 lightVec1 = normalize(vec3(-0.5, -2, 1));
