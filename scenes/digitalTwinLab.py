@@ -112,10 +112,7 @@ class DigitalTwinLab(Scene):
             [(15.3, 7),(17.96, 7),(0, 2.4)],
             [(15.43,1),(15.43,2.75),(0,0.885)],
             [(15.43,2.75),(15.43,2.9),(0,2.4)]]
-        for plane in Builder.buildWallPlan(plan):
-            mid = self.modelRenderer.addModel(plane, np.identity(4))
-            self.modelRenderer.setColor(mid, roomColor)
-        
+
         xyPlanes = [
             (0, 0, 2.4, 15.3, 1.1, Builder.S2),
             (0, 0, 0, 15.3, 7, Builder.S1|Builder.S2),
@@ -125,12 +122,26 @@ class DigitalTwinLab(Scene):
             (15.3, 1, 2.4, 0.13, 6, Builder.S1|Builder.S2),
             (15.43, 1, 0, 2.53, 6, Builder.S1|Builder.S2),
             (15.43, 1, 2.4, 2.53, 6, Builder.S2)]
-        for plane in xyPlanes:
-            mid = self.modelRenderer.addModel(Builder.buildPlaneXY(*plane[0:5], vis=plane[5]), np.identity(4))
-            self.modelRenderer.setColor(mid, roomColor)
+        
+        self.roomPlan = Builder.buildWallPlan(plan)
+        self.roomPlan.extend([Builder.buildPlaneXY(*plane[0:5], vis=plane[5]) for plane in xyPlanes])
+        self.roomPlan.append(Builder.buildPlaneXZ(0, 1.1, 2.4, 15.3, 0.7, vis=Builder.S2))
+        
+        self.roomPlan = Model.fromSubModels(self.roomPlan)
 
-        mid = self.modelRenderer.addModel(Builder.buildPlaneXZ(0, 1.1, 2.4, 15.3, 0.7, vis=Builder.S2), np.identity(4))
-        self.modelRenderer.setColor(mid, roomColor)
+        room = self.modelRenderer.addModel(self.roomPlan, np.identity(4))
+        self.modelRenderer.setColor(room, roomColor)
+
+        # for plane in Builder.buildWallPlan(plan):
+        #     mid = self.modelRenderer.addModel(Builder.buildWallPlan(plan), np.identity(4))
+        #     self.modelRenderer.setColor(mid, roomColor)
+        
+        # for plane in xyPlanes:
+        #     mid = self.modelRenderer.addModel(Builder.buildPlaneXY(*plane[0:5], vis=plane[5]), np.identity(4))
+        #     self.modelRenderer.setColor(mid, roomColor)
+
+        # mid = self.modelRenderer.addModel(Builder.buildPlaneXZ(0, 1.1, 2.4, 15.3, 0.7, vis=Builder.S2), np.identity(4))
+        # self.modelRenderer.setColor(mid, roomColor)
         return
 
     def __addRobots(self):

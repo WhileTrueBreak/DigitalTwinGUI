@@ -14,28 +14,20 @@ void main() {
 
 	ivec2 coords = ivec2(gl_FragCoord.xy);
 
-	uvec3 v = texelFetch(picking, coords, 0).xyz;
-	oPicking = v;
+	uvec3 v0 = texelFetch(picking, coords, 0).xyz;
+	oPicking = v0;
 
-	if(v.x%7==0){
-		frag = vec4(float(v.x)/80,0,0,1);
+	uvec2 v1 = texelFetch(picking, ivec2(coords.x+1, coords.y), 0).xy;
+	uvec2 v2 = texelFetch(picking, ivec2(coords.x-1, coords.y), 0).xy;
+	uvec2 v3 = texelFetch(picking, ivec2(coords.x, coords.y+1), 0).xy;
+	uvec2 v4 = texelFetch(picking, ivec2(coords.x, coords.y-1), 0).xy;
+
+	float dist = max(max(length(v0.xy-v1), length(v0.xy-v2)),max(length(v0.xy-v3), length(v0.xy-v4)));
+
+	if(dist > 0.01){
+		frag = vec4(0,0,0,1);
+	}else{
+		frag = texelFetch(screen, coords, 0);
 	}
-	if(v.x%7==1){
-		frag = vec4(0,float(v.x)/80,0,1);
-	}
-	if(v.x%7==2){
-		frag = vec4(float(v.x)/80,float(v.x)/80,0,1);
-	}
-	if(v.x%7==3){
-		frag = vec4(0,0,float(v.x)/80,1);
-	}
-	if(v.x%7==4){
-		frag = vec4(float(v.x)/80,0,float(v.x)/80,1);
-	}
-	if(v.x%7==5){
-		frag = vec4(0,float(v.x)/80,float(v.x)/80,1);
-	}
-	if(v.x%7==6){
-		frag = vec4(float(v.x)/80,float(v.x)/80,float(v.x)/80,1);
-	}
+
 }

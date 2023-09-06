@@ -94,6 +94,13 @@ class Model:
     def fromVertIndex(cls, vertices, indices, transform=np.identity(4)):
         return [cls(vertices[indices], indices)]
 
+    @classmethod
+    def fromSubModels(cls, models):
+        vertices = models[0].vertices[models[0].indices]
+        for model in models[1:]:
+            vertices = np.vstack((vertices, model.vertices[model.indices]))
+        return Model.fromVertices(vertices)
+
     def __init__(self, vertices, indices):
         self.vertices = np.array(vertices,dtype='float32')
         self.indices = np.array(indices,dtype='int32')
