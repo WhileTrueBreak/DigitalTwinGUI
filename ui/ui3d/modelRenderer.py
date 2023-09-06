@@ -306,6 +306,7 @@ class Renderer:
     
     @timing
     def __initCompositeLayers(self):
+        self.backClear = np.array([0,0,0,0], dtype='float32')
         self.accumClear = np.array([0,0,0,0], dtype='float32')
         self.revealClear = np.array([1,0,0,0], dtype='float32')
         self.pickingClear = np.array([0,0,0], dtype='uint')
@@ -587,7 +588,8 @@ class Renderer:
         # render opaque
         GL.glUseProgram(self.opaqueShader)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
+        GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
+        GL.glClearBufferfv(GL.GL_COLOR, 0, self.backClear)
         GL.glClearBufferfv(GL.GL_COLOR, 1, self.pickingClear)
         bidLoc = GL.glGetUniformLocation(self.opaqueShader, "batchId")
 
