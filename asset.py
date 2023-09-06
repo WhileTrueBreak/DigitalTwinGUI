@@ -83,14 +83,14 @@ class Assets:
         Assets.RIGHT_ARROW = Assets.loadTexture('res/textures/arrow.png', flipX=True)
         Assets.DOWN_ARROW = Assets.loadTexture('res/textures/arrow.png', rot=270)
 
-        Assets.TEXT_SHADER = Assets.linkShaders('res/shader/ui/textureVertex.glsl', 'res/shader/ui/textFragment.glsl')
-        Assets.GUI_SHADER = Assets.linkShaders('res/shader/ui/guiVertex.glsl', 'res/shader/ui/guiFragment.glsl')
-        Assets.SCREEN_SHADER = Assets.linkShaders('res/shader/ui/screenVertex.glsl', 'res/shader/ui/screenFragment.glsl')
+        Assets.TEXT_SHADER = Assets.linkShaders('res/shaders/ui/textureVertex.glsl', 'res/shaders/ui/textFragment.glsl')
+        Assets.GUI_SHADER = Assets.linkShaders('res/shaders/ui/guiVertex.glsl', 'res/shaders/ui/guiFragment.glsl')
+        Assets.SCREEN_SHADER = Assets.linkShaders('res/shaders/ui/screenVertex.glsl', 'res/shaders/ui/screenFragment.glsl')
 
-        Assets.OPAQUE_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/opaqueFragment.glsl')
-        Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/transparentFragment.glsl')
-        Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shader/3d/compositeVertex.glsl', 'res/shader/3d/compositeFragment.glsl')
-        Assets.CELL_SHADER = Assets.linkShaders('res/shader/3d/compositeVertex.glsl', 'res/shader/3d/cellFragment.glsl')
+        Assets.OPAQUE_SHADER = Assets.linkShaders('res/shaders/3d/objectVertex.glsl', 'res/shaders/3d/opaqueFragment.glsl')
+        Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shaders/3d/objectVertex.glsl', 'res/shaders/3d/transparentFragment.glsl')
+        Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shaders/3d/compositeVertex.glsl', 'res/shaders/3d/compositeFragment.glsl')
+        Assets.CELL_SHADER = Assets.linkShaders('res/shaders/3d/compositeVertex.glsl', 'res/shaders/3d/cellFragment.glsl')
 
         Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf')
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF')

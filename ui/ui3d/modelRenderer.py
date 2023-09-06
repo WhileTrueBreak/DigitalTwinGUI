@@ -651,22 +651,6 @@ class Renderer:
         # GL.glBindVertexArray(self.quadVAO)
         # GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
-
-        # # config states
-        # GL.glDisable(GL.GL_DEPTH_TEST)
-        # GL.glDepthMask(GL.GL_TRUE)
-        # GL.glViewport(*viewport)
-
-        # # render to screen
-        # GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
-        # GL.glUseProgram(self.screenShader)
-        # GL.glUniform2f(GL.glGetUniformLocation(self.screenShader, "texture_dim"), *self.window.dim)
-
-        # GL.glActiveTexture(GL.GL_TEXTURE0)
-        # GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
-        # GL.glBindVertexArray(self.quadVAO)
-        # GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
-
         # reset states
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         GL.glDepthFunc(depthFunc)
