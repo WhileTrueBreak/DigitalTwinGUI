@@ -2,6 +2,7 @@
 
 // shader outputs
 layout (location = 0) out vec4 frag;
+layout (location = 1) out uvec3 oPicking;
 
 uniform vec2 texture_dim;
 in vec2 texPos;
@@ -13,7 +14,8 @@ void main() {
 
 	ivec2 coords = ivec2(gl_FragCoord.xy);
 
-	uvec2 v = texelFetch(picking, coords, 0).xy;
+	uvec3 v = texelFetch(picking, coords, 0).xyz;
+	oPicking = v;
 
 	if(v.x%7==0){
 		frag = vec4(float(v.x)/80,0,0,1);

@@ -2,6 +2,7 @@
 
 // shader outputs
 layout (location = 0) out vec4 frag;
+layout (location = 1) out uvec3 oPicking;
 
 in vec2 texPos;
 
@@ -10,6 +11,9 @@ uniform sampler2D accum;
 
 // revealage threshold buffer
 uniform sampler2D reveal;
+
+
+uniform usampler2D picking;
 
 // epsilon number
 const float EPSILON = 0.00001f;
@@ -31,6 +35,8 @@ void main() {
 	ivec2 coords = ivec2(gl_FragCoord.xy);
 	// frag = vec4(float(coords.x)/1000, float(coords.y)/1000, 0, 1);
 	// return;
+	uvec3 v = texelFetch(picking, coords, 0).xyz;
+	oPicking = v;
 	
 	// fragment revealage
 	float revealage = texelFetch(reveal, coords, 0).r;

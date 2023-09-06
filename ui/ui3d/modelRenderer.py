@@ -620,33 +620,36 @@ class Renderer:
         GL.glEnable(GL.GL_BLEND)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
 
-        # # render composite
-        # GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
-
-        # GL.glUseProgram(self.compositeShader)
-
-        # GL.glActiveTexture(GL.GL_TEXTURE0)
-        # GL.glBindTexture(GL.GL_TEXTURE_2D, self.accumTexture)
-        # GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "accum"), 0)
-        # GL.glActiveTexture(GL.GL_TEXTURE1)
-        # GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
-        # GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "reveal"), 1)
-        # GL.glBindVertexArray(self.quadVAO)
-        # GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
-
-        ##### CELL SHADING #####
+        # render composite
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
-        GL.glUseProgram(Assets.CELL_SHADER)
 
-        GL.glUniform2f(GL.glGetUniformLocation(Assets.CELL_SHADER, "texture_dim"), *self.window.dim)
+        GL.glUseProgram(self.compositeShader)
+
         GL.glActiveTexture(GL.GL_TEXTURE0)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
-        GL.glUniform1i(GL.glGetUniformLocation(Assets.CELL_SHADER, "screen"), 0)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.accumTexture)
+        GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "accum"), 0)
         GL.glActiveTexture(GL.GL_TEXTURE1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
+        GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "reveal"), 1)
+        GL.glActiveTexture(GL.GL_TEXTURE2)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
-        GL.glUniform1i(GL.glGetUniformLocation(Assets.CELL_SHADER, "picking"), 1)
+        GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "picking"), 2)
         GL.glBindVertexArray(self.quadVAO)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
+
+        ##### CELL SHADING #####
+        # GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
+        # GL.glUseProgram(Assets.CELL_SHADER)
+
+        # GL.glUniform2f(GL.glGetUniformLocation(Assets.CELL_SHADER, "texture_dim"), *self.window.dim)
+        # GL.glActiveTexture(GL.GL_TEXTURE0)
+        # GL.glBindTexture(GL.GL_TEXTURE_2D, self.opaqueTexture)
+        # GL.glUniform1i(GL.glGetUniformLocation(Assets.CELL_SHADER, "screen"), 0)
+        # GL.glActiveTexture(GL.GL_TEXTURE1)
+        # GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
+        # GL.glUniform1i(GL.glGetUniformLocation(Assets.CELL_SHADER, "picking"), 1)
+        # GL.glBindVertexArray(self.quadVAO)
+        # GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
 
         # # config states
