@@ -308,6 +308,7 @@ class Renderer:
     def __initCompositeLayers(self):
         self.accumClear = np.array([0,0,0,0], dtype='float32')
         self.revealClear = np.array([1,0,0,0], dtype='float32')
+        self.pickingClear = np.array([0,0,0], dtype='uint')
 
         self.quadVertices = np.array([
             [-1,-1,-1, 0, 0],
@@ -587,6 +588,7 @@ class Renderer:
         GL.glUseProgram(self.opaqueShader)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
+        GL.glClearBufferfv(GL.GL_COLOR, 1, self.pickingClear)
         bidLoc = GL.glGetUniformLocation(self.opaqueShader, "batchId")
 
         for batch in self.solidBatch:
@@ -681,7 +683,7 @@ class Renderer:
     def getScreenSpaceObj(self, x, y):
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.transparentFBO)
         GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT2)
-        data = GL.glReadPixels(x, y, 1, 1, GL.GL_RGB_INTEGER, GL.GL_INT, None)
+        data = GL.glReadPixels(x, y, 1, 1, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
         GL.glReadBuffer(GL.GL_NONE)
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
         return data[0][0]
