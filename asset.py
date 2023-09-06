@@ -90,6 +90,7 @@ class Assets:
         Assets.OPAQUE_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/opaqueFragment.glsl')
         Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shader/3d/objectVertex.glsl', 'res/shader/3d/transparentFragment.glsl')
         Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shader/3d/compositeVertex.glsl', 'res/shader/3d/compositeFragment.glsl')
+        Assets.CELL_SHADER = Assets.linkShaders('res/shader/3d/compositeVertex.glsl', 'res/shader/3d/cellFragment.glsl')
 
         Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf')
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF')

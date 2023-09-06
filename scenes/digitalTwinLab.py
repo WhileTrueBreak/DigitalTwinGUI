@@ -184,9 +184,20 @@ class DigitalTwinLab(Scene):
         self.tables.append(self.modelRenderer.addModel(Assets.TABLE_SQUARE, createTransformationMatrix(4.8,7-0.9,0.85,0,0,0)))
         self.tables.append(self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(8.7,7-1.05,0.85,0,0,0)))
 
-        self.screenStream = MJPEGStream('http://172.31.1.177:8080/?action=streams')
-        self.screen = self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(5.8,6.9,1,90,0,90))
-        self.modelRenderer.setTexture(self.screen, self.screenStream.texture)
+        self.screenStreams = []
+        self.screenStreams.append(MJPEGStream('http://172.32.1.227:8080/?action=streams'))
+        self.screenStreams.append(MJPEGStream('http://172.32.1.225:8080/?action=streams'))
+        self.screen = []
+        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(5.8,6.99,1,90,0,90)))
+        self.modelRenderer.setTexture(self.screen[0], self.screenStreams[0].texture)
+        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(11.8,6.99,1,90,0,90)))
+        self.modelRenderer.setTexture(self.screen[1], self.screenStreams[0].texture)
+        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(8.8,6.99,1,90,0,90)))
+        self.modelRenderer.setTexture(self.screen[2], self.screenStreams[1].texture)
+        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(0.01,6.1,0.885,90,90,90)))
+        self.modelRenderer.setTexture(self.screen[3], self.screenStreams[1].texture)
+        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(0.01,3.2,0.885,90,90,90)))
+        self.modelRenderer.setTexture(self.screen[4], self.screenStreams[0].texture)
 
     def handleUiEvents(self, event):
         [arm.handleEvents(event) for arm in self.arms.values()]
@@ -215,7 +226,7 @@ class DigitalTwinLab(Scene):
 
         self.__updateEnv(delta)
         self.__updateModelPos()
-        self.screenStream.updateImage(delta)
+        [stream.updateImage(delta) for stream in self.screenStreams]
         [arm.update() for arm in self.arms.values()]
         [model.update(delta) for model in self.bases]
         return
@@ -236,12 +247,12 @@ class DigitalTwinLab(Scene):
         
     def start(self):
         [arm.start() for arm in self.arms.values()]
-        self.screenStream.start()
+        [stream.start() for stream in self.screenStreams]
         return
         
     def stop(self):
-        self.screenStream.stop()
         [arm.stop() for arm in self.arms.values()]
+        [stream.stop() for stream in self.screenStreams]
         return
 
 

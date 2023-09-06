@@ -200,6 +200,7 @@ class UiBatch:
 
         GL.glActiveTexture(GL.GL_TEXTURE0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.screenTexture)
+        GL.glUniform1i(GL.glGetUniformLocation(Assets.SCREEN_SHADER, "screen"), 0)
         GL.glBindVertexArray(self.quadVAO)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
