@@ -89,6 +89,14 @@ class Model:
     @classmethod
     def fromVertices(cls, vertices, transform=np.identity(4)):
         return [cls(vertices, np.arange(len(vertices)))]
+        # vertices = np.array(vertices)
+        # unq = np.unique(vertices, axis=0)
+        # idx = np.zeros(vertices.shape[0])
+        # for i, v in enumerate(vertices):
+        #     ridx = np.argwhere(np.all(unq == v, axis = 1))
+        #     idx[i] = ridx
+        # print(unq, idx)
+        # return [cls(unq, idx)]
     
     @classmethod
     def fromVertIndex(cls, vertices, indices, transform=np.identity(4)):
@@ -114,7 +122,7 @@ class Model:
             uvs = np.array(vertices[::,3:5])
 
         vertices = np.array(vertices[::,0:3])
-        self.vertices = np.zeros((len(vertices), 8))
+        self.vertices = np.zeros((vertices.shape[0], 8))
         self.vertices[::, 0:3] = vertices
 
         normals = np.cross(vertices[1::3] - vertices[0::3], vertices[2::3] - vertices[0::3])
