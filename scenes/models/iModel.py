@@ -3,7 +3,7 @@ from abc import abstractmethod
 class IModel:
 
     @abstractmethod
-    def update(self):
+    def update(self, delta):
         ...
 
     @abstractmethod

@@ -1,12 +1,14 @@
 from ui.uiHelper import *
 from ui.elements.uiWrapper import UiWrapper
+from ui.elements.uiBlock import UiBlock
 from ui.constraintManager import *
 
 class Pages:
 
     def __init__(self, window, constraints):
         self.window = window
-        self.pageWrapper = UiWrapper(window, constraints)
+        self.pageWrapper = UiBlock(window, constraints)
+        self.pageWrapper.setColor((0,0,0,0.7))
         self.pages = []
         self.currentPage = None
         self.buttonMap = {}

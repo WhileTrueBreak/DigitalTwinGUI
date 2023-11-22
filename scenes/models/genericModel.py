@@ -129,7 +129,6 @@ class GenericModel(IModel):
     def getFrame(self):
         return self.transform
 
-    
     def setAttach(self, iModel):
         self.attach = iModel
         self.__updateTranforms()

@@ -85,7 +85,7 @@ class KukaRobot(IModel):
                     self.__getNodeName('d_ForZ'),
                 ], self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/')
 
-    def update(self):
+    def update(self, delta):
         self.__updateFromOpcua()
         self.__updateJoints()
     
@@ -213,7 +213,7 @@ class KukaRobot(IModel):
     def setAttach(self, iModel):
         self.attach = iModel
 
-class KukaRobotTwin:
+class KukaRobotTwin(IModel):
 
     FREE_MOVE_PROG = 2
 
@@ -322,9 +322,9 @@ class KukaRobotTwin:
         self.unlinkBtn.setLockColor((0.6, 0.6, 0.6))
         self.page0.addChild(self.unlinkBtn)
 
-    def update(self):
-        self.liveRobot.update()
-        self.twinRobot.update()
+    def update(self, delta):
+        self.liveRobot.update(delta)
+        self.twinRobot.update(delta)
         self.__updateJoints()
         self.__updateProgram()
         self.__updateGui()
