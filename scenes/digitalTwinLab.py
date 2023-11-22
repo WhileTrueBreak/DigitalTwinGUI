@@ -152,11 +152,13 @@ class DigitalTwinLab(Scene):
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 23, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=False)
         arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        arm.setAttach(base)
         self.bases.append(base)
         self.arms[base] = arm
 
         self.hamster = GenericModel(self.window, self.modelRenderer, Assets.SCREENSQ, np.matmul(createTransformationMatrix(0,0,-0.5,90,0,90), createScaleMatrix(0.2,0.2,0.2)))
         self.hamsterPlayer = VideoPlayer.fromCapture(Assets.HAMSTER, fps=30)
+        self.hamster.setAttach(base)
         self.modelRenderer.setTexture(self.hamster.modelId, self.hamsterPlayer.texture)
         self.modelRenderer.setColor(self.hamster.modelId, (1,1,1,1))
 
@@ -164,6 +166,7 @@ class DigitalTwinLab(Scene):
         # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 22, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
         # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        # arm.setAttach(base.getFrame())
         # self.bases.append(base)
         # self.arms[base] = arm
         
@@ -171,6 +174,7 @@ class DigitalTwinLab(Scene):
         # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
         # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        # arm.setAttach(base.getFrame())
         # self.bases.append(base)
         # self.arms[base] = arm
         
@@ -178,6 +182,7 @@ class DigitalTwinLab(Scene):
         # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
         # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
+        # arm.setAttach(base.getFrame())
         # self.bases.append(base)
         # self.arms[base] = arm
 
@@ -243,10 +248,10 @@ class DigitalTwinLab(Scene):
         return
     
     def __updateModelPos(self):
-        for base in self.arms:
-            self.arms[base].setAttach(base.getFrame())
+        # for base in self.arms:
+        #     self.arms[base].setAttach(base.getFrame())
 
-        self.hamster.setAttach(self.bases[0].getFrame())
+        # self.hamster.setAttach(self.bases[0])
         
         return
     

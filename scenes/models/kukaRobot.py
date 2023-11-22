@@ -32,7 +32,7 @@ class KukaRobot(IModel):
         self.hasForceVector = hasForceVector
         self.colors = np.zeros((8,4), dtype='float32')
         self.isLinkedOpcua = True
-        self.attach = np.identity(4)
+        self.attach = None
 
         self.lastTmats = {}
         self.lastLinkTmats = None
@@ -102,6 +102,7 @@ class KukaRobot(IModel):
             self.forceVector[2] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForZ'), default=0)[0]
 
     def __updateJoints(self):
+        attachFrame = self.attach.getFrame() if self.attach else np.identity(4)
         Robot1_T_0_ = self.lastLinkTmats.copy()
         if not np.array_equal(self.lastJoints, self.joints):
             Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
@@ -111,7 +112,7 @@ class KukaRobot(IModel):
         for i,id in enumerate(self.modelKukaIds):
             mat = Robot1_T_0_[min(i, len(Robot1_T_0_)-1)].copy()
             mat = np.matmul(self.tmat, mat)
-            mat = np.matmul(self.attach, mat)
+            mat = np.matmul(attachFrame, mat)
             if hash(bytes(mat)) == self.lastTmats[id]:
                 continue
             self.modelRenderer.setTransformMatrix(id, mat)
@@ -120,6 +121,7 @@ class KukaRobot(IModel):
         self.__updateForceVector(self.forceVectorEndpoint)
     
     def __updateForceVector(self, transform):
+        attachFrame = self.attach.getFrame() if self.attach else np.identity(4)
         if not self.hasForceVector or self.forceVectorId == None: return
         if not self.isLinkedOpcua:
             self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0))
@@ -132,7 +134,7 @@ class KukaRobot(IModel):
             return
         forceTransform = vectorTransform(transform[:3,3], transform[:3,3]+2*self.forceVector, 1, upperLimit=100)
         forceTransform = np.matmul(self.tmat, forceTransform)
-        forceTransform = np.matmul(self.attach, forceTransform)
+        forceTransform = np.matmul(attachFrame, forceTransform)
         if self.lastForceColor != (0,0,0,0.7):
             self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
             self.lastForceColor = (0,0,0,0.7)
@@ -208,8 +210,8 @@ class KukaRobot(IModel):
     def setPos(self, tmat):
         self.tmat = tmat
 
-    def setAttach(self, mat):
-        self.attach = mat
+    def setAttach(self, iModel):
+        self.attach = iModel
 
 class KukaRobotTwin:
 

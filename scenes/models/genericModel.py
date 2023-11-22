@@ -24,7 +24,7 @@ class GenericModel(IModel):
         self.transform = transform
         self.modelId = self.renderer.addModel(model, transform)
 
-        self.attach = np.identity(4)
+        self.attach = None
 
         self.__createUi()
         return
@@ -85,7 +85,8 @@ class GenericModel(IModel):
         return
     
     def __updateTranforms(self):
-        self.renderer.setTransformMatrix(self.modelId, np.matmul(self.attach, self.transform))
+        attachFrame = self.attach.getFrame() if self.attach else np.identity(4)
+        self.renderer.setTransformMatrix(self.modelId, np.matmul(attachFrame, self.transform))
         return
 
     def __pollMove(self, delta):
@@ -128,8 +129,9 @@ class GenericModel(IModel):
     def getFrame(self):
         return self.transform
 
-    def setAttach(self, mat):
-        self.attach = mat
+    
+    def setAttach(self, iModel):
+        self.attach = iModel
         self.__updateTranforms()
         return
     

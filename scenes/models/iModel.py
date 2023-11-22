@@ -27,6 +27,6 @@ class IModel:
         ...
     
     @abstractmethod
-    def setAttach(self, mat):
+    def setAttach(self, iModel):
         ...
     
