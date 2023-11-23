@@ -7,7 +7,7 @@ class IModel:
         ...
 
     @abstractmethod
-    def handleEvents(self):
+    def handleEvents(self, event):
         ...
 
     @abstractmethod
@@ -28,5 +28,9 @@ class IModel:
     
     @abstractmethod
     def setAttach(self, iModel):
+        ...
+    
+    @abstractmethod
+    def setTransform(self, mat):
         ...
     

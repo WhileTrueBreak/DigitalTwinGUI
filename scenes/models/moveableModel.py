@@ -15,7 +15,7 @@ from ui.elements.uiSlider import UiSlider
 from functools import lru_cache
 import numpy as np
 
-class GenericModel(IModel):
+class MoveableModel(IModel):
 
     @timing
     def __init__(self, window, renderer, model, transform):
@@ -108,7 +108,7 @@ class GenericModel(IModel):
         self.transform = np.matmul(self.transform, createTransformationMatrix(0, 0, 0, 0, 0, angle))
         self.__updateTranforms()
         return
-
+    
     def handleEvents(self, event):
         return
     
@@ -134,6 +134,6 @@ class GenericModel(IModel):
         self.__updateTranforms()
         return
     
-    def setTransform(self, mat):
-        self.transform = mat
+    def setTransform(self, transform):
+        self.transform = transform
         self.__updateTranforms()

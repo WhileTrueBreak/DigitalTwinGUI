@@ -19,7 +19,7 @@ from utils.debug import *
 import numpy as np
 from asyncua import ua
 
-class KukaRobot(IModel):
+class KukaRobot:
 
     def __init__(self, tmat, nid, rid, modelRenderer, hasGripper=True, hasForceVector=False):
         self.joints = [0,0,0,0,0,0,0]
@@ -45,7 +45,6 @@ class KukaRobot(IModel):
         self.__loadModel()
         self.__setupConnections()
     
-    @timing
     def __loadModel(self):
         self.modelKukaIds = []
         Robot1_T_0_ , Robot1_T_i_ = self.__T_KUKAiiwa14(self.joints)
@@ -67,7 +66,6 @@ class KukaRobot(IModel):
     def __getNodeName(self, name):
         return f'ns={self.nodeId};s={self.robotId}{name}'
 
-    @timing
     def __setupConnections(self):
         self.opcuaReceiverContainer = OpcuaContainer()
         self.jointReceiver = OpcuaReceiver([
@@ -209,9 +207,11 @@ class KukaRobot(IModel):
 
     def setPos(self, tmat):
         self.tmat = tmat
+        self.__updateJoints()
 
     def setAttach(self, iModel):
         self.attach = iModel
+        self.__updateJoints()
 
 class KukaRobotTwin(IModel):
 
@@ -252,7 +252,6 @@ class KukaRobotTwin(IModel):
                 ], self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/')
         self.transmitter = OpcuaTransmitter(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/')
 
-    @timing
     def __createUi(self):
         self.pages = Pages(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))
         self.pages.addPage()
@@ -383,6 +382,7 @@ class KukaRobotTwin(IModel):
                 self.opcuaTransmitterContainer.setValue(self.__getNodeName(f'c_ProgID'), KukaRobotTwin.FREE_MOVE_PROG, ua.VariantType.Int32)
                 self.progStartFlag = True
             if event['obj'] == self.unlinkBtn:
+                print("unlink")
                 self.matchLive = not self.matchLive
                 self.unlinkBtnText.setText('Unlink' if self.matchLive else 'Link')
                 self.__updateTwinColor()
@@ -438,3 +438,6 @@ class KukaRobotTwin(IModel):
         self.liveRobot.setAttach(mat)
         self.twinRobot.setAttach(mat)
 
+    def setTransform(self, transform):
+        self.liveRobot.setPos(transform)
+        self.twinRobot.setPos(transform)

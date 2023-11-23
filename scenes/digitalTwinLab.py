@@ -3,7 +3,8 @@ from asset import *
 from connections.mjpegStream import MJPEGStream
 
 from scenes.scene import Scene
-from scenes.models.genericModel import GenericModel
+from scenes.models.moveableModel import MoveableModel
+from scenes.models.staticModel import StaticModel
 from scenes.models.kukaRobot import KukaRobotTwin
 from scenes.utils.movingCamera import MovingCamera
 from scenes.utils.builder import Builder
@@ -149,14 +150,14 @@ class DigitalTwinLab(Scene):
         self.bases = []
         self.arms = {}
 
-        base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(5, 4.9, 0.89, 0, 0, 180))
+        base = MoveableModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(5, 4.9, 0.89, 0, 0, 180))
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 23, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=False)
         arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
         # self.bases.append(base)
         # self.arms[base] = arm
 
-        self.hamster = GenericModel(self.window, self.modelRenderer, Assets.SCREENSQ, np.matmul(createTransformationMatrix(0,0,-0.5,90,0,90), createScaleMatrix(0.2,0.2,0.2)))
+        self.hamster = StaticModel(self.window, self.modelRenderer, Assets.SCREENSQ, np.matmul(createTransformationMatrix(0,0,-0.5,90,0,90), createScaleMatrix(0.2,0.2,0.2)))
         self.hamsterPlayer = VideoPlayer.fromCapture(Assets.HAMSTER, fps=30)
         
         arm.setAttach(base)
@@ -170,7 +171,7 @@ class DigitalTwinLab(Scene):
         self.iModels.append(arm)
         self.iModels.append(self.hamster)
 
-        # base = GenericModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(2.5, 3, 0.89, 0, 0, 180))
+        # base = MoveableModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(2.5, 3, 0.89, 0, 0, 180))
         # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 22, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
         # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
@@ -178,7 +179,7 @@ class DigitalTwinLab(Scene):
         # self.bases.append(base)
         # self.arms[base] = arm
         
-        # base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(6.2, 5.2, 0.7, 0, 0, -90))
+        # base = MoveableModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(6.2, 5.2, 0.7, 0, 0, -90))
         # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
         # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
@@ -186,7 +187,7 @@ class DigitalTwinLab(Scene):
         # self.bases.append(base)
         # self.arms[base] = arm
         
-        # base = GenericModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(11, 3, 0.7, 0, 0, 0))
+        # base = MoveableModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(11, 3, 0.7, 0, 0, 0))
         # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
         # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
         # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
@@ -224,9 +225,8 @@ class DigitalTwinLab(Scene):
         self.modelRenderer.setTexture(self.screen[4], self.screenStreams[0].texture)
 
     def handleUiEvents(self, event):
-        [iModel for iModel in self.iModels]
-        # [arm.handleEvents(event) for arm in self.arms.values()]
-        # [model.handleEvents(event) for model in self.bases]
+        for iModel in self.iModels:
+            iModel.handleEvents(event)
         if event['action'] == 'release':
             if event['obj'] == self.renderWindow:
                 self.__handleSceneEvents(event)
@@ -237,7 +237,9 @@ class DigitalTwinLab(Scene):
         self.panelWrapper.removeAllChildren()
         for iModel in self.iModels:
             if iModel.isModel(modelId):
-                self.panelWrapper.addChild(iModel.getControlPanel())
+                cp = iModel.getControlPanel()
+                if not cp: break
+                self.panelWrapper.addChild(cp)
         # for arm in self.arms.values():
         #     if arm.isModel(modelId):
         #         # self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
