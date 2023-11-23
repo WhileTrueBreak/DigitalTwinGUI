@@ -4,7 +4,7 @@ import ctypes
 import time
 
 from asset import *
-from utils.timing import *
+from utils.debug import *
 
 import traceback
 
@@ -616,6 +616,7 @@ class Renderer:
             batch.render()
 
         # config states
+        GL.glDepthMask(GL.GL_TRUE)
         GL.glDepthFunc(GL.GL_ALWAYS)
         GL.glEnable(GL.GL_BLEND)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)

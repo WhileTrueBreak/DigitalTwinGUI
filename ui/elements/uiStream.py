@@ -1,6 +1,6 @@
 from ui.glElement import GlElement
 from ui.uiRenderer import UiRenderer
-from utils.timing import *
+from utils.debug import *
 
 from PIL import Image
 

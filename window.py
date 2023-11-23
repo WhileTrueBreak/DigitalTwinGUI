@@ -19,7 +19,7 @@ from asset import *
 
 from constants import Constants
 
-from utils.timing import *
+from utils.debug import *
 
 import ctypes
 

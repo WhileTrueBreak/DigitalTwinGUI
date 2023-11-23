@@ -14,7 +14,7 @@ import time
 from utils.model import *
 from utils.mathHelper import *
 from utils.sprite import Sprite
-from utils.timing import *
+from utils.debug import *
 from utils.characterSlot import CharacterSlot
 
 from constants import Constants
@@ -91,7 +91,7 @@ class Assets:
         Assets.TRANSPARENT_SHADER = Assets.linkShaders('res/shaders/3d/objectVertex.glsl', 'res/shaders/3d/transparentFragment.glsl')
         Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shaders/3d/compositeVertex.glsl', 'res/shaders/3d/compositeFragment.glsl')
         Assets.CELL_SHADER = Assets.linkShaders('res/shaders/3d/compositeVertex.glsl', 'res/shaders/3d/cellFragment.glsl')
-
+        
         Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf')
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF')
         Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf')
@@ -126,7 +126,7 @@ class Assets:
     @staticmethod
     @timing
     def loadFont(fontFile, size=48*64):
-        print(f'Loading font: {Fore.LIGHTMAGENTA_EX}{fontFile}{Style.RESET_ALL}')
+        funclog(f'Loading font: {Fore.LIGHTMAGENTA_EX}{fontFile}{Style.RESET_ALL}')
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
         characters = {}
         face = freetype.Face(fontFile)
@@ -154,7 +154,7 @@ class Assets:
     @staticmethod
     @timing
     def complieShader(shaderFile, shaderType):
-        print(f'Compiling shader: {Fore.LIGHTMAGENTA_EX}{shaderFile}{Style.RESET_ALL}')
+        funclog(f'Compiling shader: {Fore.LIGHTMAGENTA_EX}{shaderFile}{Style.RESET_ALL}')
         shaderCode = Path(shaderFile).read_text()
         shaderCode = shaderCode.replace('%max_textures%', str(Constants.MAX_TEXTURE_SLOTS))
         shaderRef = GL.glCreateShader(shaderType)
@@ -172,7 +172,7 @@ class Assets:
     def linkShaders(vertexShaderFile, fragmentShaderFile):
         vertRef = Assets.complieShader(vertexShaderFile, GL.GL_VERTEX_SHADER)
         fragRef = Assets.complieShader(fragmentShaderFile, GL.GL_FRAGMENT_SHADER)
-        print(f'Linking shader: {Fore.LIGHTMAGENTA_EX}{vertexShaderFile}{Style.RESET_ALL} & {Fore.LIGHTMAGENTA_EX}{fragmentShaderFile}{Style.RESET_ALL}')
+        funclog(f'Linking shader: {Fore.LIGHTMAGENTA_EX}{vertexShaderFile}{Style.RESET_ALL} & {Fore.LIGHTMAGENTA_EX}{fragmentShaderFile}{Style.RESET_ALL}')
         programRef = GL.glCreateProgram()
         GL.glAttachShader(programRef, vertRef)
         GL.glAttachShader(programRef, fragRef)
@@ -188,7 +188,7 @@ class Assets:
     @staticmethod
     @timing
     def loadModelFile(file, tmat=np.identity(4)):
-        print(f'Loading model: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
+        funclog(f'Loading model: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
         ext = os.path.splitext(file)[1].lower()
         models = None
         match ext:
@@ -208,7 +208,7 @@ class Assets:
     @staticmethod
     @timing
     def loadTexture(file, flipX=False, flipY=False, rot=0):
-        print(f'Loading texture: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
+        funclog(f'Loading texture: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
         img = Image.open(file)
         if flipX:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)
@@ -246,6 +246,6 @@ class Assets:
     @staticmethod
     @timing
     def loadVideo(file):
-        print(f'Loading video: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
+        funclog(f'Loading video: {Fore.LIGHTMAGENTA_EX}{file}{Style.RESET_ALL}')
         capture = cv2.VideoCapture(file)
         return capture

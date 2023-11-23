@@ -1,5 +1,5 @@
 from utils.model import Model
-from utils.timing import timing
+from utils.debug import timing
 
 class Builder:
 
@@ -71,6 +71,6 @@ class Builder:
             point2 = (wall[1][0], wall[1][1], wall[2][0])
             point3 = (wall[1][0], wall[1][1], wall[2][1])
             point4 = (wall[0][0], wall[0][1], wall[2][1])
-            appendPlane(Builder.buildPlaneFromPoints(point1, point2, point3, point4, vis=Builder.S1|Builder.S2))
+            appendPlane(Builder.buildPlaneFromPoints(point1, point2, point3, point4, vis=Builder.S1|Builder.S1))
         return planes
 

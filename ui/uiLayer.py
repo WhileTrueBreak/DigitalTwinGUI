@@ -1,7 +1,7 @@
 from ui.elements.uiWrapper import UiWrapper
 from ui.uiBatch import UiBatch
 
-from utils.timing import *
+from utils.debug import *
 
 class UiLayer:
 

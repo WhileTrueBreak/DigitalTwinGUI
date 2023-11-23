@@ -28,3 +28,7 @@ def timing(func):
         LAYER -= 1
         return out
     return wrapper
+
+def funclog(string):
+    tab = f'{Fore.CYAN}|{Style.RESET_ALL} '
+    print(f"{tab*LAYER}{string}{Style.RESET_ALL}")

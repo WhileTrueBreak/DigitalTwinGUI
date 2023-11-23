@@ -1,7 +1,7 @@
 from math import *
 import numpy as np
 import functools
-from utils.timing import *
+from utils.debug import *
 
 def normalize(v):
     norm = np.linalg.norm(v)

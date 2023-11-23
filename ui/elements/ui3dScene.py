@@ -3,7 +3,7 @@ from ui.uiRenderer import UiRenderer
 
 from utils.mathHelper import *
 from utils.transform import *
-from utils.timing import *
+from utils.debug import *
 
 from ui.ui3d.modelRenderer import *
 from asset import *

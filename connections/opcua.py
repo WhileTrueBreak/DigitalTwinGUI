@@ -1,9 +1,10 @@
 from asyncua import Client
 import asyncio
 
+from threading import Thread
 import time
 
-from threading import Thread
+from utils.debug import *
 
 class OpcuaContainer:
     def __init__(self):
@@ -25,7 +26,7 @@ class OpcuaContainer:
 
 class Opcua:
 
-    MAX_POLLING_RATE = 30
+    DEFAULT_POLLING_RATE = 30
 
     def __init__(self, host):
         self.OpcUaHost = host #'oct.tpc://172.31.1.236:4840/server/'
@@ -53,15 +54,15 @@ class Opcua:
         except Exception:
             raise Exception(f'Error getting value')
     @staticmethod
-    def createOpcuaReceiverThread(container, host, data, stop):
-        t = Thread(target = Opcua.opcuaReceiverConnection, args =(container, host, data, stop))
+    def createOpcuaReceiverThread(container, host, data, stop, pollingRate=DEFAULT_POLLING_RATE):
+        t = Thread(target = Opcua.opcuaReceiverConnection, args =(container, host, data, stop, pollingRate))
         t.start()
         return t
     @staticmethod
-    def opcuaReceiverConnection(container, host, data, stop):
-        # print(f'Opcua receiver thread started: {host}')
+    def opcuaReceiverConnection(container, host, data, stop, pollingRate=DEFAULT_POLLING_RATE):
+        print(f'Opcua receiver thread started: {host}')
         start = time.time_ns()
-        delay = 1/Opcua.MAX_POLLING_RATE*1000000000
+        delay = 1/pollingRate*1000000000
         try:
             client = Opcua(host)
         except:
@@ -82,25 +83,25 @@ class Opcua:
                 # print(f'Opcua receiver polling rate: {int(rate/10)}/s')
                 accum -= 10000000000
                 rate = 0
-        # print(f'Opcua receiver thread stopped: {host}')
+        print(f'Opcua receiver thread stopped: {host}')
     @staticmethod
     async def OpcuaGetData(container, data, client):
         for d in data:
             container.setValue(d, *(await client.getValue(d)))
     @staticmethod
-    def createOpcuaTransmitterThread(container, host, stop):
-        t = Thread(target = Opcua.opcuaTransmitterConnection, args =(container, host, stop))
+    def createOpcuaTransmitterThread(container, host, stop, pollingRate=DEFAULT_POLLING_RATE):
+        t = Thread(target = Opcua.opcuaTransmitterConnection, args =(container, host, stop, pollingRate))
         t.start()
         return t
     @staticmethod
-    def opcuaTransmitterConnection(container, host, stop):
-        # print(f'Opcua transmitter thread started: {host}')
+    def opcuaTransmitterConnection(container, host, stop, pollingRate=DEFAULT_POLLING_RATE):
+        print(f'Opcua transmitter thread started: {host}')
         try:
             client = Opcua(host)
         except:
             stop = lambda:True
         start = time.time_ns()
-        delay = 1/Opcua.MAX_POLLING_RATE*1000000000
+        delay = 1/pollingRate*1000000000
         rate = 0
         accum = 0
         while not stop():
@@ -120,7 +121,7 @@ class Opcua:
                 # print(f'Opcua transmitter polling rate: {int(rate/10)}/s')
                 accum -= 10000000000
                 rate = 0
-        # print(f'Opcua transmitter thread stopped: {host}')
+        print(f'Opcua transmitter thread stopped: {host}')
 
 
 

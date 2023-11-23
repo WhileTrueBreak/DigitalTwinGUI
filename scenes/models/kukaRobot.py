@@ -14,7 +14,7 @@ from connections.opcuaTransmitter import OpcuaTransmitter
 
 from asset import *
 
-from utils.timing import *
+from utils.debug import *
 
 import numpy as np
 from asyncua import ua

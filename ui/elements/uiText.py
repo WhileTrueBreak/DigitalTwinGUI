@@ -5,7 +5,7 @@ from ui.uiRenderer import *
 
 from utils.transform import *
 from utils.sprite import *
-from utils.timing import *
+from utils.debug import *
 
 from asset import *
 

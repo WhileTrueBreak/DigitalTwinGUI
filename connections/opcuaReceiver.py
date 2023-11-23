@@ -1,17 +1,18 @@
 from connections.opcua import *
 
 class OpcuaReceiver:
-    def __init__(self, data, container, host):
+    def __init__(self, data, container, host, pollingRate=30):
         self.data = data
         self.container = container
         self.host = host
         self.threadStopFlag = False
         self.thread = None
+        self.pollingRate = pollingRate
     
     def start(self):
         self.threadStopFlag = False
         if self.thread == None or not self.thread.is_alive():
-            self.thread = Opcua.createOpcuaReceiverThread(self.container, self.host, self.data, lambda:self.threadStopFlag)
+            self.thread = Opcua.createOpcuaReceiverThread(self.container, self.host, self.data, lambda:self.threadStopFlag, pollingRate=self.pollingRate)
 
     def stop(self):
         self.threadStopFlag = True

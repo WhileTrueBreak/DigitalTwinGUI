@@ -2,7 +2,7 @@ from asset import Assets
 
 from constants import Constants
 
-from utils.timing import *
+from utils.debug import *
 
 import OpenGL.GL as GL
 
