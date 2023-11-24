@@ -5,6 +5,8 @@ from stl import mesh as stlmesh
 import pywavefront
 import numpy as np
 
+from utils.debug import *
+
 class Model:
 
     @classmethod
@@ -132,6 +134,7 @@ class Model:
         if has_uvs:
             self.vertices[::,6:8] = uvs
 
+    @timing
     def generateSubModels(self, maxVerts):
         maxVerts = maxVerts - (maxVerts%3)
         total = self.indices.shape[0]

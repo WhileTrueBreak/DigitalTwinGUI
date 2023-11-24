@@ -248,8 +248,8 @@ class DigitalTwinLab(Scene):
         #     if model.isModel(modelId):
         #         # self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
         #         self.panelWrapper.addChild(model.getControlPanel())
-        if len(self.panelWrapper.children) == 0:
-            self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
+        # if len(self.panelWrapper.children) == 0:
+        #     self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
     
     def update(self, delta):
         self.hamsterPlayer.update(delta) 

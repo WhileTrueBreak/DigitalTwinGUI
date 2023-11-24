@@ -382,7 +382,6 @@ class KukaRobotTwin(IModel):
                 self.opcuaTransmitterContainer.setValue(self.__getNodeName(f'c_ProgID'), KukaRobotTwin.FREE_MOVE_PROG, ua.VariantType.Int32)
                 self.progStartFlag = True
             if event['obj'] == self.unlinkBtn:
-                print("unlink")
                 self.matchLive = not self.matchLive
                 self.unlinkBtnText.setText('Unlink' if self.matchLive else 'Link')
                 self.__updateTwinColor()
