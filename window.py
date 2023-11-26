@@ -86,11 +86,6 @@ class Window():
 
         Assets.init()
     
-    def createUi(self):
-        self.sceneManager.createUi()
-        self.uiLayer.getMasterElem().addChild(self.sceneManager.getWrapper())
-
-    # @timing
     def update(self):
         self.resetHovered()
         self.eventHandler()
@@ -139,6 +134,7 @@ class Window():
         return
 
     def run(self):
+        self.uiLayer.getMasterElem().addChild(self.sceneManager.getWrapper())
         start = time.time_ns()
         while self.running:
             end = start
@@ -159,8 +155,8 @@ class Window():
         pygame.quit()
         # sys.exit()
 
-    def addScene(self, scene):
-        self.sceneManager.addScene(scene)
+    def getSceneManager(self):
+        return self.sceneManager
 
     def getMousePos(self):
         return self.mousePos
