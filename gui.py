@@ -12,8 +12,6 @@ import colorama
 colorama.init(convert=True)
 nest_asyncio.apply()
 
-import cProfile
-
 def run():
     window = Window((1200, 800), 'Digital Twin GUI', fullscreen=False, resizeable=True, vsync=False)
 

@@ -3,6 +3,8 @@ from asset import *
 from connections.mjpegStream import MJPEGStream
 
 from scenes.scene import Scene
+from scenes.models.interfaces.model import SimpleModel, Updatable
+from scenes.models.interfaces.interactable import Interactable
 from scenes.models.moveableModel import MoveableModel
 from scenes.models.staticModel import StaticModel
 from scenes.models.kukaRobot import KukaRobotTwin
@@ -19,6 +21,7 @@ from ui.elements.uiSlider import UiSlider
 from ui.constraintManager import *
 from ui.uiHelper import *
 
+from utils.interfaces.pollController import PollController
 from utils.mathHelper import *
 from utils.videoPlayer import *
 
@@ -31,7 +34,8 @@ class DigitalTwinLab(Scene):
 
     def __init__(self, window, name):
         super().__init__(window, name)
-        self.iModels = []
+        self.models = []
+        
         self.camera = MovingCamera(self.window, [12, 3, 1.5, -90, 0, -50], 2)
     @timing
     def createUi(self):
@@ -157,7 +161,7 @@ class DigitalTwinLab(Scene):
         # self.bases.append(base)
         # self.arms[base] = arm
 
-        self.hamster = StaticModel(self.window, self.modelRenderer, Assets.SCREENSQ, np.matmul(createTransformationMatrix(0,0,-0.5,90,0,90), createScaleMatrix(0.2,0.2,0.2)))
+        self.hamster = StaticModel(self.modelRenderer, Assets.SCREENSQ, np.matmul(createTransformationMatrix(0,0,-0.5,90,0,90), createScaleMatrix(0.2,0.2,0.2)))
         self.hamsterPlayer = VideoPlayer.fromCapture(Assets.HAMSTER, fps=30)
         
         arm.setAttach(base)
@@ -167,9 +171,9 @@ class DigitalTwinLab(Scene):
         self.modelRenderer.setTexture(self.hamster.modelId, self.hamsterPlayer.texture)
         self.modelRenderer.setColor(self.hamster.modelId, (1,1,1,1))
 
-        self.iModels.append(base)
-        self.iModels.append(arm)
-        self.iModels.append(self.hamster)
+        self.models.append(base)
+        self.models.append(arm)
+        self.models.append(self.hamster)
 
         # base = MoveableModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(2.5, 3, 0.89, 0, 0, 180))
         # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 22, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
@@ -197,36 +201,40 @@ class DigitalTwinLab(Scene):
 
         [self.modelRenderer.setColor(model.modelId, (0.9,1.0,1.0,1.0)) for model in self.bases]
 
-    def __addFurniture(self): 
-        self.shelves = []
-        self.shelves.append(self.modelRenderer.addModel(Assets.SHELF, createTransformationMatrix(14.70,7,0,0,0,-90)))
-        self.shelves.append(self.modelRenderer.addModel(Assets.SHELF, createTransformationMatrix(12.66,7,0,0,0,-90)))
-        self.shelves.append(self.modelRenderer.addModel(Assets.SHELF, createTransformationMatrix(11.35,7,0,0,0,-90)))
-        self.shelves.append(self.modelRenderer.addModel(Assets.SHELF, createTransformationMatrix(10.75,7,0,0,0,-90)))
-
-        self.tables = []
-        self.tables.append(self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(2.5,7-1.05,0.85,0,0,0)))
-        self.tables.append(self.modelRenderer.addModel(Assets.TABLE_SQUARE, createTransformationMatrix(4.8,7-0.9,0.85,0,0,0)))
-        self.tables.append(self.modelRenderer.addModel(Assets.TABLE_RECT, createTransformationMatrix(8.7,7-1.05,0.85,0,0,0)))
+    def __addFurniture(self):
+        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(14.70,7,0,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(12.66,7,0,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(11.35,7,0,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(10.75,7,0,0,0,-90)))
+        
+        self.models.append(SimpleModel(self.modelRenderer, Assets.TABLE_RECT, createTransformationMatrix(2.5,7-1.05,0.85,0,0,0)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.TABLE_SQUARE, createTransformationMatrix(4.8,7-0.9,0.85,0,0,0)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.TABLE_RECT, createTransformationMatrix(8.7,7-1.05,0.85,0,0,0)))
 
         self.screenStreams = []
         self.screenStreams.append(MJPEGStream('http://172.32.1.227:8080/?action=streams'))
         self.screenStreams.append(MJPEGStream('http://172.32.1.225:8080/?action=streams'))
-        self.screen = []
-        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(5.8,6.99,1,90,0,90)))
-        self.modelRenderer.setTexture(self.screen[0], self.screenStreams[0].texture)
-        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(11.8,6.99,1,90,0,90)))
-        self.modelRenderer.setTexture(self.screen[1], self.screenStreams[0].texture)
-        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(8.8,6.99,1,90,0,90)))
-        self.modelRenderer.setTexture(self.screen[2], self.screenStreams[1].texture)
-        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(0.01,6.1,0.885,90,90,90)))
-        self.modelRenderer.setTexture(self.screen[3], self.screenStreams[1].texture)
-        self.screen.append(self.modelRenderer.addModel(Assets.SCREEN, createTransformationMatrix(0.01,3.2,0.885,90,90,90)))
-        self.modelRenderer.setTexture(self.screen[4], self.screenStreams[0].texture)
+        
+        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(5.8,6.99,1,90,0,90))
+        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[0].texture)
+        self.models.append(screen)
+        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(11.8,6.99,1,90,0,90))
+        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[0].texture)
+        self.models.append(screen)
+        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(8.8,6.99,1,90,0,90))
+        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[1].texture)
+        self.models.append(screen)
+        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(0.01,6.1,0.885,90,90,90))
+        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[1].texture)
+        self.models.append(screen)
+        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(0.01,3.2,0.885,90,90,90))
+        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[1].texture)
+        self.models.append(screen)
 
     def handleUiEvents(self, event):
-        for iModel in self.iModels:
-            iModel.handleEvents(event)
+        for model in self.models:
+            if not isinstance(model, Interactable): continue
+            model.handleEvents(event)
         if event['action'] == 'release':
             if event['obj'] == self.renderWindow:
                 self.__handleSceneEvents(event)
@@ -235,38 +243,26 @@ class DigitalTwinLab(Scene):
     def __handleSceneEvents(self, event):
         modelId = event['modelId']
         self.panelWrapper.removeAllChildren()
-        for iModel in self.iModels:
-            if iModel.isModel(modelId):
-                cp = iModel.getControlPanel()
+        for model in self.models:
+            if model.isModel(modelId):
+                if not isinstance(model, Interactable): continue
+                cp = model.getControlPanel()
                 if not cp: break
                 self.panelWrapper.addChild(cp)
-        # for arm in self.arms.values():
-        #     if arm.isModel(modelId):
-        #         # self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
-        #         self.panelWrapper.addChild(arm.getControlPanel())
-        # for model in self.bases:
-        #     if model.isModel(modelId):
-        #         # self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 0.7, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
-        #         self.panelWrapper.addChild(model.getControlPanel())
-        # if len(self.panelWrapper.children) == 0:
-        #     self.renderWindow.updateWidth(COMPOUND(RELATIVE(T_W, 1, P_W), ABSOLUTE(T_W, -2*DigitalTwinLab.UI_PADDING)))
     
     def update(self, delta):
         self.hamsterPlayer.update(delta) 
 
         self.__updateEnv(delta)
         self.__updateModelPos()
-        [stream.updateImage(delta) for stream in self.screenStreams]
-        [iModel.update(delta) for iModel in self.iModels]
-        # [arm.update() for arm in self.arms.values()]
-        # [model.update(delta) for model in self.bases]
+        [stream.update(delta) for stream in self.screenStreams]
+        
+        for model in self.models:
+            if not isinstance(model, Updatable): continue
+            model.update(delta)
         return
     
     def __updateModelPos(self):
-        # for base in self.arms:
-        #     self.arms[base].setAttach(base.getFrame())
-        # self.hamster.setAttach(self.bases[0])
-        
         return
     
     def __updateEnv(self, delta):
@@ -274,15 +270,14 @@ class DigitalTwinLab(Scene):
             self.camera.moveCamera(delta)
         if self.camera.hasMoved():
             self.modelRenderer.setViewMatrix(createViewMatrix(*self.camera.getCameraTransform()))
-        
+
     def start(self):
-        # [arm.start() for arm in self.arms.values()]
-        [iModel.start() for iModel in self.iModels]
+        [model.start() for model in self.models if isinstance(model, PollController)]
         [stream.start() for stream in self.screenStreams]
         return
-        
+
     def stop(self):
-        [arm.stop() for arm in self.arms.values()]
+        [model.start() for model in self.models if isinstance(model, PollController)]
         [stream.stop() for stream in self.screenStreams]
         return
 

@@ -1,3 +1,13 @@
+from asset import *
+
+from connections.opcua import *
+from connections.opcuaReceiver import OpcuaReceiver
+from connections.opcuaTransmitter import OpcuaTransmitter
+
+from scenes.models.interfaces.model import Updatable
+from scenes.models.interfaces.interactable import Interactable
+from scenes.ui.pages import Pages
+
 from ui.elements.uiSlider import UiSlider
 from ui.elements.uiButton import UiButton
 from ui.elements.uiWrapper import UiWrapper
@@ -5,19 +15,11 @@ from ui.elements.uiText import UiText
 from ui.constraintManager import *
 from ui.uiHelper import *
 
-from scenes.models.iModel import IModel
-from scenes.ui.pages import Pages
-
-from connections.opcua import *
-from connections.opcuaReceiver import OpcuaReceiver
-from connections.opcuaTransmitter import OpcuaTransmitter
-
-from asset import *
-
+from utils.interfaces.pollController import PollController
 from utils.debug import *
 
-import numpy as np
 from asyncua import ua
+import numpy as np
 
 class KukaRobot:
 
@@ -213,7 +215,7 @@ class KukaRobot:
         self.attach = iModel
         self.__updateJoints()
 
-class KukaRobotTwin(IModel):
+class KukaRobotTwin(Updatable, Interactable, PollController):
 
     FREE_MOVE_PROG = 2
 

@@ -86,11 +86,11 @@ class Window():
 
         Assets.init()
     
-    def update(self):
+    def update(self, delta):
         self.resetHovered()
         self.eventHandler()
-        self.sceneManager.update(self.delta)
-        self.uiLayer.update(self.delta)
+        self.sceneManager.update(delta)
+        self.uiLayer.update(delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.uiLayer.render()
         return
@@ -140,7 +140,7 @@ class Window():
             end = start
             start = time.time_ns()
 
-            self.update()
+            self.update(self.delta)
 
             pygame.display.flip()
 

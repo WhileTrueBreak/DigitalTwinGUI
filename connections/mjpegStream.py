@@ -1,9 +1,10 @@
 from PIL import Image
 
 from connections.mjpegThread import *
+from utils.interfaces.pollController import PollController
 from asset import *
 
-class MJPEGStream:
+class MJPEGStream(PollController):
     def __init__(self, url):
 
         self.url = url
@@ -15,7 +16,7 @@ class MJPEGStream:
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
 
-    def updateImage(self, delta):
+    def update(self, delta):
         stream = self.container.getStream()
         if stream == None: 
             return

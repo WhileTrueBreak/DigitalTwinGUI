@@ -1,6 +1,7 @@
 from asset import *
 
-from scenes.models.iModel import IModel
+from scenes.models.interfaces.model import SimpleModel, Updatable
+from scenes.models.interfaces.interactable import Interactable
 from scenes.ui.pages import Pages
 
 from ui.constraintManager import *
@@ -15,15 +16,13 @@ from ui.elements.uiSlider import UiSlider
 from functools import lru_cache
 import numpy as np
 
-class MoveableModel(IModel):
+class MoveableModel(SimpleModel, Updatable, Interactable):
 
     @timing
     def __init__(self, window, renderer, model, transform):
-        self.window = window
-        self.renderer = renderer
-        self.transform = transform
-        self.modelId = self.renderer.addModel(model, transform)
+        super().__init__(renderer, model, transform)
 
+        self.window = window
         self.attach = None
 
         self.__createUi()
@@ -115,9 +114,6 @@ class MoveableModel(IModel):
     def getControlPanel(self):
         return self.pages.getPageWrapper()
 
-    def isModel(self, modelId):
-        return modelId == self.modelId
-    
     def getPos(self):
         return self.transform[0:3,3]
     
