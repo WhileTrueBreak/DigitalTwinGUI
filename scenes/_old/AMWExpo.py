@@ -9,6 +9,7 @@ from ui.uiHelper import *
 
 from connections.mjpegStream import MJPEGStream
 from connections.opcua import *
+from constants import Constants
 
 from utils.mathHelper import *
 
@@ -69,7 +70,7 @@ class AMWExpo(Scene):
         self.threadStopFlag = True
         self.opcuaReceiverContainer = OpcuaContainer()
         
-        self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+        self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, Constants.OPCUA_LOCATION, 
             [
                 'ns=24;s=R4d_Joi1', 
                 'ns=24;s=R4d_Joi2', 
@@ -79,13 +80,13 @@ class AMWExpo(Scene):
                 'ns=24;s=R4d_Joi6', 
                 'ns=24;s=R4d_Joi7'
             ], lambda:self.threadStopFlag)
-        self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+        self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, Constants.OPCUA_LOCATION, 
             [
                 'ns=24;s=R4d_ForX', 
                 'ns=24;s=R4d_ForY', 
                 'ns=24;s=R4d_ForZ' 
             ], lambda:self.threadStopFlag)
-        self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+        self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, Constants.OPCUA_LOCATION, 
             [
                 'ns=24;s=R4c_ProgID', 
                 'ns=24;s=R4c_Start',    
@@ -98,7 +99,7 @@ class AMWExpo(Scene):
         self.doneFlag = False
 
         self.opcuaTransmitterContainer = OpcuaContainer()
-        self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/', lambda:self.threadStopFlag)
+        self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, Constants.OPCUA_LOCATION, lambda:self.threadStopFlag)
         return
 
     def createUi(self):
@@ -583,7 +584,7 @@ class AMWExpo(Scene):
         self.threadStopFlag = False
 
         if not self.dataThread.is_alive():
-            self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            self.dataThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, Constants.OPCUA_LOCATION, 
                 [
                     'ns=24;s=R4d_Joi1', 
                     'ns=24;s=R4d_Joi2', 
@@ -594,14 +595,14 @@ class AMWExpo(Scene):
                     'ns=24;s=R4d_Joi7'
                 ], lambda:self.threadStopFlag)
         if not self.forceThread.is_alive():
-            self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            self.forceThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, Constants.OPCUA_LOCATION, 
                 [
                     'ns=24;s=R4d_ForX', 
                     'ns=24;s=R4d_ForY', 
                     'ns=24;s=R4d_ForZ' 
                 ], lambda:self.threadStopFlag)
         if not self.progControlThread.is_alive():
-            self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/', 
+            self.progControlThread = Opcua.createOpcuaReceiverThread(self.opcuaReceiverContainer, Constants.OPCUA_LOCATION, 
             [
                 'ns=24;s=R4c_ProgID', 
                 'ns=24;s=R4c_Start',    
@@ -609,7 +610,7 @@ class AMWExpo(Scene):
                 'ns=24;s=R4f_End',  
             ], lambda:self.threadStopFlag)
         if not self.transmitter.is_alive():
-            self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/', lambda:self.threadStopFlag)
+            self.transmitter = Opcua.createOpcuaTransmitterThread(self.opcuaTransmitterContainer, Constants.OPCUA_LOCATION, lambda:self.threadStopFlag)
         return
     
     def stop(self):

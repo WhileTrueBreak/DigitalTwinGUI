@@ -18,6 +18,16 @@ from ui.uiHelper import *
 from utils.interfaces.pollController import PollController
 from utils.debug import *
 
+from connections.opcua import *
+from connections.opcuaReceiver import OpcuaReceiver
+from connections.opcuaTransmitter import OpcuaTransmitter
+from constants import Constants
+
+from asset import *
+
+from utils.timing import *
+
+import numpy as np
 from asyncua import ua
 import numpy as np
 
@@ -78,12 +88,12 @@ class KukaRobot:
                     self.__getNodeName('d_Joi5'),
                     self.__getNodeName('d_Joi6'),
                     self.__getNodeName('d_Joi7'),
-                ], self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/')
+                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION)
         self.forceReceiver = OpcuaReceiver([
                     self.__getNodeName('d_ForX'),
                     self.__getNodeName('d_ForY'),
                     self.__getNodeName('d_ForZ'),
-                ], self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/')
+                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION)
 
     def update(self, delta):
         self.__updateFromOpcua()
@@ -251,8 +261,8 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
                     self.__getNodeName('c_Start'),
                     self.__getNodeName('f_Ready'),
                     self.__getNodeName('f_End'),
-                ], self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/')
-        self.transmitter = OpcuaTransmitter(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/')
+                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION)
+        self.transmitter = OpcuaTransmitter(self.opcuaTransmitterContainer, Constants.OPCUA_LOCATION)
 
     def __createUi(self):
         self.pages = Pages(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 1, 1))

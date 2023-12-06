@@ -29,27 +29,23 @@ class Opcua:
     DEFAULT_POLLING_RATE = 30
 
     def __init__(self, host):
-        self.OpcUaHost = host #'oct.tpc://172.31.1.236:4840/server/'
+        self.OpcUaHost = host
         self.opcuaClient = Client(self.OpcUaHost)
         asyncio.run(self.opcuaClient.connect())
         self.nodeDict = {}
 
     async def setValue(self, node, value, type):
         try:
-            if node in self.nodeDict:
-                return await self.nodeDict[node].set_value(value, type)
-            self.nodeDict[node] = self.opcuaClient.get_node(node)
-            # print(f'added {node} to dict for {self.__class__.__name__}')
+            if not node in self.nodeDict:
+                self.nodeDict[node] = self.opcuaClient.get_node(node)
             return await self.nodeDict[node].set_value(value, type)
         except Exception:
             raise Exception(f'Error setting value')
 
     async def getValue(self, node):
         try:
-            if node in self.nodeDict:
-                return (await self.nodeDict[node].get_value(), await self.nodeDict[node].read_data_type_as_variant_type())
-            self.nodeDict[node] = self.opcuaClient.get_node(node)
-            # print(f'added {node} to dict for {self}')
+            if not node in self.nodeDict:
+                self.nodeDict[node] = self.opcuaClient.get_node(node)
             return (await self.nodeDict[node].get_value(), await self.nodeDict[node].read_data_type_as_variant_type())
         except Exception:
             raise Exception(f'Error getting value')
@@ -66,6 +62,7 @@ class Opcua:
         try:
             client = Opcua(host)
         except:
+            print(f'Opcua receiver thread stopping: {host}')
             stop = lambda:True
         rate = 0
         accum = 0
@@ -95,10 +92,12 @@ class Opcua:
         return t
     @staticmethod
     def opcuaTransmitterConnection(container, host, stop, pollingRate=DEFAULT_POLLING_RATE):
+
         print(f'Opcua transmitter thread started: {host}')
         try:
             client = Opcua(host)
         except:
+            print(f'Opcua receiver thread stopping: {host}')
             stop = lambda:True
         start = time.time_ns()
         delay = 1/pollingRate*1000000000
