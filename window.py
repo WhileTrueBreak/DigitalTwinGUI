@@ -10,6 +10,8 @@ from vectors import *
 from math import *
 import sys
 
+import time
+
 from ui.uiLayer import UiLayer
 from ui.constraintManager import *
 
@@ -152,8 +154,13 @@ class Window():
                 self.timeCounter -= 1
                 self.frames = 0
         self.sceneManager.stop()
+        self.waitStop()
+    
+    def waitStop(self):
+        self.stop()
+    
+    def stop(self):
         pygame.quit()
-        # sys.exit()
 
     def getSceneManager(self):
         return self.sceneManager

@@ -271,6 +271,7 @@ class KukaScene(Scene):
         self.cameraTransform[1] += yawY-deltaPos[1]*cos(radYaw)#*sin(radPitch)
         self.cameraTransform[2] += -deltaPos[2]*sin(radPitch)#+deltaPos[1]*cos(radPitch)
 
+    @timing
     def start(self):
         self.armStream.start()
         for stream in self.printerStreams:
@@ -279,6 +280,7 @@ class KukaScene(Scene):
         self.kukaTwin.start()
         return
     
+    @timing
     def stop(self):
         self.armStream.stop()
         for stream in self.printerStreams:

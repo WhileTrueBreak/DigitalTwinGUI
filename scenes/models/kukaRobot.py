@@ -3,6 +3,7 @@ from asset import *
 from connections.opcua import *
 from connections.opcuaReceiver import OpcuaReceiver
 from connections.opcuaTransmitter import OpcuaTransmitter
+from constants import Constants
 
 from scenes.models.interfaces.model import Updatable
 from scenes.models.interfaces.interactable import Interactable
@@ -17,15 +18,6 @@ from ui.uiHelper import *
 
 from utils.interfaces.pollController import PollController
 from utils.debug import *
-
-from connections.opcua import *
-from connections.opcuaReceiver import OpcuaReceiver
-from connections.opcuaTransmitter import OpcuaTransmitter
-from constants import Constants
-
-from asset import *
-
-from utils.timing import *
 
 import numpy as np
 from asyncua import ua
@@ -152,11 +144,13 @@ class KukaRobot:
             self.modelRenderer.setTransformMatrix(self.forceVectorId, forceTransform)
             self.lastFoceMat = hash(bytes(forceTransform))
 
+    @timing
     def start(self):
         if not self.isLinkedOpcua:return
         self.jointReceiver.start()
         self.forceReceiver.start()
 
+    @timing
     def stop(self):
         self.jointReceiver.stop()
         self.forceReceiver.stop()
@@ -404,12 +398,14 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
     def setTwinColors(self, colors):
         self.twinRobot.setColors(colors)
 
+    @timing
     def start(self):
         self.liveRobot.start()
         self.twinRobot.start()
         self.progControlReceiver.start()
         self.transmitter.start()
 
+    @timing
     def stop(self):
         self.liveRobot.stop()
         self.twinRobot.stop()

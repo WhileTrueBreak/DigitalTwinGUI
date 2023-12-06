@@ -271,13 +271,15 @@ class DigitalTwinLab(Scene):
         if self.camera.hasMoved():
             self.modelRenderer.setViewMatrix(createViewMatrix(*self.camera.getCameraTransform()))
 
+    @timing
     def start(self):
         [model.start() for model in self.models if isinstance(model, PollController)]
         [stream.start() for stream in self.screenStreams]
         return
 
+    @timing
     def stop(self):
-        [model.start() for model in self.models if isinstance(model, PollController)]
+        [model.stop() for model in self.models if isinstance(model, PollController)]
         [stream.stop() for stream in self.screenStreams]
         return
 

@@ -39,6 +39,7 @@ class SceneManager:
         if self.currentScene == None: return
         self.currentScene.recUpdate(delta)
 
+    @timing
     def stop(self):
         if self.currentScene == None: return
         self.sceneWrapper.removeChild(self.currentScene.sceneWrapper)
