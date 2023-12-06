@@ -11,6 +11,7 @@ from scenes.ui.pages import Pages
 from connections.opcua import *
 from connections.opcuaReceiver import OpcuaReceiver
 from connections.opcuaTransmitter import OpcuaTransmitter
+from constants import Constants
 
 from asset import *
 
@@ -78,12 +79,12 @@ class KukaRobot(IModel):
                     self.__getNodeName('d_Joi5'),
                     self.__getNodeName('d_Joi6'),
                     self.__getNodeName('d_Joi7'),
-                ], self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/')
+                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION)
         self.forceReceiver = OpcuaReceiver([
                     self.__getNodeName('d_ForX'),
                     self.__getNodeName('d_ForY'),
                     self.__getNodeName('d_ForZ'),
-                ], self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/')
+                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION)
 
     def update(self, delta):
         self.__updateFromOpcua()
@@ -249,8 +250,8 @@ class KukaRobotTwin(IModel):
                     self.__getNodeName('c_Start'),
                     self.__getNodeName('f_Ready'),
                     self.__getNodeName('f_End'),
-                ], self.opcuaReceiverContainer, 'oct.tpc://172.31.1.236:4840/server/')
-        self.transmitter = OpcuaTransmitter(self.opcuaTransmitterContainer, 'oct.tpc://172.31.1.236:4840/server/')
+                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION)
+        self.transmitter = OpcuaTransmitter(self.opcuaTransmitterContainer, Constants.OPCUA_LOCATION)
 
     @timing
     def __createUi(self):
