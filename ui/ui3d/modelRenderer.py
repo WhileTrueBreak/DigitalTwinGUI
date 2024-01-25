@@ -117,7 +117,7 @@ class BatchRenderer:
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 6:11] = data
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 11:13] = model.vertices[::,6:8]
         self.vertices[self.currentIndex:self.currentIndex+vShape[0], 13:14] = np.tile([-1], (vShape[0], 1))
-        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 14:15] = np.tile([index], (vShape[0], 1))
+        self.vertices[self.currentIndex:self.currentIndex+vShape[0], 14:15] = np.tile([index+1], (vShape[0], 1))
 
         self.currentIndex += vShape[0]
         self.isDirty = True
@@ -269,14 +269,14 @@ class BatchRenderer:
 
     def getData(self, id):
         if id in self.textureDict:
-            tex = self.textures[self.texModelMap.index(self.textureDict[id])]
+            tex = self.textures[self.texModelMap.index(self.textureDict[id-1])]
         else:
             tex = None
-        data = {'model':self.models[id], 'color':self.colors[id], 'matrix':self.transformationMatrices[id].T, 'texture':tex}
+        data = {'model':self.models[id], 'color':self.colors[id-1], 'matrix':self.transformationMatrices[id].T, 'texture':tex}
         return data
 
 class Renderer:
-    def __init__(self, window, supportTransparency=False):
+    def __init__(self, window, supportTransparency=True):
         self.window = window
         self.supportTransparency = supportTransparency
 
@@ -495,6 +495,7 @@ class Renderer:
             self.batches[modelid[0]].setTransformMatrix(modelid[1], matrix)
 
     def setColor(self, id, color):
+        if not self.supportTransparency: color = (*color[0:3], 1)
         for i,modelId in enumerate(self.idDict[id]):
             batch = self.batches[modelId[0]]
             objId = modelId[1]
@@ -594,49 +595,50 @@ class Renderer:
         bidLoc = GL.glGetUniformLocation(self.opaqueShader, "batchId")
 
         for batch in self.solidBatch:
-            GL.glUniform1ui(bidLoc, self.batches.index(batch))
+            GL.glUniform1ui(bidLoc, self.batches.index(batch)+1)
             batch.render()
 
-        # config states
-        GL.glDepthMask(GL.GL_FALSE)
-        GL.glEnable(GL.GL_BLEND)
-        GL.glBlendFunci(0, GL.GL_ONE, GL.GL_ONE)
-        GL.glBlendFunci(1, GL.GL_ZERO, GL.GL_ONE_MINUS_SRC_COLOR)
-        GL.glBlendEquation(GL.GL_FUNC_ADD)
+        if self.supportTransparency:
+            # config states
+            GL.glDepthMask(GL.GL_FALSE)
+            GL.glEnable(GL.GL_BLEND)
+            GL.glBlendFunci(0, GL.GL_ONE, GL.GL_ONE)
+            GL.glBlendFunci(1, GL.GL_ZERO, GL.GL_ONE_MINUS_SRC_COLOR)
+            GL.glBlendEquation(GL.GL_FUNC_ADD)
 
-        # render transparent
-        GL.glUseProgram(self.transparentShader)
-        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.transparentFBO)
-        GL.glClearBufferfv(GL.GL_COLOR, 0, self.accumClear)
-        GL.glClearBufferfv(GL.GL_COLOR, 1, self.revealClear)
-        bidLoc = GL.glGetUniformLocation(self.transparentShader, "batchId")
+            # render transparent
+            GL.glUseProgram(self.transparentShader)
+            GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.transparentFBO)
+            GL.glClearBufferfv(GL.GL_COLOR, 0, self.accumClear)
+            GL.glClearBufferfv(GL.GL_COLOR, 1, self.revealClear)
+            bidLoc = GL.glGetUniformLocation(self.transparentShader, "batchId")
 
-        for batch in self.transparentBatch:
-            GL.glUniform1ui(bidLoc, self.batches.index(batch))
-            batch.render()
+            for batch in self.transparentBatch:
+                GL.glUniform1ui(bidLoc, self.batches.index(batch))
+                batch.render()
 
-        # config states
-        GL.glDepthMask(GL.GL_TRUE)
-        GL.glDepthFunc(GL.GL_ALWAYS)
-        GL.glEnable(GL.GL_BLEND)
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+            # config states
+            GL.glDepthMask(GL.GL_TRUE)
+            GL.glDepthFunc(GL.GL_ALWAYS)
+            GL.glEnable(GL.GL_BLEND)
+            GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
 
-        # render composite
-        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
+            # render composite
+            GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
 
-        GL.glUseProgram(self.compositeShader)
+            GL.glUseProgram(self.compositeShader)
 
-        GL.glActiveTexture(GL.GL_TEXTURE0)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.accumTexture)
-        GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "accum"), 0)
-        GL.glActiveTexture(GL.GL_TEXTURE1)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
-        GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "reveal"), 1)
-        GL.glActiveTexture(GL.GL_TEXTURE2)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
-        GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "picking"), 2)
-        GL.glBindVertexArray(self.quadVAO)
-        GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
+            GL.glActiveTexture(GL.GL_TEXTURE0)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, self.accumTexture)
+            GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "accum"), 0)
+            GL.glActiveTexture(GL.GL_TEXTURE1)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, self.revealTexture)
+            GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "reveal"), 1)
+            GL.glActiveTexture(GL.GL_TEXTURE2)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, self.pickingTexture)
+            GL.glUniform1i(GL.glGetUniformLocation(self.compositeShader, "picking"), 2)
+            GL.glBindVertexArray(self.quadVAO)
+            GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
         ##### CELL SHADING #####
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
@@ -676,7 +678,10 @@ class Renderer:
         data = GL.glReadPixels(x, y, 1, 1, GL.GL_RGB_INTEGER, GL.GL_UNSIGNED_INT, None)
         GL.glReadBuffer(GL.GL_NONE)
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
-        return data[0][0]
+        data = data[0][0]
+        data[0] -= 1
+        data[1] -= 1
+        return data
     
     def getTexture(self):
         return self.opaqueTexture

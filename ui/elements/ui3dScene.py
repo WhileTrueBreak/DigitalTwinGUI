@@ -9,7 +9,7 @@ from ui.ui3d.modelRenderer import *
 from asset import *
 
 class Ui3DScene(GlElement):
-    def __init__(self, window, constraints, supportTransparency=False, dim=(0,0,0,0)):
+    def __init__(self, window, constraints, supportTransparency=True, dim=(0,0,0,0)):
         super().__init__(window, constraints, dim)
 
         self.hoveredObj = -1
@@ -20,7 +20,7 @@ class Ui3DScene(GlElement):
 
         self.backgroundColor = (0.15,0.15,0.15)
 
-        self.modelRenderer = Renderer(self.window, supportTransparency)
+        self.modelRenderer = Renderer(self.window, supportTransparency=supportTransparency)
         self.modelRenderer.setProjectionMatrix(createProjectionMatrix(self.dim[2], self.dim[3], self.FOV, self.NEAR_PLANE, self.FAR_PLANE))
         self.modelRenderer.setViewMatrix(createViewMatrix(0, 0, 0, 0, 0, 0))
 
@@ -72,7 +72,7 @@ class Ui3DScene(GlElement):
         envPos = [int(self.window.dim[0]*relPos[0]), int(self.window.dim[1]-self.window.dim[1]*relPos[1])]
         data = self.modelRenderer.getScreenSpaceObj(*envPos)
         if (data[1], data[0]) not in self.modelRenderer.idDict: 
-            print(f'Error: invalid {data}')
+            # print(f'Error: invalid {data}')
             return -1
         self.hoveredObj = self.modelRenderer.idDict[(data[1], data[0])]
 

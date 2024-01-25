@@ -39,8 +39,8 @@ class DigitalTwinLab(Scene):
         self.camera = MovingCamera(self.window, [12, 3, 1.5, -90, 0, -50], 2)
     @timing
     def createUi(self):
-        self.renderWindow = Ui3DScene(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0, 0, 1, 1, DigitalTwinLab.UI_PADDING))
-        self.renderWindow.setBackgroundColor((0.2, 0.2, 0.2))
+        self.renderWindow = Ui3DScene(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0, 0, 1, 1, DigitalTwinLab.UI_PADDING), supportTransparency=True)
+        self.renderWindow.setBackgroundColor((0.25, 0.2, 0.27))
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
         
