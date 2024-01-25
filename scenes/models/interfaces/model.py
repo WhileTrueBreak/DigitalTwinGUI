@@ -7,6 +7,9 @@ class SimpleModel:
         self.transform = transform
         self.modelId = self.renderer.addModel(model, transform)
     
+    def getFrame(self):
+        return self.transform
+
     def isModel(self, modelId):
         return modelId == self.modelId
 

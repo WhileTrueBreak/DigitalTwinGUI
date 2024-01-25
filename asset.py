@@ -48,6 +48,8 @@ class Assets:
 
         Assets.GRIPPER = Assets.loadModelFile('res/models/gripper/2F140.stl', createTransformationMatrix(0, 0, 0, 0, 0, 90))
         Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, -0.926, 0, 0, 0))
+        Assets.KUKA_EDU = Assets.loadModelFile('res/models/Ready2_educate.STL', createTransformationMatrix(0, 0, 0, 0, 0, 0))
+        Assets.CNC_EX = Assets.loadModelFile('res/models/CNCex.STL', createTransformationMatrix(0, 0, 0, 0, 0, 0))
 
         Assets.TABLE_CUSTOM = Assets.loadModelFile('res/models/Objects/Benchtop_Custom.stl')
         Assets.TABLE_RECT = Assets.loadModelFile('res/models/Objects/Benchtop_Rectangle.STL')
@@ -62,6 +64,7 @@ class Assets:
         Assets.TABLE = Assets.loadModelFile('res/models/Expo/RoundTable.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
         Assets.TVSCREEN = Assets.loadModelFile('res/models/Expo/TvScreen.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
         Assets.KUKA_FLEX = Assets.loadModelFile('res/models/Expo/KukaFlex.stl', np.matmul(createTransformationMatrix(9, -8.4075, -0.89, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))
+        Assets.THE_MATRIX = Assets.loadModelFile('res/models/MatrixFrameV3.STL')
 
         Assets.AMW_LEFT_TEX = Assets.loadTexture('res/textures/AMW_LEFT.jpg', flipX=True, flipY=True)
         Assets.AMW_RIGHT_TEX = Assets.loadTexture('res/textures/AMW_RIGHT.jpg', flipX=False, flipY=True)
@@ -71,6 +74,7 @@ class Assets:
         Assets.POLE = Assets.loadModelFile('res/models/pole.stl', createScaleMatrix(10, 10, 10))
 
         Assets.ENDER3_3D_PRINTER = Assets.loadModelFile('res/models/Objects/Ender3-V2.STL')
+        Assets.PRUSA_XL = Assets.loadModelFile('res/models/Prusa XLm.STL')
         Assets.SHELF = Assets.loadModelFile('res/models/Objects/Shelving1.stl', createTransformationMatrix(0, 0, 0, 90, 0, 0))
 
         Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')

@@ -152,83 +152,75 @@ class DigitalTwinLab(Scene):
 
     def __addRobots(self):
         self.bases = []
-        self.arms = {}
 
-        base = MoveableModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(5, 4.9, 0.89, 0, 0, 180))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 23, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=False)
-        arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
-        arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
-        # self.bases.append(base)
-        # self.arms[base] = arm
-
-        self.hamster = StaticModel(self.modelRenderer, Assets.SCREENSQ, np.matmul(createTransformationMatrix(0,0,-0.5,90,0,90), createScaleMatrix(0.2,0.2,0.2)))
-        self.hamsterPlayer = VideoPlayer.fromCapture(Assets.HAMSTER, fps=30)
-        
+        # ROBOT 3 - KEENANS DEMO ROBOT
+        base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(2.3, 5, 0.89, 0, 0, 180))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 23, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm.setLiveColors([(1, 51/255, 51/255, 0.7)for i in range(9)])
+        arm.setTwinColors([(1, 178/255, 102/255, 0.0)for i in range(9)])
         arm.setAttach(base)
-        self.hamster.setAttach(base)
-
-        self.modelRenderer.setColor(base.modelId, (0.9,1.0,1.0,1.0))
-        self.modelRenderer.setTexture(self.hamster.modelId, self.hamsterPlayer.texture)
-        self.modelRenderer.setColor(self.hamster.modelId, (1,1,1,1))
-
+        self.bases.append(base)
         self.models.append(base)
         self.models.append(arm)
-        self.models.append(self.hamster)
-
-        # base = MoveableModel(self.window, self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(2.5, 3, 0.89, 0, 0, 180))
-        # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 22, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
-        # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
-        # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
-        # arm.setAttach(base.getFrame())
-        # self.bases.append(base)
-        # self.arms[base] = arm
         
-        # base = MoveableModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(6.2, 5.2, 0.7, 0, 0, -90))
-        # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
-        # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
-        # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
-        # arm.setAttach(base.getFrame())
-        # self.bases.append(base)
-        # self.arms[base] = arm
-        
-        # base = MoveableModel(self.window, self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(11, 3, 0.7, 0, 0, 0))
-        # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=True)
-        # arm.setLiveColors([(0.5, i/8, 1.0, 0.7)for i in range(9)])
-        # arm.setTwinColors([(1.0, 0.5, i/8, 0.0)for i in range(9)])
-        # arm.setAttach(base.getFrame())
-        # self.bases.append(base)
-        # self.arms[base] = arm
+        # ROBOT 4 - MSM Testing ROBOT
+        base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(14, 2.5, 0.89, 0, 0, 0))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=False)
+        arm.setLiveColors([(1, 1, 0, 0.7)for i in range(9)])
+        arm.setTwinColors([(1, 1, 153/255, 0.0)for i in range(9)])
+        arm.setAttach(base)
+        self.bases.append(base)
+        self.models.append(base)
+        self.models.append(arm)
 
-        [self.modelRenderer.setColor(model.modelId, (0.9,1.0,1.0,1.0)) for model in self.bases]
+        # ROBOT 1 - Moblie 1
+        base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(13, 1, 0.9, 0, 0, -90))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 21, 'R1', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm.setLiveColors([(0, 1, 0, 0.7)for i in range(9)])
+        arm.setTwinColors([(102/255, 1, 178/255, 0.0)for i in range(9)])
+        arm.setAttach(base)
+        self.bases.append(base)
+        self.models.append(base)
+        self.models.append(arm)
+        
+        # ROBOT 2 - Moblie 2
+        base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(14.2, 1, 0.9, 0, 0, 0))
+        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        arm.setLiveColors([(0, 0.5, 1.0, 0.7)for i in range(9)])
+        arm.setTwinColors([(153/255, 153/255, 1, 0.0)for i in range(9)])
+        arm.setAttach(base)
+        self.bases.append(base)
+        self.models.append(base)
+        self.models.append(arm)
 
     def __addFurniture(self):
-        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(14.70,7,0,0,0,-90)))
-        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(12.66,7,0,0,0,-90)))
-        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(11.35,7,0,0,0,-90)))
-        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(10.75,7,0,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(16.70,3.6,0,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(0.9,2,0,0,0,90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(0.9,4.5,0,0,0,90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(0.9,6,0,0,0,0)))
         
-        self.models.append(SimpleModel(self.modelRenderer, Assets.TABLE_RECT, createTransformationMatrix(2.5,7-1.05,0.85,0,0,0)))
-        self.models.append(SimpleModel(self.modelRenderer, Assets.TABLE_SQUARE, createTransformationMatrix(4.8,7-0.9,0.85,0,0,0)))
-        self.models.append(SimpleModel(self.modelRenderer, Assets.TABLE_RECT, createTransformationMatrix(8.7,7-1.05,0.85,0,0,0)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.TABLE_RECT, createTransformationMatrix(4.5,7-0.5,0.85,0,0,90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.TABLE_SQUARE, createTransformationMatrix(10.3,7-0.9,0.85,0,0,0)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.TABLE_RECT, createTransformationMatrix(7,0.8,0.85,0,0,90)))
+
+        self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8,6.6,0.5,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8,6.6,1.35,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73,6.6,0.5,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73,6.6,1.35,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73+0.73,6.6,0.5,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73+0.73,6.6,1.35,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73+0.73+0.73,6.6,0.5,0,0,-90)))
+        self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73+0.73+0.73,6.6,1.35,0,0,-90)))
+
+        self.models.append(SimpleModel(self.modelRenderer, Assets.THE_MATRIX, createTransformationMatrix(5.6,6,0,0,0,0)))
+        
+        self.models.append(SimpleModel(self.modelRenderer, Assets.KUKA_EDU, createTransformationMatrix(4,1.2,0,0,0,-90)))
 
         self.screenStreams = []
-        self.screenStreams.append(MJPEGStream('http://172.32.1.227:8080/?action=streams'))
-        self.screenStreams.append(MJPEGStream('http://172.32.1.225:8080/?action=streams'))
+        self.screenStreams.append(MJPEGStream('http://172.32.1.226:8080/?action=streams'))
         
-        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(5.8,6.99,1,90,0,90))
+        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(5.5,6.99,1,90,0,90))
         self.modelRenderer.setTexture(screen.modelId, self.screenStreams[0].texture)
-        self.models.append(screen)
-        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(11.8,6.99,1,90,0,90))
-        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[0].texture)
-        self.models.append(screen)
-        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(8.8,6.99,1,90,0,90))
-        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[1].texture)
-        self.models.append(screen)
-        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(0.01,6.1,0.885,90,90,90))
-        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[1].texture)
-        self.models.append(screen)
-        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(0.01,3.2,0.885,90,90,90))
-        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[1].texture)
         self.models.append(screen)
 
     def handleUiEvents(self, event):
@@ -251,8 +243,6 @@ class DigitalTwinLab(Scene):
                 self.panelWrapper.addChild(cp)
     
     def update(self, delta):
-        self.hamsterPlayer.update(delta) 
-
         self.__updateEnv(delta)
         self.__updateModelPos()
         [stream.update(delta) for stream in self.screenStreams]
