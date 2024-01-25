@@ -26,10 +26,10 @@ void main() {
 
 	if(dist > 0.01){
 		frag = vec4(1,0,0.6,1);
-		frag = texelFetch(screen, coords, 0) - vec4(0.3,0.3,0.3,0);
+		// frag = texelFetch(screen, coords, 0) - vec4(0.3,0.3,0.3,0);
 	}else{
 		frag = texelFetch(screen, coords, 0);
-		// frag = vec4(0.3,0,0.6,1);
+		frag = vec4(0.3,0,0.6,1);
 	}
 
 }
