@@ -614,7 +614,7 @@ class Renderer:
             bidLoc = GL.glGetUniformLocation(self.transparentShader, "batchId")
 
             for batch in self.transparentBatch:
-                GL.glUniform1ui(bidLoc, self.batches.index(batch))
+                GL.glUniform1ui(bidLoc, self.batches.index(batch)+1)
                 batch.render()
 
             # config states
