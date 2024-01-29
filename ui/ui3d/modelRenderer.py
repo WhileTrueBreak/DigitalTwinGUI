@@ -672,7 +672,6 @@ class Renderer:
             data.append(batch.getData(modelid[1]))
         return data
 
-    @timing
     def getScreenSpaceObj(self, x, y):
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.transparentFBO)
         GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT2)

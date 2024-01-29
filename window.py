@@ -34,6 +34,7 @@ class Window():
     def __init__(self, size, title, sceneManager=DefaultSceneManager(), fullscreen=False, resizeable=False, vsync=True):
         pygame.init()
         display_flags = pygame.DOUBLEBUF | pygame.OPENGL
+        self.title = title
         if resizeable:
             display_flags = display_flags | pygame.RESIZABLE
         if fullscreen:
@@ -95,6 +96,7 @@ class Window():
         self.uiLayer.update(delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.uiLayer.render()
+        GL.glFinish()
         return
     
     def eventHandler(self):
@@ -135,6 +137,7 @@ class Window():
         self.dim = pygame.display.get_window_size()
         return
 
+    @timing
     def run(self):
         self.uiLayer.getMasterElem().addChild(self.sceneManager.getWrapper())
         start = time.time_ns()
@@ -144,13 +147,14 @@ class Window():
 
             self.update(self.delta)
 
-            pygame.display.flip()
+            pygame.display.flip()   
 
             self.delta = (start - end)/1000000000
             self.timeCounter += self.delta
             self.frames += 1
             if self.timeCounter >= 1:
-                print(f'frame time: {Fore.CYAN}{1000000/self.frames:.0f}us{Style.RESET_ALL} | FPS: {Fore.CYAN}{self.frames}{Style.RESET_ALL}')
+                pygame.display.set_caption(f'{self.title} | frame time: {1000000/self.frames:.0f}us | FPS: {self.frames}')
+                # print(f'frame time: {Fore.CYAN}{1000000/self.frames:.0f}us{Style.RESET_ALL} | FPS: {Fore.CYAN}{self.frames}{Style.RESET_ALL}')
                 self.timeCounter -= 1
                 self.frames = 0
         self.sceneManager.stop()
