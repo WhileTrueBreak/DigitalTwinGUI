@@ -84,14 +84,13 @@ class UiText(GlElement):
         self.renderers.append(self.renderer)
 
     def reshape(self):
-
         textureDim = self.window.dim
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.textFrameTex)
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
         self.__updateTextScale()
-        self.__updateRenderTexture(self.text, self.font, self.scaledFontSize/48)
+        self.__updateRenderTexture(self.text, self.font)
         self.__updateRenderer()
         return
 
@@ -122,7 +121,7 @@ class UiText(GlElement):
             maxdes = max(maxdes, ch.descender*scale)
             maxasc = max(maxasc, ch.ascender*scale)
 
-            x += w*scale + self.textSpacing*scale
+            x += w*scale + self.scaledTextSpacing*scale
         x -= self.scaledTextSpacing*scale
         widthAspect = x/(maxasc+maxdes)
         
@@ -135,14 +134,17 @@ class UiText(GlElement):
         if self.fitParent:
             if (self.maxDescender + self.maxAscender)*widthAspect < self.parent.dim[2]:
                 self.updateHeight(RELATIVE(T_H, 1, P_H))
-            else:
+            else: 
                 scale = self.parent.dim[2]/((self.maxDescender + self.maxAscender)*widthAspect)
                 self.updateHeight(RELATIVE(T_H, scale, P_H))
         else:
             self.updateHeight(ABSOLUTE(T_H, self.maxDescender + self.maxAscender))
         self.dirtyText = False
 
-    def __updateRenderTexture(self, text, font, scale):
+    @timing
+    def __updateRenderTexture(self, text, font):
+        scale = self.scaledFontSize/48
+
         GL.glUseProgram(Assets.TEXT_SHADER)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.textFrame)
 
