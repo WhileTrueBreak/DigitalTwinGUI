@@ -141,6 +141,7 @@ class Window():
     def run(self):
         self.uiLayer.getMasterElem().addChild(self.sceneManager.getWrapper())
         start = time.time_ns()
+        lastTime = start
         while self.running:
             end = start
             start = time.time_ns()
@@ -153,7 +154,8 @@ class Window():
             self.timeCounter += self.delta
             self.frames += 1
             if self.timeCounter >= 1:
-                pygame.display.set_caption(f'{self.title} | frame time: {1000000/self.frames:.0f}us | FPS: {self.frames}')
+                pygame.display.set_caption(f'{self.title} | frame time: {((time.time_ns()-lastTime)/1000)/self.frames:.0f}us | FPS: {self.frames}')
+                lastTime = time.time_ns()
                 # print(f'frame time: {Fore.CYAN}{1000000/self.frames:.0f}us{Style.RESET_ALL} | FPS: {Fore.CYAN}{self.frames}{Style.RESET_ALL}')
                 self.timeCounter -= 1
                 self.frames = 0
