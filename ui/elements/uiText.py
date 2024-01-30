@@ -105,6 +105,7 @@ class UiText(GlElement):
         if self.prevWindowScale[1] == self.currScale[1]: return
         self.scaledFontSize = self.fontSize*self.currScale[1]
         self.scaledTextSpacing = self.textSpacing*self.currScale[1]
+        self.prevWindowScale = self.currScale
         self.dirtyText = True
 
     def __updateTextBound(self):
