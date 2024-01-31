@@ -84,23 +84,26 @@ class UiText(GlElement):
         self.renderers.append(self.renderer)
 
     def reshape(self):
-        textureDim = self.window.dim
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.textFrameTex)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, textureDim[0], textureDim[1], 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
 
         self.__updateTextScale()
+        self.__updateTextBound()
+        self.updateDim()
+
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.textFrameTex)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, int(self.textBounds[2]), int(self.textBounds[3]), 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
+        
         self.__updateRenderTexture(self.text, self.font)
         self.__updateRenderer()
         return
 
     def update(self, delta):
-        self.__updateTextScale()
-        self.__updateTextBound()
+        if self.dirtyText:
+            self.reshape()
         return
     
     def __updateTextScale(self):
-        self.currScale = (1,1)#self.window.getWindowScale()
+        self.currScale = (1,1) #self.window.getWindowScale()
         if self.prevWindowScale[1] == self.currScale[1]: return
         self.scaledFontSize = self.fontSize*self.currScale[1]
         self.scaledTextSpacing = self.textSpacing*self.currScale[1]
@@ -146,6 +149,7 @@ class UiText(GlElement):
         scale = self.scaledFontSize/48
 
         GL.glUseProgram(Assets.TEXT_SHADER)
+        GL.glViewport(0, 0, int(self.textBounds[2]), int(self.textBounds[3]))
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.textFrame)
 
         clearColor = GL.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE)
@@ -160,8 +164,8 @@ class UiText(GlElement):
         GL.glEnable(GL.GL_BLEND)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
 
-        x = self.dim[0]
-        y = self.dim[1]
+        x = 0
+        y = 0
         for c in text:
             ch = font[c]
             w, h = ch.textureSize
@@ -192,26 +196,31 @@ class UiText(GlElement):
         GL.glBindVertexArray(0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        GL.glViewport(0, 0, *self.window.dim)
         GL.glClearColor(*clearColor)
 
     def __updateRenderer(self):
         screenCoords = [
             (self.openGLDim[0], self.openGLDim[1]),
-            (self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]),
-            (self.openGLDim[0]+self.openGLDim[2], self.openGLDim[1]+self.openGLDim[3]),
-            (self.openGLDim[0], self.openGLDim[1]+self.openGLDim[3])
+            (self.openGLDim[0]+ self.openGLDim[2], self.openGLDim[1]),
+            (self.openGLDim[0]+ self.openGLDim[2], self.openGLDim[1]+ self.openGLDim[3]),
+            (self.openGLDim[0], self.openGLDim[1]+ self.openGLDim[3])
         ]
         screenCoords = [((c[0]+1)/2,(c[1]+1)/2)for c in screenCoords]
-        self.renderer.getSprite().setTexCoords(screenCoords)
+        uv = [
+            (0,0),(1,0),(1,1),(0,1)
+        ]
+
+        self.renderer.getSprite().setTexCoords(uv)
         self.renderer.getTransform().setPos((self.openGLDim[0], self.openGLDim[1]))
         self.renderer.getTransform().setSize((self.openGLDim[2], self.openGLDim[3]))
         self.renderer.setDirtyVertex()
 
     def __getVertexData(self, xpos, ypos, w, h):
-        xpos = (2*xpos)/self.window.dim[0] - 1
-        ypos = (2*(self.window.dim[1]-ypos))/self.window.dim[1] - 1
-        w = (2*w)/self.window.dim[0]
-        h = (2*h)/self.window.dim[1]
+        xpos = (2*xpos)/self.textBounds[2] - 1
+        ypos = (2*(self.textBounds[3]-ypos))/self.textBounds[3] - 1
+        w = (2*w)/self.textBounds[2]
+        h = (2*h)/self.textBounds[3]
         return np.array([
             xpos,       ypos + h, 0, 0,
             xpos,       ypos,     0, 1,
