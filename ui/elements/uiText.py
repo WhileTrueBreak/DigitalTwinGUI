@@ -22,7 +22,7 @@ class UiText(GlElement):
         self.font = Assets.MONACO_FONT
         self.text = 'default'
         self.fontSize = 48
-        self.textSpacing = 10
+        self.textSpacing = 3
         self.textColor = (1,1,1)
         self.scaledFontSize = self.fontSize
         self.scaledTextSpacing = self.textSpacing
@@ -31,6 +31,7 @@ class UiText(GlElement):
         self.prevWindowScale = (0,0)
         self.textBounds = (0,0,0,0)
 
+        self.textRenderScale = 4
         self.textIndices = np.array([1,0,3,3,1,2], dtype='int32')
         self.maxDescender = 0
         self.maxAscender = 0
@@ -90,7 +91,7 @@ class UiText(GlElement):
         self.updateDim()
 
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.textFrameTex)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, int(self.textBounds[2]), int(self.textBounds[3]), 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16F, int(self.textBounds[2]*self.textRenderScale), int(self.textBounds[3]*self.textRenderScale), 0, GL.GL_RGBA, GL.GL_HALF_FLOAT, None)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         
         self.__updateRenderTexture(self.text, self.font)
@@ -125,6 +126,8 @@ class UiText(GlElement):
             maxasc = max(maxasc, ch.ascender*scale)
 
             x += w*scale + self.scaledTextSpacing*scale
+            if c == ' ':
+                x += self.scaledTextSpacing*scale*2
         x -= self.scaledTextSpacing*scale
         widthAspect = x/(maxasc+maxdes)
         
@@ -149,7 +152,7 @@ class UiText(GlElement):
         scale = self.scaledFontSize/48
 
         GL.glUseProgram(Assets.TEXT_SHADER)
-        GL.glViewport(0, 0, int(self.textBounds[2]), int(self.textBounds[3]))
+        GL.glViewport(0, 0, int(self.textBounds[2]*self.textRenderScale), int(self.textBounds[3]*self.textRenderScale))
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.textFrame)
 
         clearColor = GL.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE)
@@ -192,12 +195,14 @@ class UiText(GlElement):
             GL.glDisableVertexAttribArray(0)
             #now advance cursors for next glyph (note that advance is number of 1/64 pixels)
             x += w + self.scaledTextSpacing*scale
+            if c == ' ':
+                x += self.scaledTextSpacing*scale*2
 
         GL.glBindVertexArray(0)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
-        GL.glViewport(0, 0, *self.window.dim)
         GL.glClearColor(*clearColor)
+        GL.glViewport(0, 0, *self.window.dim)
 
     def __updateRenderer(self):
         screenCoords = [
