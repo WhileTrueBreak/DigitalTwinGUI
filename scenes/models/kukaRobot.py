@@ -209,7 +209,7 @@ class KukaRobot:
         return modelId in self.modelKukaIds
 
     def getColors(self):
-        return [self.modelRenderer.getData(i)[0]['color'] for i in self.modelKukaIds]
+        return self.colors
 
     def setPos(self, tmat):
         self.tmat = tmat
