@@ -96,9 +96,8 @@ class Assets:
         Assets.COMPOSITE_SHADER = Assets.linkShaders('res/shaders/3d/compositeVertex.glsl', 'res/shaders/3d/compositeFragment.glsl')
         Assets.CELL_SHADER = Assets.linkShaders('res/shaders/3d/compositeVertex.glsl', 'res/shaders/3d/cellFragment.glsl')
         
-        Assets.VERA_FONT = Assets.loadFont('res/fonts/Vera.ttf')
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF')
-        Assets.FIRACODE_FONT = Assets.loadFont('res/fonts/FiraCode-Retina.ttf')
+        Assets.COMIC_SANS_FONT = Assets.loadFont('res/fonts/comic_sans.ttf')
         Assets.ARIAL_FONT = Assets.loadFont('res/fonts/ARIALNB.TTF',48*64)
 
         Assets.OMNIMOVE = Assets.loadModelFile('res/models/omnimove/KMP200.stl', np.matmul(createTransformationMatrix(0, 0, -0.7, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))

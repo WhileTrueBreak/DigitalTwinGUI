@@ -254,6 +254,11 @@ class UiText(GlElement):
 
     def setTextColor(self, color):
         self.textColor = color
+        self.dirtyText = True
 
     def isFitParent(self, fit):
         self.fitParent = fit
+
+    def setRenderScaling(self, scale):
+        self.textRenderScale = scale
+        self.dirtyText = True
