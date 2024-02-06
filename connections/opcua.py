@@ -66,16 +66,17 @@ class Opcua:
             stop = lambda:True
         rate = 0
         accum = 0
+        start = time.time_ns()
         while not stop():
-            start = time.time_ns()
             try:
                 asyncio.run(Opcua.OpcuaGetData(container, data, client))
             except:
                 return
             time_past = time.time_ns() - start
+            accum += time.time_ns() - start
+            start = time.time_ns()
             time.sleep(max(0, (delay-time_past)/1000000000))
             rate += 1
-            accum += time.time_ns() - start
             if accum >= 10000000000:
                 # print(f'Opcua receiver polling rate: {int(rate/10)}/s')
                 accum -= 10000000000

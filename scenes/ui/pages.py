@@ -19,7 +19,12 @@ class Pages:
         if event['action'] != 'release': return
         if event['obj'] in self.buttonMap:
             self.switchPage(self.buttonMap[event['obj']])
-            
+    
+    def refreshPage(self):
+        if self.currentPage == None: return
+        self.pageWrapper.removeAllChildren()
+        self.pageWrapper.addChild(self.currentPage)
+
     def switchPage(self, page):
         self.currentPage = page
         self.pageWrapper.removeAllChildren()

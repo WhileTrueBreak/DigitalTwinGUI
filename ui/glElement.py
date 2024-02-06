@@ -2,6 +2,7 @@ from ui.constraintManager import *
 
 from abc import abstractmethod
 import OpenGL.GL as GL
+import time
 
 from utils.debug import *
 
@@ -13,6 +14,8 @@ class GlElement:
         self.openGLDim = self.dim
 
         self.renderers = []
+
+        self.lastInteracted = 0
 
         self.children = []
         self.parent = None
@@ -66,15 +69,18 @@ class GlElement:
         if self.window.getHoveredUI() == self:
             self.isDefault = False
             if self.window.mouseButtons[0] and not self.lastMouseState[0]:
+                self.lastInteracted = time.time_ns()
                 self.onPress()
                 self.isPressed = True
                 self.window.uiSelectBuffer.append(self)
             elif not self.window.mouseButtons[0] and self.lastMouseState[0] and self.isPressed:
+                self.lastInteracted = time.time_ns()
                 self.onRelease()
                 self.isPressed = False
             elif not self.window.mouseButtons[0] and not self.lastMouseState[0]:
                 self.onHover()
             else:
+                self.lastInteracted = time.time_ns()
                 self.onHeld()
         elif not self.isDefault:
             self.isPressed = False

@@ -101,6 +101,11 @@ def solveQuadratic(a, b, c):
     d = (b**2-4*a*c)**0.5
     return ((-b+d)/(2*a),(-b-d)/(2*a))
 
+def rad2Deg(radians):
+    return radians * 180 / np.pi
+
+def deg2Rad(degrees):
+    return degrees * np.pi / 180
 
 
 

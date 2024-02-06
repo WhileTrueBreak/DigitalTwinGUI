@@ -15,13 +15,15 @@ from ui.elements.uiWrapper import UiWrapper
 from ui.elements.uiText import UiText
 from ui.constraintManager import *
 from ui.uiHelper import *
-
 from utils.interfaces.pollController import PollController
 from utils.debug import *
+from utils.kukaiiwaIKSolver import ForwardKinematics, InverseKinematics, Configuration
+from utils.mathHelper import rad2Deg, deg2Rad
 
 import numpy as np
 from asyncua import ua
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 
 class KukaRobot:
 
@@ -72,7 +74,8 @@ class KukaRobot:
 
     def __setupConnections(self):
         self.opcuaReceiverContainer = OpcuaContainer()
-        self.jointReceiver = OpcuaReceiver([
+        self.receivers = []
+        self.receivers.append(OpcuaReceiver([
                     self.__getNodeName('d_Joi1'),
                     self.__getNodeName('d_Joi2'),
                     self.__getNodeName('d_Joi3'),
@@ -80,12 +83,12 @@ class KukaRobot:
                     self.__getNodeName('d_Joi5'),
                     self.__getNodeName('d_Joi6'),
                     self.__getNodeName('d_Joi7'),
-                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION)
-        self.forceReceiver = OpcuaReceiver([
+                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION))
+        self.receivers.append(OpcuaReceiver([
                     self.__getNodeName('d_ForX'),
                     self.__getNodeName('d_ForY'),
                     self.__getNodeName('d_ForZ'),
-                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION)
+                ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION))
 
     def update(self, delta):
         self.__updateFromOpcua()
@@ -93,14 +96,19 @@ class KukaRobot:
     
     def __updateFromOpcua(self):
         if not self.isLinkedOpcua: return
+        updateJoint = True
         for i in range(7):
-            if not self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_Joi{i+1}')): continue
-            self.joints[i] = radians(self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_Joi{i+1}'), default=0)[0])
-        if self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForX')):
+            if not self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_Joi{i+1}')):
+                updateJoint = False
+        if updateJoint:
+            for i in range(7):
+                self.joints[i] = radians(self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_Joi{i+1}'), default=0)[0])
+        
+        if (self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForX')) and
+            self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForY')) and
+            self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForZ'))):
             self.forceVector[0] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForX'), default=0)[0]
-        if self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForY')):
             self.forceVector[1] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForY'), default=0)[0]
-        if self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForZ')):
             self.forceVector[2] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForZ'), default=0)[0]
 
     def __updateJoints(self):
@@ -147,13 +155,11 @@ class KukaRobot:
     @timing
     def start(self):
         if not self.isLinkedOpcua:return
-        self.jointReceiver.start()
-        self.forceReceiver.start()
+        for r in self.receivers: r.start()
 
     @timing
     def stop(self):
-        self.jointReceiver.stop()
-        self.forceReceiver.stop()
+        for r in self.receivers: r.stop()
 
     def __DH(self, DH_table):
         T_0_ = np.ndarray(shape=(len(DH_table)+1,4,4))
@@ -165,10 +171,10 @@ class KukaRobot:
             d = DH_table[i][2]
             the = DH_table[i][3]
 
-            T = np.array([[np.cos(the),-np.sin(the),0,a],
-                [np.sin(the)*np.cos(alp),np.cos(the)*np.cos(alp),-np.sin(alp),-np.sin(alp)*d],
-                [np.sin(the)*np.sin(alp),np.cos(the)*np.sin(alp),np.cos(alp),np.cos(alp)*d],
-                [0,0,0,1]])
+            T = np.array([[np.cos(the)            ,-np.sin(the)           ,0           ,a             ],
+                          [np.sin(the)*np.cos(alp),np.cos(the)*np.cos(alp),-np.sin(alp),-np.sin(alp)*d],
+                          [np.sin(the)*np.sin(alp),np.cos(the)*np.sin(alp),np.cos(alp) ,np.cos(alp)*d ],
+                          [0                      ,0                      ,0           ,1             ]])
 
             T_0_[:][:][i+1] = np.matmul(T_0_[:][:][i],T)
             T_i_[:][:][i] = T
@@ -223,6 +229,9 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
 
     FREE_MOVE_PROG = 2
 
+    FOWARD_KINEMATICS = 0
+    INVERSE_KINEMATICS = 1
+
     def __init__(self, window, tmat, nid, rid, modelRenderer, hasGripper=True, hasForceVector=False):
         self.liveRobot = KukaRobot(tmat, nid, rid, modelRenderer, hasGripper, hasForceVector)
         self.twinRobot = KukaRobot(tmat, nid, rid, modelRenderer, hasGripper, False)
@@ -231,7 +240,19 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         self.nodeId = nid
         self.robotId = rid
 
+        self.mode = KukaRobotTwin.FOWARD_KINEMATICS
+
+        self.liveJoints = self.liveRobot.getJoints().copy()
         self.twinJoints = self.twinRobot.getJoints().copy()
+
+        self.twinPose = np.identity(4)
+        self.twinNSParam = None
+        self.twinTurn = None
+        self.livePose = np.identity(4)
+        self.liveNSParam = None
+        self.liveTurn = None
+
+        self.hasMoved = True
 
         self.twinRobot.disconnectOpcua()
 
@@ -263,6 +284,29 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         self.pages.addPage()
         self.pages.addPage()
         self.pages.addPage()
+
+        self.sendBtn, self.sendBtnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.5, 0.9, 0.5, 0.1, 5))
+        self.sendBtnText.setText('Execute')
+        self.sendBtnText.setFontSize(20)
+        self.sendBtnText.setTextSpacing(8)
+        self.sendBtn.setDefaultColor((0,109/255,174/255))
+        self.sendBtn.setHoverColor((0,159/255,218/255))
+        self.sendBtn.setPressColor((0,172/255,62/255))
+        self.sendBtn.setLockColor((0.6, 0.6, 0.6))
+        
+        self.unlinkBtn, self.unlinkBtnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.0, 0.9, 0.5, 0.1, 5))
+        self.unlinkBtnText.setText('Unlink')
+        self.unlinkBtnText.setFontSize(20)
+        self.unlinkBtnText.setTextSpacing(8)
+        self.unlinkBtn.setDefaultColor((0,109/255,174/255))
+        self.unlinkBtn.setHoverColor((0,159/255,218/255))
+        self.unlinkBtn.setPressColor((0,172/255,62/255))
+        self.unlinkBtn.setLockColor((0.6, 0.6, 0.6))
+
+        self.__createPage0()
+        self.__createPage1()
+    
+    def __createPage0(self):
         self.page0 = self.pages.getPage(0)
         self.p0title = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0.5, 0.05))
         self.p0title.setText('Joint Control')
@@ -270,23 +314,22 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         self.p0title.setFontSize(28)
         self.page0.addChild(self.p0title)
 
-        self.selecterWrappers = [None]*7
-        padding = 5
-        for i in range(len(self.selecterWrappers)):
-            self.selecterWrappers[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0, 0.1*i+0.1, 1, 0.1, padding))
-        self.page0.addChildren(*self.selecterWrappers)
+        self.P0Wrappers = [None]*7
+        for i in range(len(self.P0Wrappers)):
+            self.P0Wrappers[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0, 0.1*i+0.1, 1, 0.1, 5))
+        self.page0.addChildren(*self.P0Wrappers)
 
-        self.liveTextWrapper = [None]*len(self.selecterWrappers)
-        self.liveAngleText = [None]*len(self.selecterWrappers)
-        self.twinTextWrapper = [None]*len(self.selecterWrappers)
-        self.twinAngleText = [None]*len(self.selecterWrappers)
+        self.liveTextWrapper = [None]*len(self.P0Wrappers)
+        self.liveAngleText = [None]*len(self.P0Wrappers)
+        self.twinTextWrapper = [None]*len(self.P0Wrappers)
+        self.twinAngleText = [None]*len(self.P0Wrappers)
 
-        self.angleSlider = [None]*len(self.selecterWrappers)
-        for i in range(len(self.selecterWrappers)):
+        self.jointAngleSlider = [None]*len(self.P0Wrappers)
+        for i in range(len(self.P0Wrappers)):
             self.liveTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0.5, 0.5))
             self.twinTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0.5, 0, 0.5, 0.5))
-            self.selecterWrappers[i].addChild(self.liveTextWrapper[i])
-            self.selecterWrappers[i].addChild(self.twinTextWrapper[i])
+            self.P0Wrappers[i].addChild(self.liveTextWrapper[i])
+            self.P0Wrappers[i].addChild(self.twinTextWrapper[i])
             self.liveAngleText[i] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
             self.liveAngleText[i].setFontSize(18)
             self.liveAngleText[i].setTextSpacing(7)
@@ -295,50 +338,138 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
             self.twinAngleText[i].setTextSpacing(7)
             self.liveTextWrapper[i].addChild(self.liveAngleText[i])
             self.twinTextWrapper[i].addChild(self.twinAngleText[i])
-            self.angleSlider[i] = UiSlider(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 1, 0.5))
-            self.angleSlider[i].setRange(-pi, pi)
-            self.angleSlider[i].setBaseColor((1,1,1))
-            self.angleSlider[i].setSliderColor((0,109/255,174/255))
-            self.angleSlider[i].setSliderPercentage(0.05)
-            self.selecterWrappers[i].addChild(self.angleSlider[i])
-        self.sendBtn, self.sendBtnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.5, 0.9, 0.5, 0.1, padding))
-        self.sendBtnText.setText('Execute')
-        self.sendBtnText.setFontSize(20)
-        self.sendBtnText.setTextSpacing(8)
-        self.sendBtn.setDefaultColor((0,109/255,174/255))
-        self.sendBtn.setHoverColor((0,159/255,218/255))
-        self.sendBtn.setPressColor((0,172/255,62/255))
-        self.sendBtn.setLockColor((0.6, 0.6, 0.6))
-        self.page0.addChild(self.sendBtn)
+            self.jointAngleSlider[i] = UiSlider(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 1, 0.5))
+            self.jointAngleSlider[i].setRange(-pi, pi)
+            self.jointAngleSlider[i].setBaseColor((1,1,1))
+            self.jointAngleSlider[i].setSliderColor((0,109/255,174/255))
+            self.jointAngleSlider[i].setSliderPercentage(0.05)
+            self.P0Wrappers[i].addChild(self.jointAngleSlider[i])
         
-        constraints = [
-            COMPOUND(RELATIVE(T_X, 0, P_W), ABSOLUTE(T_X, padding)),
-            COMPOUND(RELATIVE(T_Y, 0.9, P_H), ABSOLUTE(T_Y, padding)),
-            COMPOUND(RELATIVE(T_W, 0.5, P_W), ABSOLUTE(T_W, -2*padding)),
-            COMPOUND(RELATIVE(T_H, 0.1, P_H), ABSOLUTE(T_H, -2*padding)),
-        ]
-        self.unlinkBtn, self.unlinkBtnText = centeredTextButton(self.window, constraints)
-        self.unlinkBtnText.setText('Unlink')
-        self.unlinkBtnText.setFontSize(20)
-        self.unlinkBtnText.setTextSpacing(8)
-        self.unlinkBtn.setDefaultColor((0,109/255,174/255))
-        self.unlinkBtn.setHoverColor((0,159/255,218/255))
-        self.unlinkBtn.setPressColor((0,172/255,62/255))
-        self.unlinkBtn.setLockColor((0.6, 0.6, 0.6))
+        self.page0.addChild(self.sendBtn)
         self.page0.addChild(self.unlinkBtn)
 
+    def __createPage1(self):
+        self.page1 = self.pages.getPage(1)
+        self.p1title = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0.5, 0.05))
+        self.p1title.setText('Inverse Kinematics')
+        self.p1title.setTextColor((1,1,1))
+        self.p1title.setFontSize(28)
+        self.page1.addChild(self.p1title)
+
+        self.P1Wrappers = [None]*7
+        for i in range(len(self.P1Wrappers)):
+            self.P1Wrappers[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0, 0.1*i+0.1, 1, 0.1, 5))
+        self.page1.addChildren(*self.P1Wrappers)
+
+        self.liveTextWrapper = [None]*7
+        self.livePosText = [None]*3
+        self.twinTextWrapper = [None]*7
+        self.twinPosText = [None]*3
+
+        for i in range(3):
+            self.liveTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0.5, 0.5))
+            self.twinTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0.5, 0, 0.5, 0.5))
+            self.P1Wrappers[i].addChild(self.liveTextWrapper[i])
+            self.P1Wrappers[i].addChild(self.twinTextWrapper[i])
+            self.livePosText[i] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
+            self.livePosText[i].setFontSize(18)
+            self.livePosText[i].setTextSpacing(7)
+            self.twinPosText[i] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
+            self.twinPosText[i].setFontSize(18)
+            self.twinPosText[i].setTextSpacing(7)
+            self.liveTextWrapper[i].addChild(self.livePosText[i])
+            self.twinTextWrapper[i].addChild(self.twinPosText[i])
+
+        self.liveRotText = [None]*3
+        self.twinRotText = [None]*3
+        self.rotSlider = [None]*3
+        for i in range(3, 6):
+            self.liveTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0.5, 0.5))
+            self.twinTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0.5, 0, 0.5, 0.5))
+            self.P1Wrappers[i].addChild(self.liveTextWrapper[i])
+            self.P1Wrappers[i].addChild(self.twinTextWrapper[i])
+            self.liveRotText[i-3] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
+            self.liveRotText[i-3].setFontSize(18)
+            self.liveRotText[i-3].setTextSpacing(7)
+            self.twinRotText[i-3] = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
+            self.twinRotText[i-3].setFontSize(18)
+            self.twinRotText[i-3].setTextSpacing(7)
+            self.liveTextWrapper[i].addChild(self.liveRotText[i-3])
+            self.twinTextWrapper[i].addChild(self.twinRotText[i-3])
+            self.rotSlider[i-3] = UiSlider(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 1, 0.5))
+            self.rotSlider[i-3].setRange(-pi, pi)
+            self.rotSlider[i-3].setBaseColor((1,1,1))
+            self.rotSlider[i-3].setSliderColor((0,109/255,174/255))
+            self.rotSlider[i-3].setSliderPercentage(0.05)
+            self.P1Wrappers[i].addChild(self.rotSlider[i-3])
+        self.rotSlider[1].setRange(-pi/2, pi/2)
+
+        self.liveTextWrapper[6] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0.5, 0.5))
+        self.twinTextWrapper[6] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0.5, 0, 0.5, 0.5))
+        self.P1Wrappers[6].addChild(self.liveTextWrapper[6])
+        self.P1Wrappers[6].addChild(self.twinTextWrapper[6])
+        self.liveNSParamText = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
+        self.liveNSParamText.setFontSize(18)
+        self.liveNSParamText.setTextSpacing(7)
+        self.twinNSParamText = UiText(self.window, Constraints.ALIGN_CENTER_PERCENTAGE(0, 0.5))
+        self.twinNSParamText.setFontSize(18)
+        self.twinNSParamText.setTextSpacing(7)
+        self.liveTextWrapper[6].addChild(self.liveNSParamText)
+        self.twinTextWrapper[6].addChild(self.twinNSParamText)
+        self.NSParamSlider = UiSlider(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 1, 0.5))
+        self.NSParamSlider.setRange(-pi, pi)
+        self.NSParamSlider.setBaseColor((1,1,1))
+        self.NSParamSlider.setSliderColor((0,109/255,174/255))
+        self.NSParamSlider.setSliderPercentage(0.05)
+        self.P1Wrappers[6].addChild(self.NSParamSlider)
+
+        self.armTurnBtn, self.armTurnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0/3, 0.8, 1/3, 0.1, 5))
+        self.armTurnText.setFontSize(17)
+        self.armTurnText.setTextSpacing(7)
+        self.armTurnBtn.setDefaultColor((0,109/255,174/255))
+        self.armTurnBtn.setHoverColor((0,159/255,218/255))
+        self.armTurnBtn.setPressColor((0,172/255,62/255))
+        self.armTurnBtn.setLockColor((0.6, 0.6, 0.6))
+
+        self.elbowTurnBtn, self.elbowTurnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(1/3, 0.8, 1/3, 0.1, 5))
+        self.elbowTurnText.setFontSize(18)
+        self.elbowTurnText.setTextSpacing(7)
+        self.elbowTurnBtn.setDefaultColor((0,109/255,174/255))
+        self.elbowTurnBtn.setHoverColor((0,159/255,218/255))
+        self.elbowTurnBtn.setPressColor((0,172/255,62/255))
+        self.elbowTurnBtn.setLockColor((0.6, 0.6, 0.6))
+
+        self.wristTurnBtn, self.wristTurnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(2/3, 0.8, 1/3, 0.1, 5))
+        self.wristTurnText.setFontSize(18)
+        self.wristTurnText.setTextSpacing(7)
+        self.wristTurnBtn.setDefaultColor((0,109/255,174/255))
+        self.wristTurnBtn.setHoverColor((0,159/255,218/255))
+        self.wristTurnBtn.setPressColor((0,172/255,62/255))
+        self.wristTurnBtn.setLockColor((0.6, 0.6, 0.6)) 
+
+        self.page1.addChild(self.armTurnBtn)
+        self.page1.addChild(self.elbowTurnBtn)
+        self.page1.addChild(self.wristTurnBtn)
+
+        # self.page1.addChild(self.sendBtn)
+        # self.page1.addChild(self.unlinkBtn)
+
+    @timing
     def update(self, delta):
         self.liveRobot.update(delta)
         self.twinRobot.update(delta)
-        self.__updateJoints()
+        if not np.array_equal(self.liveJoints, self.liveRobot.getJoints()): self.hasMoved = True
+
         self.__updateProgram()
+
+        self.liveJoints = self.liveRobot.getJoints().copy()
+        self.__syncModes()
+        self.__syncLive()
+        self.__updateMode()
         self.__updateGui()
-
-    def __updateJoints(self):
-        if self.matchLive:
-            self.twinJoints = self.liveRobot.getJoints().copy()
-        self.twinRobot.setJoints(self.twinJoints)
-
+        self.__updateJoints()
+        self.hasMoved = False
+    
     def __updateProgram(self):
         if not self.opcuaReceiverContainer.getValue(self.__getNodeName('f_Ready'), default=False)[0]:
             self.sendBtn.lock()
@@ -367,16 +498,111 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
             self.__updateTwinColor()
         elif self.opcuaReceiverContainer.getValue(self.__getNodeName('f_Ready'), default=False)[0]:
             self.sendBtn.unlock()
+    
+    @timing
+    def __syncModes(self):
+        if self.matchLive: return
+        if self.mode == KukaRobotTwin.FOWARD_KINEMATICS:
+            for i in range(7):
+                self.twinJoints[i] = self.jointAngleSlider[i].getValue()
+            try:
+                self.twinPose, self.twinNSParam, self.twinTurn, _ = ForwardKinematics(self.twinJoints)
+            except:
+                pass
+        elif self.mode == KukaRobotTwin.INVERSE_KINEMATICS:
+            r = R.from_euler('xyz',[
+                self.rotSlider[2].getValue(),
+                self.rotSlider[1].getValue(),
+                self.rotSlider[0].getValue()],degrees=False)
+            self.twinPose[:3,:3] = r.as_matrix()
+            self.twinNSParam = self.NSParamSlider.getValue()
+            try:
+                self.twinJoints, _, _ = InverseKinematics(self.twinPose, self.twinNSParam, self.twinTurn)
+            except:
+                try:
+                    self.twinPose, self.twinNSParam, self.twinTurn, _ = ForwardKinematics(self.twinJoints)
+                except:
+                    pass
+                pass
 
+    @timing
+    def __syncLive(self):
+        if not self.matchLive: return
+        self.mode = KukaRobotTwin.FOWARD_KINEMATICS
+        if self.matchLive:
+            self.twinJoints = self.liveRobot.getJoints().copy()
+        try:
+            self.livePose, self.liveNSParam, self.liveTurn, _ = ForwardKinematics(self.liveJoints)
+            self.twinPose = self.livePose.copy()
+            self.twinNSParam = self.liveNSParam
+            self.twinTurn = self.liveTurn
+        except AssertionError as msg: 
+            pass
+        except Exception as error:
+            print(error)
+            pass
+        # for i in range(len(self.P0Wrappers)):
+        #     self.jointAngleSlider[i].setValue(self.twinJoints[i])
+
+    @timing
     def __updateGui(self):
-        for i in range(len(self.selecterWrappers)):
-            self.liveAngleText[i].setText(f'Live: {int(self.liveRobot.getJoints()[i]*180/pi)}')
-            if not self.matchLive:
-                twinText = self.angleSlider[i].getValue()
-                self.twinJoints[i] = float(twinText)
-            else:
-                self.angleSlider[i].setValue(self.twinJoints[i])
-            self.twinAngleText[i].setText(f'Twin: {int(self.twinRobot.getJoints()[i]*180/pi)}')
+        for i in range(len(self.P0Wrappers)):
+            self.jointAngleSlider[i].setValue(self.twinJoints[i])
+            self.liveAngleText[i].setText(f'Live: {round(self.liveJoints[i]*180/pi)}')
+            self.twinAngleText[i].setText(f'Twin: {round(self.twinJoints[i]*180/pi)}')
+        
+        if self.twinPose is not None and self.twinNSParam is not None and self.twinTurn is not None:
+            self.twinNSParamText.setText(f'Twin R: {round(rad2Deg(self.twinNSParam))}')
+            self.twinPosText[0].setText(f'Twin X: {round(self.twinPose[0,3]*1000)}')
+            self.twinPosText[1].setText(f'Twin Y: {round(self.twinPose[1,3]*1000)}')
+            self.twinPosText[2].setText(f'Twin Z: {round(self.twinPose[2,3]*1000)}')
+
+            # A = np.arctan2(self.twinPose[1,0], self.twinPose[0,0])
+            # B = np.arctan2(-self.twinPose[2,0], np.sqrt(self.twinPose[2,1]**2+self.twinPose[2,2]**2))
+            # C = np.arctan2(self.twinPose[2,1], self.twinPose[2,2])
+
+            r = R.from_matrix(self.twinPose[:3,:3])
+            C, B, A = r.as_euler('xyz', degrees=False)
+
+            self.twinRotText[0].setText(f'Live A: {round(rad2Deg(A))}')
+            self.twinRotText[1].setText(f'Live B: {round(rad2Deg(B))}')
+            self.twinRotText[2].setText(f'Live C: {round(rad2Deg(C))}')
+            
+            self.rotSlider[0].setValue(A or 0)
+            self.rotSlider[1].setValue(B or 0)
+            self.rotSlider[2].setValue(C or 0)
+            self.NSParamSlider.setValue(self.twinNSParam or 0)
+
+        if self.livePose is not None and self.liveNSParam is not None and self.liveTurn is not None:
+            arm, elbow, wrist = Configuration(self.liveTurn)
+            self.liveNSParamText.setText(f'Live R: {round(rad2Deg(self.liveNSParam))}')
+            self.livePosText[0].setText(f'Live X: {round(self.livePose[0,3]*1000)}')
+            self.livePosText[1].setText(f'Live Y: {round(self.livePose[1,3]*1000)}')
+            self.livePosText[2].setText(f'Live Z: {round(self.livePose[2,3]*1000)}')
+
+            self.armTurnText.setText(f'Arm: {arm}')
+            self.elbowTurnText.setText(f'Elbow: {elbow}')
+            self.wristTurnText.setText(f'Wrist: {wrist}')
+
+            A = np.arctan2(self.livePose[1,0], self.livePose[0,0])
+            B = np.arcsin(-self.livePose[2,0])
+            C = np.arctan2(self.livePose[2,1], self.livePose[2,2])
+
+            self.liveRotText[0].setText(f'Live A: {round(rad2Deg(A))}')
+            self.liveRotText[1].setText(f'Live B: {round(rad2Deg(B))}')
+            self.liveRotText[2].setText(f'Live C: {round(rad2Deg(C))}')
+    
+    def __updateJoints(self):
+        self.twinRobot.setJoints(self.twinJoints)
+
+    def __updateMode(self):
+        li = lambda x:x.lastInteracted
+        li1 = max(map(li, self.jointAngleSlider))
+        li2 = max(max(map(li, self.rotSlider)), li(self.NSParamSlider))
+        if li1 > li2:
+            self.mode = KukaRobotTwin.FOWARD_KINEMATICS
+        else:
+            self.mode = KukaRobotTwin.INVERSE_KINEMATICS
 
     def handleEvents(self, event):
         self.pages.handleEvents(event)
@@ -413,6 +639,7 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         self.transmitter.stop()
 
     def getControlPanel(self):
+        self.pages.refreshPage()
         return self.pages.getPageWrapper()
 
     def __isTransmitClear(self):

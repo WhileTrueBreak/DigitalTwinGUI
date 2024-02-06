@@ -163,35 +163,35 @@ class DigitalTwinLab(Scene):
         self.models.append(base)
         self.models.append(arm)
         
-        # ROBOT 4 - MSM Testing ROBOT
-        base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(14, 2.5, 0.89, 0, 0, 0))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=False)
-        arm.setLiveColors([(1, 1, 0, 0.7)for i in range(9)])
-        arm.setTwinColors([(1, 1, 153/255, 0.0)for i in range(9)])
-        arm.setAttach(base)
-        self.bases.append(base)
-        self.models.append(base)
-        self.models.append(arm)
+        # # ROBOT 4 - MSM Testing ROBOT
+        # base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(14, 2.5, 0.89, 0, 0, 0))
+        # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=False)
+        # arm.setLiveColors([(1, 1, 0, 0.7)for i in range(9)])
+        # arm.setTwinColors([(1, 1, 153/255, 0.0)for i in range(9)])
+        # arm.setAttach(base)
+        # self.bases.append(base)
+        # self.models.append(base)
+        # self.models.append(arm)
 
-        # ROBOT 1 - Moblie 1
-        base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(13, 1, 0.9, 0, 0, -90))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 21, 'R1', self.modelRenderer, hasForceVector=True, hasGripper=True)
-        arm.setLiveColors([(0, 1, 0, 0.7)for i in range(9)])
-        arm.setTwinColors([(102/255, 1, 178/255, 0.0)for i in range(9)])
-        arm.setAttach(base)
-        self.bases.append(base)
-        self.models.append(base)
-        self.models.append(arm)
+        # # ROBOT 1 - Moblie 1
+        # base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(13, 1, 0.9, 0, 0, -90))
+        # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 21, 'R1', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        # arm.setLiveColors([(0, 1, 0, 0.7)for i in range(9)])
+        # arm.setTwinColors([(102/255, 1, 178/255, 0.0)for i in range(9)])
+        # arm.setAttach(base)
+        # self.bases.append(base)
+        # self.models.append(base)
+        # self.models.append(arm)
         
-        # ROBOT 2 - Moblie 2
-        base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(14.2, 1, 0.9, 0, 0, 0))
-        arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
-        arm.setLiveColors([(0, 0.5, 1.0, 0.7)for i in range(9)])
-        arm.setTwinColors([(153/255, 153/255, 1, 0.0)for i in range(9)])
-        arm.setAttach(base)
-        self.bases.append(base)
-        self.models.append(base)
-        self.models.append(arm)
+        # # ROBOT 2 - Moblie 2
+        # base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(14.2, 1, 0.9, 0, 0, 0))
+        # arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        # arm.setLiveColors([(0, 0.5, 1.0, 0.7)for i in range(9)])
+        # arm.setTwinColors([(153/255, 153/255, 1, 0.0)for i in range(9)])
+        # arm.setAttach(base)
+        # self.bases.append(base)
+        # self.models.append(base)
+        # self.models.append(arm)
 
     def __addFurniture(self):
         self.models.append(SimpleModel(self.modelRenderer, Assets.SHELF, createTransformationMatrix(16.70,3.6,0,0,0,-90)))
