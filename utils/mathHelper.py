@@ -107,6 +107,11 @@ def rad2Deg(radians):
 def deg2Rad(degrees):
     return degrees * np.pi / 180
 
+def setBit(num, bit, bitValue):
+    if bitValue:
+        return num|(1<<bit)
+    else:
+        return num&~(1<<bit)
 
 
 

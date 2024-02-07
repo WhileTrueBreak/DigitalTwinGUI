@@ -365,7 +365,7 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         self.livePosText = [None]*3
         self.twinTextWrapper = [None]*7
         self.twinPosText = [None]*3
-
+        self.posSlider = [None]*3
         for i in range(3):
             self.liveTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0, 0, 0.5, 0.5))
             self.twinTextWrapper[i] = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE(0.5, 0, 0.5, 0.5))
@@ -379,6 +379,15 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
             self.twinPosText[i].setTextSpacing(7)
             self.liveTextWrapper[i].addChild(self.livePosText[i])
             self.twinTextWrapper[i].addChild(self.twinPosText[i])
+            self.posSlider[i] = UiSlider(self.window, Constraints.ALIGN_PERCENTAGE(0, 0.5, 1, 0.5))
+            self.posSlider[i].setBaseColor((1,1,1))
+            self.posSlider[i].setSliderColor((0,109/255,174/255))
+            self.posSlider[i].setSliderPercentage(0.05)
+            self.P1Wrappers[i].addChild(self.posSlider[i])
+        
+        self.posSlider[0].setRange(-(0.42+0.4+0.15194),0.42+0.4+0.15194)
+        self.posSlider[1].setRange(-(0.42+0.4+0.15194),0.42+0.4+0.15194)
+        self.posSlider[2].setRange(-(0.42+0.4+0.15194)+0.36,0.42+0.4+0.15194+0.36)
 
         self.liveRotText = [None]*3
         self.twinRotText = [None]*3
@@ -423,28 +432,25 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         self.NSParamSlider.setSliderPercentage(0.05)
         self.P1Wrappers[6].addChild(self.NSParamSlider)
 
-        self.armTurnBtn, self.armTurnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0/3, 0.8, 1/3, 0.1, 5))
+        self.armTurnBtn, self.armTurnText = centeredTextToggleButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0/3, 0.8, 1/3, 0.1, 5))
         self.armTurnText.setFontSize(17)
         self.armTurnText.setTextSpacing(7)
-        self.armTurnBtn.setDefaultColor((0,109/255,174/255))
-        self.armTurnBtn.setHoverColor((0,159/255,218/255))
-        self.armTurnBtn.setPressColor((0,172/255,62/255))
+        self.armTurnBtn.setUntoggleColor((0,109/255,174/255))
+        self.armTurnBtn.setToggleColor((0,69/255,134/255))
         self.armTurnBtn.setLockColor((0.6, 0.6, 0.6))
 
-        self.elbowTurnBtn, self.elbowTurnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(1/3, 0.8, 1/3, 0.1, 5))
+        self.elbowTurnBtn, self.elbowTurnText = centeredTextToggleButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(1/3, 0.8, 1/3, 0.1, 5))
         self.elbowTurnText.setFontSize(18)
         self.elbowTurnText.setTextSpacing(7)
-        self.elbowTurnBtn.setDefaultColor((0,109/255,174/255))
-        self.elbowTurnBtn.setHoverColor((0,159/255,218/255))
-        self.elbowTurnBtn.setPressColor((0,172/255,62/255))
+        self.elbowTurnBtn.setUntoggleColor((0,109/255,174/255))
+        self.elbowTurnBtn.setToggleColor((0,69/255,134/255))
         self.elbowTurnBtn.setLockColor((0.6, 0.6, 0.6))
 
-        self.wristTurnBtn, self.wristTurnText = centeredTextButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(2/3, 0.8, 1/3, 0.1, 5))
+        self.wristTurnBtn, self.wristTurnText = centeredTextToggleButton(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(2/3, 0.8, 1/3, 0.1, 5))
         self.wristTurnText.setFontSize(18)
-        self.wristTurnText.setTextSpacing(7)
-        self.wristTurnBtn.setDefaultColor((0,109/255,174/255))
-        self.wristTurnBtn.setHoverColor((0,159/255,218/255))
-        self.wristTurnBtn.setPressColor((0,172/255,62/255))
+        self.wristTurnText.setTextSpacing(7)    
+        self.wristTurnBtn.setUntoggleColor((0,109/255,174/255))
+        self.wristTurnBtn.setToggleColor((0,69/255,134/255))
         self.wristTurnBtn.setLockColor((0.6, 0.6, 0.6)) 
 
         self.page1.addChild(self.armTurnBtn)
@@ -514,7 +520,14 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
                 self.rotSlider[1].getValue(),
                 self.rotSlider[0].getValue()],degrees=False)
             self.twinPose[:3,:3] = r.as_matrix()
+            self.twinPose[0,3] = self.posSlider[0].getValue()
+            self.twinPose[1,3] = self.posSlider[1].getValue()
+            self.twinPose[2,3] = self.posSlider[2].getValue()
             self.twinNSParam = self.NSParamSlider.getValue()
+            self.twinTurn = setBit(self.twinTurn, 0, self.armTurnBtn.isToggled())
+            self.twinTurn = setBit(self.twinTurn, 1, self.elbowTurnBtn.isToggled())
+            self.twinTurn = setBit(self.twinTurn, 2, self.wristTurnBtn.isToggled())
+
             try:
                 self.twinJoints, _, _ = InverseKinematics(self.twinPose, self.twinNSParam, self.twinTurn)
             except:
@@ -553,12 +566,16 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
             self.twinPosText[1].setText(f'Twin Y: {round(self.twinPose[1,3]*1000)}')
             self.twinPosText[2].setText(f'Twin Z: {round(self.twinPose[2,3]*1000)}')
 
-            # A = np.arctan2(self.twinPose[1,0], self.twinPose[0,0])
-            # B = np.arctan2(-self.twinPose[2,0], np.sqrt(self.twinPose[2,1]**2+self.twinPose[2,2]**2))
-            # C = np.arctan2(self.twinPose[2,1], self.twinPose[2,2])
-
             r = R.from_matrix(self.twinPose[:3,:3])
             C, B, A = r.as_euler('xyz', degrees=False)
+
+            arm, elbow, wrist = Configuration(self.twinTurn)
+            self.armTurnText.setText(f'Arm: {arm}')
+            self.elbowTurnText.setText(f'Elbow: {elbow}')
+            self.wristTurnText.setText(f'Wrist: {wrist}')
+            self.armTurnBtn.setToggle(arm != 1)
+            self.elbowTurnBtn.setToggle(elbow != 1)
+            self.wristTurnBtn.setToggle(wrist != 1)
 
             self.twinRotText[0].setText(f'Live A: {round(rad2Deg(A))}')
             self.twinRotText[1].setText(f'Live B: {round(rad2Deg(B))}')
@@ -567,18 +584,16 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
             self.rotSlider[0].setValue(A or 0)
             self.rotSlider[1].setValue(B or 0)
             self.rotSlider[2].setValue(C or 0)
+            self.posSlider[0].setValue(self.twinPose[0,3])
+            self.posSlider[1].setValue(self.twinPose[1,3])
+            self.posSlider[2].setValue(self.twinPose[2,3])
             self.NSParamSlider.setValue(self.twinNSParam or 0)
 
         if self.livePose is not None and self.liveNSParam is not None and self.liveTurn is not None:
-            arm, elbow, wrist = Configuration(self.liveTurn)
             self.liveNSParamText.setText(f'Live R: {round(rad2Deg(self.liveNSParam))}')
             self.livePosText[0].setText(f'Live X: {round(self.livePose[0,3]*1000)}')
             self.livePosText[1].setText(f'Live Y: {round(self.livePose[1,3]*1000)}')
             self.livePosText[2].setText(f'Live Z: {round(self.livePose[2,3]*1000)}')
-
-            self.armTurnText.setText(f'Arm: {arm}')
-            self.elbowTurnText.setText(f'Elbow: {elbow}')
-            self.wristTurnText.setText(f'Wrist: {wrist}')
 
             A = np.arctan2(self.livePose[1,0], self.livePose[0,0])
             B = np.arcsin(-self.livePose[2,0])
@@ -594,7 +609,12 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
     def __updateMode(self):
         li = lambda x:x.lastInteracted
         li1 = max(map(li, self.jointAngleSlider))
-        li2 = max(max(map(li, self.rotSlider)), li(self.NSParamSlider))
+        li2 = max(max(map(li, self.rotSlider)), 
+                  max(map(li, self.posSlider)), 
+                  li(self.NSParamSlider),
+                  li(self.armTurnBtn),
+                  li(self.elbowTurnBtn),
+                  li(self.wristTurnBtn))
         if li1 > li2:
             self.mode = KukaRobotTwin.FOWARD_KINEMATICS
         else:
@@ -617,7 +637,6 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         self.unlinkBtnText.setText('Unlink' if self.matchLive else 'Link')
         self.hasMoved = True
         self.__updateTwinColor()
-
 
     def setLiveColors(self, colors):
         self.liveRobot.setColors(colors)
