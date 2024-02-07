@@ -19,7 +19,6 @@ def Configuration(rconf):
 
     return arm, elbow, wrist
 
-@timing
 def ForwardKinematics(joints):
     # Tolerance
     tol = 1e-8
@@ -100,7 +99,6 @@ def ForwardKinematics(joints):
 
     return pose, nsparam, rconf, jout
 
-@timing
 def InverseKinematics(pose, nsparam, rconf):
     arm, elbow, wrist = Configuration(rconf)
 
