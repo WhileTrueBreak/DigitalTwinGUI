@@ -652,6 +652,7 @@ class Renderer:
             funclog(f't3: {(time.time_ns()-s)/1000} us')
 
         ##### CELL SHADING #####
+        s = time.time_ns()
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
         GL.glUseProgram(Assets.CELL_SHADER)
 
@@ -664,6 +665,7 @@ class Renderer:
         GL.glUniform1i(GL.glGetUniformLocation(Assets.CELL_SHADER, "picking"), 1)
         GL.glBindVertexArray(self.quadVAO)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
+        funclog(f't4: {(time.time_ns()-s)/1000} us')
 
         s = time.time_ns()
         # reset states
