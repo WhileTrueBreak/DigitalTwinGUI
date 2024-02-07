@@ -161,6 +161,7 @@ class BatchRenderer:
         GL.glBindVertexArray(0)
         self.isDirty = False
 
+    @timing
     def render(self):
         # print(f"trans:{self.isTransparent} | dirty:{self.isDirty} | size:{self.currentIndex} | tex:{len(self.textures)}")
 
