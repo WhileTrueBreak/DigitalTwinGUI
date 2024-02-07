@@ -573,7 +573,7 @@ class Renderer:
 
     @timing
     def render(self):
-
+        s = time.time_ns()
         # remember previous values
         depthFunc = GL.glGetIntegerv(GL.GL_DEPTH_FUNC)
         depthTest = GL.glGetIntegerv(GL.GL_DEPTH_TEST)
@@ -595,6 +595,8 @@ class Renderer:
         GL.glClearBufferfv(GL.GL_COLOR, 0, self.backClear)
         GL.glClearBufferfv(GL.GL_COLOR, 1, self.pickingClear)
         bidLoc = GL.glGetUniformLocation(self.opaqueShader, "batchId")
+
+        funclog(f't1: {(time.time_ns()-s)/1000} us')
 
         for batch in self.solidBatch:
             GL.glUniform1ui(bidLoc, self.batches.index(batch)+1)
