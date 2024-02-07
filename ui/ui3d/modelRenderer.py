@@ -603,6 +603,7 @@ class Renderer:
             batch.render()
 
         if self.supportTransparency:
+            s = time.time_ns()
             # config states
             GL.glDepthMask(GL.GL_FALSE)
             GL.glEnable(GL.GL_BLEND)
@@ -617,9 +618,13 @@ class Renderer:
             GL.glClearBufferfv(GL.GL_COLOR, 1, self.revealClear)
             bidLoc = GL.glGetUniformLocation(self.transparentShader, "batchId")
 
+            funclog(f't2: {(time.time_ns()-s)/1000} us')
+
             for batch in self.transparentBatch:
                 GL.glUniform1ui(bidLoc, self.batches.index(batch)+1)
                 batch.render()
+            
+            s = time.time_ns()
 
             # config states
             GL.glDepthMask(GL.GL_TRUE)
@@ -644,7 +649,11 @@ class Renderer:
             GL.glBindVertexArray(self.quadVAO)
             GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
+            funclog(f't3: {(time.time_ns()-s)/1000} us')
+
         ##### CELL SHADING #####
+
+        s = time.time_ns()
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
         GL.glUseProgram(Assets.CELL_SHADER)
 
@@ -658,6 +667,9 @@ class Renderer:
         GL.glBindVertexArray(self.quadVAO)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
+        funclog(f't4: {(time.time_ns()-s)/1000} us')
+        s = time.time_ns()
+
         # reset states
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         GL.glDepthFunc(depthFunc)
@@ -667,6 +679,7 @@ class Renderer:
         if blend:
             GL.glEnable(GL.GL_BLEND)
         GL.glClearColor(*clearColor)
+        funclog(f't5: {(time.time_ns()-s)/1000} us')
         return
 
     def getData(self, id):
