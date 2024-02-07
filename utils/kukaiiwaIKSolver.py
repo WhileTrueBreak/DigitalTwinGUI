@@ -1,5 +1,7 @@
 import numpy as np
+from utils.debug import *
 from utils.mathHelper import deg2Rad, rad2Deg
+
 
 def Configuration(rconf):
     arm = 1
@@ -17,6 +19,7 @@ def Configuration(rconf):
 
     return arm, elbow, wrist
 
+@timing
 def ForwardKinematics(joints):
     # Tolerance
     tol = 1e-8
@@ -97,6 +100,7 @@ def ForwardKinematics(joints):
 
     return pose, nsparam, rconf, jout
 
+@timing
 def InverseKinematics(pose, nsparam, rconf):
     arm, elbow, wrist = Configuration(rconf)
 

@@ -458,6 +458,7 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
     def update(self, delta):
         self.liveRobot.update(delta)
         self.twinRobot.update(delta)
+        
         if not np.array_equal(self.liveJoints, self.liveRobot.getJoints()): self.hasMoved = True
 
         self.__updateProgram()
@@ -528,6 +529,7 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
     @timing
     def __syncLive(self):
         if not self.matchLive: return
+        if not self.hasMoved: return
         self.mode = KukaRobotTwin.FOWARD_KINEMATICS
         if self.matchLive:
             self.twinJoints = self.liveRobot.getJoints().copy()
@@ -541,8 +543,6 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         except Exception as error:
             print(error)
             pass
-        # for i in range(len(self.P0Wrappers)):
-        #     self.jointAngleSlider[i].setValue(self.twinJoints[i])
 
     @timing
     def __updateGui(self):
@@ -614,9 +614,14 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
                 self.opcuaTransmitterContainer.setValue(self.__getNodeName(f'c_ProgID'), KukaRobotTwin.FREE_MOVE_PROG, ua.VariantType.Int32)
                 self.progStartFlag = True
             if event['obj'] == self.unlinkBtn:
-                self.matchLive = not self.matchLive
-                self.unlinkBtnText.setText('Unlink' if self.matchLive else 'Link')
-                self.__updateTwinColor()
+                self.__toggleLink()
+
+    def __toggleLink(self):
+        self.matchLive = not self.matchLive
+        self.unlinkBtnText.setText('Unlink' if self.matchLive else 'Link')
+        self.hasMoved = True
+        self.__updateTwinColor()
+
 
     def setLiveColors(self, colors):
         self.liveRobot.setColors(colors)
