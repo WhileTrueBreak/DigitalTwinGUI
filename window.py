@@ -97,6 +97,7 @@ class Window():
         self.uiLayer.update(delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.uiLayer.render()
+        GL.glFlush()
         return
     
     @timing
