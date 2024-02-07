@@ -11,3 +11,4 @@ nest-asyncio
 pywavefront
 opencv-python
 colorama
+scipy
