@@ -242,6 +242,7 @@ class DigitalTwinLab(Scene):
                 if not cp: break
                 self.panelWrapper.addChild(cp)
     
+    @timing
     def update(self, delta):
         self.__updateEnv(delta)
         self.__updateModelPos()

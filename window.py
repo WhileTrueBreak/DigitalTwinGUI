@@ -89,6 +89,7 @@ class Window():
 
         Assets.init()
     
+    @timing
     def update(self, delta):
         self.resetHovered()
         self.eventHandler()
@@ -96,9 +97,9 @@ class Window():
         self.uiLayer.update(delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.uiLayer.render()
-        GL.glFinish()
         return
     
+    @timing
     def eventHandler(self):
         cResized = False
         self.mousePos = pygame.mouse.get_pos()
