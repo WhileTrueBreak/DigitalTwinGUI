@@ -147,7 +147,6 @@ class UiText(GlElement):
             self.updateHeight(ABSOLUTE(T_H, self.maxDescender + self.maxAscender))
         self.dirtyText = False
 
-    @timing
     def __updateRenderTexture(self, text, font):
         scale = self.scaledFontSize/48
 

@@ -570,6 +570,7 @@ class Renderer:
                 self.idDict[id][i] = (batchId, objId)
                 self.idDict[(batchId, objId)] = id
 
+    @timing
     def render(self):
 
         # remember previous values
