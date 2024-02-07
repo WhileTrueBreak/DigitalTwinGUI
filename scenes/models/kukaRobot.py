@@ -454,7 +454,6 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         # self.page1.addChild(self.sendBtn)
         # self.page1.addChild(self.unlinkBtn)
 
-    @timing
     def update(self, delta):
         self.liveRobot.update(delta)
         self.twinRobot.update(delta)
@@ -500,7 +499,6 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         elif self.opcuaReceiverContainer.getValue(self.__getNodeName('f_Ready'), default=False)[0]:
             self.sendBtn.unlock()
     
-    @timing
     def __syncModes(self):
         if self.matchLive: return
         if self.mode == KukaRobotTwin.FOWARD_KINEMATICS:
@@ -526,7 +524,6 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
                     pass
                 pass
 
-    @timing
     def __syncLive(self):
         if not self.matchLive: return
         if not self.hasMoved: return
@@ -544,7 +541,6 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
             print(error)
             pass
 
-    @timing
     def __updateGui(self):
         for i in range(len(self.P0Wrappers)):
             self.jointAngleSlider[i].setValue(self.twinJoints[i])
