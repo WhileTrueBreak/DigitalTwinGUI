@@ -12,6 +12,8 @@ class UiToggleButton(GlElement):
         super().__init__(window, constraints, dim)
         self.type = 'button'
 
+        self.isDirty = True
+
         self.mask = None
         self.currentColor = (1, 1, 1)
         self.untoggledColor = (1, 1, 1)
@@ -34,7 +36,10 @@ class UiToggleButton(GlElement):
         return
 
     def update(self, delta):
-        self.currentColor = self.toggleColor if self.toggled else self.untoggledColor
+        if self.isDirty:
+            self.currentColor = self.toggleColor if self.toggled else self.untoggledColor
+            self.reshape()
+            self.isDirty = False
         return
 
     def __setColor(self, color):
@@ -49,19 +54,19 @@ class UiToggleButton(GlElement):
 
     def setToggle(self, toggle):
         self.toggled = toggle
-        self.update(0)
+        self.isDirty = True
 
     def setUntoggleColor(self, color):
         self.untoggledColor = color
-        self.update(0)
+        self.isDirty = True
 
     def setToggleColor(self, color):
         self.toggleColor = color
-        self.update(0)
+        self.isDirty = True
 
     def setLockColor(self, color):
         self.lockColor = color
-        self.update(0)
+        self.isDirty = True
     
     def setMaskingTexture(self, texture):
         self.mask = texture
@@ -84,7 +89,7 @@ class UiToggleButton(GlElement):
     def onRelease(self, callback=None):
         if self.lockFlag: return
         self.toggled = not self.toggled
-        self.__setColor(self.toggleColor if self.toggled else self.untoggledColor)
+        self.isDirty = True
         self.window.uiEvents.append({'obj':self, 'action':'release', 'type':self.type, 'time':time.time_ns()})
 
     def lock(self):
