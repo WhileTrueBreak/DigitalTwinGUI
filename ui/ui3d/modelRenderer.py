@@ -161,7 +161,6 @@ class BatchRenderer:
         GL.glBindVertexArray(0)
         self.isDirty = False
 
-    @timing
     def render(self):
         # print(f"trans:{self.isTransparent} | dirty:{self.isDirty} | size:{self.currentIndex} | tex:{len(self.textures)}")
 
@@ -571,7 +570,6 @@ class Renderer:
                 self.idDict[id][i] = (batchId, objId)
                 self.idDict[(batchId, objId)] = id
 
-    @timing
     def render(self):
         s = time.time_ns()
         # remember previous values
@@ -596,7 +594,7 @@ class Renderer:
         GL.glClearBufferfv(GL.GL_COLOR, 1, self.pickingClear)
         bidLoc = GL.glGetUniformLocation(self.opaqueShader, "batchId")
 
-        funclog(f't1: {(time.time_ns()-s)/1000} us')
+        # funclog(f't1: {(time.time_ns()-s)/1000} us')
 
         for batch in self.solidBatch:
             GL.glUniform1ui(bidLoc, self.batches.index(batch)+1)
@@ -618,7 +616,7 @@ class Renderer:
             GL.glClearBufferfv(GL.GL_COLOR, 1, self.revealClear)
             bidLoc = GL.glGetUniformLocation(self.transparentShader, "batchId")
 
-            funclog(f't2: {(time.time_ns()-s)/1000} us')
+            # funclog(f't2: {(time.time_ns()-s)/1000} us')
 
             for batch in self.transparentBatch:
                 GL.glUniform1ui(bidLoc, self.batches.index(batch)+1)
@@ -649,7 +647,7 @@ class Renderer:
             GL.glBindVertexArray(self.quadVAO)
             GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
-            funclog(f't3: {(time.time_ns()-s)/1000} us')
+            # funclog(f't3: {(time.time_ns()-s)/1000} us')
 
         ##### CELL SHADING #####
         s = time.time_ns()
@@ -665,7 +663,7 @@ class Renderer:
         GL.glUniform1i(GL.glGetUniformLocation(Assets.CELL_SHADER, "picking"), 1)
         GL.glBindVertexArray(self.quadVAO)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
-        funclog(f't4: {(time.time_ns()-s)/1000} us')
+        # funclog(f't4: {(time.time_ns()-s)/1000} us')
 
         s = time.time_ns()
         # reset states
@@ -677,7 +675,7 @@ class Renderer:
         if blend:
             GL.glEnable(GL.GL_BLEND)
         GL.glClearColor(*clearColor)
-        funclog(f't5: {(time.time_ns()-s)/1000} us')
+        # funclog(f't5: {(time.time_ns()-s)/1000} us')
         return
 
     def getData(self, id):

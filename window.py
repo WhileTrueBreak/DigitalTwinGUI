@@ -89,7 +89,6 @@ class Window():
 
         Assets.init()
     
-    @timing
     def update(self, delta):
         self.resetHovered()
         self.eventHandler()
@@ -100,7 +99,6 @@ class Window():
         GL.glFlush()
         return
     
-    @timing
     def eventHandler(self):
         cResized = False
         self.mousePos = pygame.mouse.get_pos()
