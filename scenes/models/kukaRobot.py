@@ -246,11 +246,11 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         self.twinJoints = self.twinRobot.getJoints().copy()
 
         self.twinPose = np.identity(4)
-        self.twinNSParam = None
-        self.twinTurn = None
+        self.twinNSParam = 0
+        self.twinTurn = 0
         self.livePose = np.identity(4)
-        self.liveNSParam = None
-        self.liveTurn = None
+        self.liveNSParam = 0
+        self.liveTurn = 0
 
         self.hasMoved = True
 
