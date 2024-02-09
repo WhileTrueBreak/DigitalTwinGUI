@@ -42,6 +42,9 @@ class BatchRenderer:
         self.textureDict = {}
         self.texModelMap = []
         self.textures = []  
+
+        self.boundMin = np.full((3), -np.inf)
+        self.boundMax = np.full((3), np.inf)
         
         self.currentIndex = 0
 
@@ -121,6 +124,7 @@ class BatchRenderer:
 
         self.currentIndex += vShape[0]
         self.isDirty = True
+        # self.__calcBounds()
 
         return index
 
@@ -141,6 +145,8 @@ class BatchRenderer:
 
         self.currentIndex -= upper-lower
         self.isDirty = True
+        
+        # self.__calcBounds()
         return
 
     def __updateVertices(self):
@@ -214,6 +220,8 @@ class BatchRenderer:
         GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssbo)
         mat = self.transformationMatrices[id]
         GL.glBufferSubData(GL.GL_SHADER_STORAGE_BUFFER, mat.nbytes*id, mat.nbytes, mat)
+
+        # self.__calcBounds()
         
         # GL.glBindBuffer(GL.GL_SHADER_STORAGE_BUFFER, self.ssbo)
         # GL.glBufferData(GL.GL_SHADER_STORAGE_BUFFER, self.transformationMatrices, GL.GL_DYNAMIC_DRAW)
@@ -274,6 +282,23 @@ class BatchRenderer:
             tex = None
         data = {'model':self.models[id], 'color':self.colors[id-1], 'matrix':self.transformationMatrices[id].T, 'texture':tex}
         return data
+
+    @timing
+    def __calcBounds(self):
+        minP = np.full((3), np.inf)
+        maxP = np.full((3), -np.inf)
+        for i,e in enumerate(self.isAvaliable):
+            if e: continue
+            lower = self.modelRange[i][0]
+            upper = self.modelRange[i][1]
+            xyz = self.vertices[lower:upper, 0:3]
+            xyz = np.pad(xyz, ((0, 0), (0, 1)), mode='constant', constant_values=1)
+            T = self.transformationMatrices[i]
+            xyz = np.matmul(xyz, T)[:,0:3]
+            minP = np.vstack((minP, xyz.min(axis=0))).min(axis=0)
+            maxP = np.vstack((maxP, xyz.max(axis=0))).max(axis=0)
+        self.boundMin = minP
+        self.boundMax = maxP
 
 class Renderer:
     def __init__(self, window, supportTransparency=True):
