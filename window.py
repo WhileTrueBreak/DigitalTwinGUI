@@ -41,7 +41,7 @@ class Window():
             display_flags = display_flags | pygame.FULLSCREEN
             size = (0,0)
 
-        windowIcon = pygame.image.load('res/icons/malogo.png')
+        windowIcon = pygame.image.load('res/icons/malogo_48.png')
         pygame.display.set_icon(windowIcon)
         
         self.screen = pygame.display.set_mode(size, display_flags, vsync=(1 if vsync else 0))
