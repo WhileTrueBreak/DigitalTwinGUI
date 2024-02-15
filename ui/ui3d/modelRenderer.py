@@ -642,7 +642,8 @@ class Renderer:
             GL.glEnable(GL.GL_BLEND)
             GL.glBlendFunci(0, GL.GL_ONE, GL.GL_ONE)
             GL.glBlendFunci(1, GL.GL_ZERO, GL.GL_ONE_MINUS_SRC_COLOR)
-            GL.glBlendEquation(GL.GL_FUNC_ADD)
+            GL.glBlendEquationi(0, GL.GL_FUNC_ADD)
+            GL.glBlendEquationi(1, GL.GL_FUNC_ADD)
 
             # render transparent
             GL.glUseProgram(self.transparentShader)
