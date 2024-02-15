@@ -238,6 +238,8 @@ class BatchRenderer:
     
     def setColor(self, id, color):
         if np.array_equal(self.colors[id], color): return
+        if color[3] == 0: self.inView[id] = False
+        else: self.inView[id] = True
         lower = self.modelRange[id][0]
         upper = self.modelRange[id][1]
         self.colors[id] = color

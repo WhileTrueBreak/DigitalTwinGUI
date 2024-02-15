@@ -15,6 +15,8 @@ in vec2 texCoord;
 in vec4 color;
 
 void main(){
+	if(color.a == 0) discard;
+
 	picking = uvec3(objIndex, batchId, gl_PrimitiveID+1);
 	vec4 objColor = vec4(0,0,0,0);
 	if(texId >= 0){
