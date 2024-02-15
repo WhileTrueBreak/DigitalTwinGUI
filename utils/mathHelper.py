@@ -113,7 +113,23 @@ def setBit(num, bit, bitValue):
     else:
         return num&~(1<<bit)
 
+def getFrustum(matrix):
+    def fromNumbers(v):
+        mag = np.linalg.norm(v[0:3])
+        norm = normalize(v[0:3])
+        return np.append(norm,v[3]/mag)
+    
+    frustum = np.zeros((6, 4))
+    frustum[0] = fromNumbers(matrix[3]+matrix[0])
+    frustum[1] = fromNumbers(matrix[3]-matrix[0])
+    frustum[2] = fromNumbers(matrix[3]+matrix[1])
+    frustum[3] = fromNumbers(matrix[3]-matrix[1])
+    frustum[4] = fromNumbers(matrix[3]+matrix[2])
+    frustum[5] = fromNumbers(matrix[3]-matrix[2])
 
+    return frustum
 
+def pointFrustumDist(point, frustum):
+    return np.dot(point, frustum[0:3]) + frustum[3]
 
 

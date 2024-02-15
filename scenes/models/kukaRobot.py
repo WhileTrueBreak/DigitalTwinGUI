@@ -19,6 +19,7 @@ from utils.interfaces.pollController import PollController
 from utils.debug import *
 from utils.kukaiiwaIKSolver import ForwardKinematics, InverseKinematics, Configuration
 from utils.mathHelper import rad2Deg, deg2Rad
+from window import Window
 
 import numpy as np
 from asyncua import ua
@@ -58,12 +59,15 @@ class KukaRobot:
             mat = Robot1_T_0_[i].copy()
             self.modelKukaIds.append(self.modelRenderer.addModel(Assets.KUKA_IIWA14_MODEL[i], mat))
             self.modelRenderer.setColor(self.modelKukaIds[-1], self.colors[i])
+        self.armModels = Assets.KUKA_IIWA14_MODEL
         if self.hasGripper:
             self.modelKukaIds.append(self.modelRenderer.addModel(Assets.GRIPPER, Robot1_T_0_[7].copy()))
+            self.gripperModel = Assets.GRIPPER
             self.modelRenderer.setColor(self.modelKukaIds[-1], self.colors[-1])
         self.forceVectorId = None
         if self.hasForceVector:
             self.forceVectorId = self.modelRenderer.addModel(Assets.POLE, np.identity(4))
+            self.forceModel = Assets.POLE
             self.modelRenderer.setColor(self.forceVectorId, (0,0,0,0.7))
         for id in self.modelKukaIds:
             self.lastTmats[id] = None
@@ -75,7 +79,7 @@ class KukaRobot:
     def __setupConnections(self):
         self.opcuaReceiverContainer = OpcuaContainer()
         self.receivers = []
-        self.receivers.append(OpcuaReceiver([
+        self.receivers.append(OpcuaReceiver([ 
                     self.__getNodeName('d_Joi1'),
                     self.__getNodeName('d_Joi2'),
                     self.__getNodeName('d_Joi3'),
@@ -89,7 +93,7 @@ class KukaRobot:
                     self.__getNodeName('d_ForY'),
                     self.__getNodeName('d_ForZ'),
                 ], self.opcuaReceiverContainer, Constants.OPCUA_LOCATION))
-
+    
     def update(self, delta):
         self.__updateFromOpcua()
         self.__updateJoints()
@@ -103,14 +107,15 @@ class KukaRobot:
         if updateJoint:
             for i in range(7):
                 self.joints[i] = radians(self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_Joi{i+1}'), default=0)[0])
-        
+
         if (self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForX')) and
             self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForY')) and
             self.opcuaReceiverContainer.hasUpdated(self.__getNodeName(f'd_ForZ'))):
             self.forceVector[0] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForX'), default=0)[0]
             self.forceVector[1] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForY'), default=0)[0]
             self.forceVector[2] = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_ForZ'), default=0)[0]
-
+    
+    # @timing
     def __updateJoints(self):
         attachFrame = self.attach.getFrame() if self.attach else np.identity(4)
         Robot1_T_0_ = self.lastLinkTmats.copy()
@@ -123,10 +128,11 @@ class KukaRobot:
             mat = Robot1_T_0_[min(i, len(Robot1_T_0_)-1)].copy()
             mat = np.matmul(self.tmat, mat)
             mat = np.matmul(attachFrame, mat)
-            if hash(bytes(mat)) == self.lastTmats[id]:
+            hashed = hash(bytes(mat))
+            if hashed == self.lastTmats[id]:
                 continue
             self.modelRenderer.setTransformMatrix(id, mat)
-            self.lastTmats[id] = hash(bytes(mat.copy()))
+            self.lastTmats[id] = hashed
         self.forceVectorEndpoint = Robot1_T_0_[-1]
         self.__updateForceVector(self.forceVectorEndpoint)
     
@@ -225,6 +231,36 @@ class KukaRobot:
         self.attach = iModel
         self.__updateJoints()
 
+    def inViewFrustrum(self, proj, view):
+        attachFrame = self.attach.getFrame() if self.attach else np.identity(4)
+        frustum = getFrustum(np.matmul(proj.T,view))
+        bounds = []
+        for i,m in enumerate(self.armModels):
+            mat = self.lastLinkTmats[min(i, len(self.lastLinkTmats)-1)].copy()
+            mat = np.matmul(self.tmat, mat)
+            mat = np.matmul(attachFrame, mat)
+            bounds.append(m.getAABBBound(mat))
+        mat = self.lastLinkTmats[-1].copy()
+        mat = np.matmul(self.tmat, mat)
+        mat = np.matmul(attachFrame, mat)
+        if self.hasGripper:
+            bounds.append(self.gripperModel.getAABBBound(mat))
+        if self.hasForceVector:
+            bounds.append(self.forceModel.getAABBBound(mat))
+
+        for b in bounds:
+            dists = np.matmul(b, frustum.T)
+            if not np.any(np.all(dists < 0, axis=0)): return True
+            # dists = np.dot(frustum[:,0:3],b[0])+frustum[:,3]+b[1]
+            # if np.all(dists>=0): return True
+        return False
+
+    def setViewFlag(self, flag):
+        for id in self.modelKukaIds:
+            self.modelRenderer.setViewFlag(id, flag)
+        if self.forceVectorId:
+            self.modelRenderer.setViewFlag(self.forceVectorId, flag)
+
 class KukaRobotTwin(Updatable, Interactable, PollController):
 
     FREE_MOVE_PROG = 2
@@ -235,6 +271,7 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
     def __init__(self, window, tmat, nid, rid, modelRenderer, hasGripper=True, hasForceVector=False):
         self.liveRobot = KukaRobot(tmat, nid, rid, modelRenderer, hasGripper, hasForceVector)
         self.twinRobot = KukaRobot(tmat, nid, rid, modelRenderer, hasGripper, False)
+        self.renderer = modelRenderer
 
         self.window = window
         self.nodeId = nid
@@ -261,6 +298,9 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
         self.progStartFlag = False
         self.executingFlag = False
         self.doneFlag = False
+
+        self.inView = True
+        self.viewCheckFrame = -1
 
         self.__createUi()
         self.__setupConnections()
@@ -695,3 +735,16 @@ class KukaRobotTwin(Updatable, Interactable, PollController):
     def setTransform(self, transform):
         self.liveRobot.setPos(transform)
         self.twinRobot.setPos(transform)
+
+    def inViewFrustrum(self, proj, view):
+        if self.viewCheckFrame == Window.INSTANCE.frameCount: return self.inView
+        self.inView = self.liveRobot.inViewFrustrum(proj, view) or self.twinRobot.inViewFrustrum(proj, view)
+        self.viewCheckFrame = Window.INSTANCE.frameCount
+        return self.inView
+
+    def setViewFlag(self, flag):
+        self.liveRobot.setViewFlag(flag)
+        self.twinRobot.setViewFlag(flag)
+
+
+

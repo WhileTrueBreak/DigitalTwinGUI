@@ -36,7 +36,7 @@ class DigitalTwinLab(Scene):
         super().__init__(window, name)
         self.models = []
         
-        self.camera = MovingCamera(self.window, [12, 3, 1.5, -90, 0, -50], 2)
+        self.camera = MovingCamera(self.window, [0, 0, 1.5, -90, 0, 45], 2)
     @timing
     def createUi(self):
         self.renderWindow = Ui3DScene(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0, 0, 1, 1, DigitalTwinLab.UI_PADDING), supportTransparency=True)
@@ -133,21 +133,11 @@ class DigitalTwinLab(Scene):
         self.roomPlan.extend([Builder.buildPlaneXY(*plane[0:5], vis=plane[5]) for plane in xyPlanes])
         self.roomPlan.append(Builder.buildPlaneXZ(0, 1.1, 2.4, 15.3, 0.7, vis=Builder.S2))
         
-        self.roomPlan = Model.fromSubModels(self.roomPlan)
+        self.roomPlan = Model.fromSubModels(self.roomPlan)[0]
+        room = SimpleModel(self.modelRenderer, self.roomPlan, np.identity(4))
+        self.models.append(room)
+        self.modelRenderer.setColor(room.modelId, roomColor)
 
-        room = self.modelRenderer.addModel(self.roomPlan, np.identity(4))
-        self.modelRenderer.setColor(room, roomColor)
-
-        # for plane in Builder.buildWallPlan(plan):
-        #     mid = self.modelRenderer.addModel(Builder.buildWallPlan(plan), np.identity(4))
-        #     self.modelRenderer.setColor(mid, roomColor)
-        
-        # for plane in xyPlanes:
-        #     mid = self.modelRenderer.addModel(Builder.buildPlaneXY(*plane[0:5], vis=plane[5]), np.identity(4))
-        #     self.modelRenderer.setColor(mid, roomColor)
-
-        # mid = self.modelRenderer.addModel(Builder.buildPlaneXZ(0, 1.1, 2.4, 15.3, 0.7, vis=Builder.S2), np.identity(4))
-        # self.modelRenderer.setColor(mid, roomColor)
         return
 
     def __addRobots(self):
@@ -216,12 +206,11 @@ class DigitalTwinLab(Scene):
         
         self.models.append(SimpleModel(self.modelRenderer, Assets.KUKA_EDU, createTransformationMatrix(4,1.2,0,0,0,-90)))
 
-        self.screenStreams = []
-        self.screenStreams.append(MJPEGStream('http://172.32.1.226:8080/?action=streams'))
+        self.screenStream = MJPEGStream('http://172.32.1.226:8080/?action=streams')
         
-        screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(5.5,6.99,1,90,0,90))
-        self.modelRenderer.setTexture(screen.modelId, self.screenStreams[0].texture)
-        self.models.append(screen)
+        self.screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(5.5,6.99,1,90,0,90))
+        self.modelRenderer.setTexture(self.screen.modelId, self.screenStream.texture)
+        self.models.append(self.screen)
 
     def handleUiEvents(self, event):
         for model in self.models:
@@ -245,11 +234,23 @@ class DigitalTwinLab(Scene):
     def update(self, delta):
         self.__updateEnv(delta)
         self.__updateModelPos()
-        [stream.update(delta) for stream in self.screenStreams]
         
+        if self.screen.inViewFrustrum(self.modelRenderer.projectionMatrix, self.modelRenderer.viewMatrix):
+            self.screenStream.start()
+            self.screenStream.update(delta)
+        else:
+            self.screenStream.stop()
+
+        for model in self.models:
+            if not hasattr(model, 'inViewFrustrum'): continue
+            if not hasattr(model, 'setViewFlag'): continue
+            inView = model.inViewFrustrum(self.modelRenderer.projectionMatrix, self.modelRenderer.viewMatrix)
+            model.setViewFlag(inView)
+
         for model in self.models:
             if not isinstance(model, Updatable): continue
             model.update(delta)
+
         return
     
     def __updateModelPos(self):
@@ -264,13 +265,13 @@ class DigitalTwinLab(Scene):
     @timing
     def start(self):
         [model.start() for model in self.models if isinstance(model, PollController)]
-        [stream.start() for stream in self.screenStreams]
+        self.screenStream.start()
         return
 
     @timing
     def stop(self):
         [model.stop() for model in self.models if isinstance(model, PollController)]
-        [stream.stop() for stream in self.screenStreams]
+        self.screenStream.stop()
         return
 
 

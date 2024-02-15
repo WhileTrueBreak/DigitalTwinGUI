@@ -114,9 +114,10 @@ class Model:
     def __init__(self, vertices, indices):
         self.vertices = np.array(vertices,dtype='float32')
         self.indices = np.array(indices,dtype='int32')
-        self.createVertexData(self.vertices)
+        self.__createVertexData(self.vertices)
+        self.__calcBound()
     
-    def createVertexData(self, vertices):
+    def __createVertexData(self, vertices):
         if len(vertices[0]) == 8: return
         has_uvs = False
         if len(vertices[0]) == 5:
@@ -135,6 +136,22 @@ class Model:
             self.vertices[::,6:8] = uvs
 
     @timing
+    def __calcBound(self):
+        xyzs = self.vertices[:,0:3]
+        minV = np.min(xyzs, axis=0)
+        maxV = np.max(xyzs, axis=0)
+        self.boundCenter = (minV+maxV)/2
+        maxL = np.max(xyzs-self.boundCenter, axis=0)
+        self.boundRadius = np.linalg.norm(maxL)
+        corners = np.vstack((minV, maxV))
+
+        X, Y, Z = np.meshgrid(corners[:,0], corners[:,1], corners[:,2], indexing='ij')
+
+        # Reshape to combine the coordinates into a single array
+        vertices = np.column_stack([X.ravel(), Y.ravel(), Z.ravel(), np.ones((8))])
+        self.aabbBound = vertices
+    
+    @timing
     def generateSubModels(self, maxVerts):
         maxVerts = maxVerts - (maxVerts%3)
         total = self.indices.shape[0]
@@ -145,3 +162,12 @@ class Model:
             models.append(Model.fromVertices(asVert)[0])
             start += maxVerts
         return models
+
+    def getSphereBound(self, transform=np.identity(4)):
+        center_ = np.matmul(transform, np.append(self.boundCenter,1))[0:3]
+        radius_ = self.boundRadius*np.max(np.linalg.norm(transform[0:3,0:3],axis=1))
+        return center_, radius_
+    
+    def getAABBBound(self, transform=np.identity(4)):
+        vertices_ = np.matmul(self.aabbBound, transform.T)
+        return vertices_

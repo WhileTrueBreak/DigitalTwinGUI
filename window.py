@@ -27,11 +27,15 @@ import ctypes
 
 from colorama import Fore, Back, Style
 
-class Window():
+class Window:
     
     TAB_HEIGHT = 40
+    INSTANCE = None
 
     def __init__(self, size, title, sceneManager=DefaultSceneManager(), fullscreen=False, resizeable=False, vsync=True):
+        assert Window.INSTANCE == None
+        Window.INSTANCE = self
+        
         pygame.init()
         display_flags = pygame.DOUBLEBUF | pygame.OPENGL
         self.title = title
@@ -54,6 +58,7 @@ class Window():
         self.initOpenGL()
 
         self.delta = 1
+        self.frameCount = 0
 
         self.running = True
 
@@ -101,7 +106,7 @@ class Window():
         self.uiLayer.update(delta)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.uiLayer.render()
-        GL.glFlush()
+        # GL.glFlush()
         return
     
     def eventHandler(self):
@@ -157,6 +162,7 @@ class Window():
 
             self.delta = (start - end)/1000000000
             self.timeCounter += self.delta
+            self.frameCount += 1
             self.frames += 1
             if self.timeCounter >= 1:
                 pygame.display.set_caption(f'{self.title} | frame time: {((time.time_ns()-lastTime)/1000)/self.frames:.0f}us | FPS: {self.frames}')

@@ -32,6 +32,7 @@ class BatchRenderer:
         self.isTransparent = isTransparent
 
         self.isAvaliable = [True]
+        self.inView = {}
 
         self.colors = [(1,1,1,1)]
 
@@ -100,6 +101,7 @@ class BatchRenderer:
 
         vShape = model.vertices.shape
         index = self.isAvaliable.index(True)
+        self.inView[index] = True
 
         # added more slots if index is at the end
         if index == len(self.isAvaliable)-1 and index < BatchRenderer.MAX_SSBO_SIZE:
@@ -131,6 +133,8 @@ class BatchRenderer:
     @timing
     def removeModel(self, id):
         self.isAvaliable[id] = True
+        self.inView.pop(id, None)
+
         # shift vertices
         lower = self.modelRange[id][0]
         upper = self.modelRange[id][1]
@@ -169,6 +173,10 @@ class BatchRenderer:
 
     def render(self):
         # print(f"trans:{self.isTransparent} | dirty:{self.isDirty} | size:{self.currentIndex} | tex:{len(self.textures)}")
+
+        if not np.any(np.array(list(self.inView.values()))): 
+            # print('not rendering nothing in view')
+            return
 
         if self.isDirty:
             self.__updateVertices()
@@ -282,6 +290,9 @@ class BatchRenderer:
             tex = None
         data = {'model':self.models[id], 'color':self.colors[id-1], 'matrix':self.transformationMatrices[id].T, 'texture':tex}
         return data
+
+    def setViewFlag(self, id, flag):
+        self.inView[id] = flag
 
     @timing
     def __calcBounds(self):
@@ -596,7 +607,6 @@ class Renderer:
                 self.idDict[(batchId, objId)] = id
 
     def render(self):
-        s = time.time_ns()
         # remember previous values
         depthFunc = GL.glGetIntegerv(GL.GL_DEPTH_FUNC)
         depthTest = GL.glGetIntegerv(GL.GL_DEPTH_TEST)
@@ -619,8 +629,6 @@ class Renderer:
         GL.glClearBufferfv(GL.GL_COLOR, 1, self.pickingClear)
         bidLoc = GL.glGetUniformLocation(self.opaqueShader, "batchId")
 
-        # funclog(f't1: {(time.time_ns()-s)/1000} us')
-
         for batch in self.solidBatch:
             GL.glUniform1ui(bidLoc, self.batches.index(batch)+1)
             batch.render()
@@ -641,13 +649,9 @@ class Renderer:
             GL.glClearBufferfv(GL.GL_COLOR, 1, self.revealClear)
             bidLoc = GL.glGetUniformLocation(self.transparentShader, "batchId")
 
-            # funclog(f't2: {(time.time_ns()-s)/1000} us')
-
             for batch in self.transparentBatch:
                 GL.glUniform1ui(bidLoc, self.batches.index(batch)+1)
                 batch.render()
-            
-            s = time.time_ns()
 
             # config states
             GL.glDepthMask(GL.GL_TRUE)
@@ -672,10 +676,7 @@ class Renderer:
             GL.glBindVertexArray(self.quadVAO)
             GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
 
-            # funclog(f't3: {(time.time_ns()-s)/1000} us')
-
         ##### CELL SHADING #####
-        s = time.time_ns()
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.opaqueFBO)
         GL.glUseProgram(Assets.CELL_SHADER)
 
@@ -688,9 +689,7 @@ class Renderer:
         GL.glUniform1i(GL.glGetUniformLocation(Assets.CELL_SHADER, "picking"), 1)
         GL.glBindVertexArray(self.quadVAO)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 6)
-        # funclog(f't4: {(time.time_ns()-s)/1000} us')
 
-        s = time.time_ns()
         # reset states
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         GL.glDepthFunc(depthFunc)
@@ -700,7 +699,7 @@ class Renderer:
         if blend:
             GL.glEnable(GL.GL_BLEND)
         GL.glClearColor(*clearColor)
-        # funclog(f't5: {(time.time_ns()-s)/1000} us')
+        # GL.glFinish() #TODO: (for debug) remove this later 
         return
 
     def getData(self, id):
@@ -724,3 +723,6 @@ class Renderer:
     def getTexture(self):
         return self.opaqueTexture
 
+    def setViewFlag(self, id, flag):
+        for modelid in self.idDict[id]: 
+            self.batches[modelid[0]].setViewFlag(modelid[1], flag)
