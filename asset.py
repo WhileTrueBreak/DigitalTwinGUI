@@ -103,6 +103,8 @@ class Assets:
         Assets.OMNIMOVE = Assets.loadModelFile('res/models/omnimove/KMP200.stl', np.matmul(createTransformationMatrix(0, 0, -0.7, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))
         Assets.OMNIMOVE_CHARGER = Assets.loadModelFile('res/models/omnimove/KMP200_Charger.stl')
 
+        Assets.ARROW_BTN = Assets.loadModelFile('res/models/arrowbtn.STL', np.matmul(createScaleMatrix(0.001, 0.001, 0.001), createTransformationMatrix(-15,15,0,90,0,0)))
+
         floorVertices = [
             [0,0,0],[1,0,0],[0,1,0],
             [0,1,0],[1,0,0],[1,1,0],

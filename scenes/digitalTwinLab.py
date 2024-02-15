@@ -206,11 +206,47 @@ class DigitalTwinLab(Scene):
         
         self.models.append(SimpleModel(self.modelRenderer, Assets.KUKA_EDU, createTransformationMatrix(4,1.2,0,0,0,-90)))
 
-        self.screenStream = MJPEGStream('http://172.32.1.226:8080/?action=streams')
+        self.leftBtn = SimpleModel(self.modelRenderer, Assets.ARROW_BTN, np.matmul(createTransformationMatrix(4.3,6.5,0.85,0,0,180),createScaleMatrix(8, 8, 8)))
+        self.rightBtn = SimpleModel(self.modelRenderer, Assets.ARROW_BTN, np.matmul(createTransformationMatrix(4.7,6.5,0.85,0,0,0),createScaleMatrix(8, 8, 8)))
+        self.modelRenderer.setColor(self.leftBtn.modelId, (0.3,1,0.7,1))
+        self.modelRenderer.setColor(self.rightBtn.modelId, (0.3,1,0.7,1))
+        self.models.append(self.leftBtn)
+        self.models.append(self.rightBtn)
+
+        self.streamDict = {}
+
+        streams = []
+        streams.append(MJPEGStream('http://172.32.1.225:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.226:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.227:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.90:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.91:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.92:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.93:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.94:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.95:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.96:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.97:8080/?action=streams'))
+
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3        ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3        ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73   ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73   ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*2 ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*2 ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*3 ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*3 ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*4 ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
+        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*4 ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
         
+        for stream in streams: self.streamDict[stream] = []
         self.screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(5.5,6.99,1,90,0,90))
-        self.modelRenderer.setTexture(self.screen.modelId, self.screenStream.texture)
-        self.models.append(self.screen)
+        self.streamDict[streams[1]].append(self.screen)
+        self.screenIndex = 1
+
+        for key in self.streamDict.keys():
+            for display in self.streamDict[key]:
+                self.modelRenderer.setTexture(display.modelId, key.texture)
 
     def handleUiEvents(self, event):
         for model in self.models:
@@ -224,6 +260,12 @@ class DigitalTwinLab(Scene):
     def __handleSceneEvents(self, event):
         modelId = event['modelId']
         self.panelWrapper.removeAllChildren()
+
+        if self.rightBtn.isModel(modelId):
+            self.__changeScreenDisplay(self.screenIndex+1)
+        elif self.leftBtn.isModel(modelId):
+            self.__changeScreenDisplay(self.screenIndex-1)
+
         for model in self.models:
             if model.isModel(modelId):
                 if not isinstance(model, Interactable): continue
@@ -231,21 +273,33 @@ class DigitalTwinLab(Scene):
                 if not cp: break
                 self.panelWrapper.addChild(cp)
     
+    def __changeScreenDisplay(self, newIndex):
+        self.streamDict[list(self.streamDict.keys())[self.screenIndex]].remove(self.screen)
+        self.screenIndex = newIndex%len(self.streamDict.keys())
+        stream = list(self.streamDict.keys())[self.screenIndex]
+        self.streamDict[stream].append(self.screen)
+        self.modelRenderer.setTexture(self.screen.modelId, stream.texture)
+
     def update(self, delta):
         self.__updateEnv(delta)
         self.__updateModelPos()
-        
-        if self.screen.inViewFrustrum(self.modelRenderer.projectionMatrix, self.modelRenderer.viewMatrix):
-            self.screenStream.start()
-            self.screenStream.update(delta)
-        else:
-            self.screenStream.stop()
 
         for model in self.models:
             if not hasattr(model, 'inViewFrustrum'): continue
             if not hasattr(model, 'setViewFlag'): continue
             inView = model.inViewFrustrum(self.modelRenderer.projectionMatrix, self.modelRenderer.viewMatrix)
             model.setViewFlag(inView)
+
+        for stream in self.streamDict.keys():
+            active = False
+            for display in self.streamDict[stream]:
+                if not display.inViewFrustrum(self.modelRenderer.projectionMatrix, self.modelRenderer.viewMatrix): continue
+                active = True
+            if active:
+                stream.start()
+                stream.update(delta)
+            else:
+                stream.stop()
 
         for model in self.models:
             if not isinstance(model, Updatable): continue
@@ -265,13 +319,15 @@ class DigitalTwinLab(Scene):
     @timing
     def start(self):
         [model.start() for model in self.models if isinstance(model, PollController)]
-        self.screenStream.start()
+        for i in self.streamDict.keys():
+            i.start()
         return
 
     @timing
     def stop(self):
         [model.stop() for model in self.models if isinstance(model, PollController)]
-        self.screenStream.stop()
+        for i in self.streamDict.keys():
+            i.stop()
         return
 
 

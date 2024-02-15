@@ -636,7 +636,6 @@ class Renderer:
             batch.render()
 
         if self.supportTransparency:
-            s = time.time_ns()
             # config states
             GL.glDepthMask(GL.GL_FALSE)
             GL.glEnable(GL.GL_BLEND)

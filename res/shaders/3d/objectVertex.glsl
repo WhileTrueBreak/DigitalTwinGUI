@@ -37,8 +37,8 @@ void main() {
   vec3 lightVec2 = normalize(vec3(0.5, 2, -0.5));
   vec4 tnormal = TMAT[matIndex] * vec4(vertexNormal,0.0);
 
-  float shade1 = dot(lightVec1, tnormal.xyz)/2+0.5;
-  float shade2 = dot(lightVec2, tnormal.xyz)/2+0.5;
+  float shade1 = dot(lightVec1, normalize(tnormal.xyz))/2+0.5;
+  float shade2 = dot(lightVec2, normalize(tnormal.xyz))/2+0.5;
   shade = max(shade1, shade2);
   
   color = vertexColor;

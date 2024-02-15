@@ -10,7 +10,8 @@ class MJPEGStream(PollController):
         self.url = url
         self.container = StreamContainer()
         self.threadStopFlag = True
-        self.thread = createMjpegThread(self.container, self.url, lambda:self.threadStopFlag)
+        self.thread = None
+        # self.thread = createMjpegThread(self.container, self.url, lambda:self.threadStopFlag)
         self.image = None
 
         self.texture = GL.glGenTextures(1)
@@ -47,7 +48,7 @@ class MJPEGStream(PollController):
     
     def start(self):
         self.threadStopFlag = False
-        if self.thread.is_alive(): return
+        if self.thread != None and self.thread.is_alive(): return
         self.thread = createMjpegThread(self.container, self.url, lambda:self.threadStopFlag)
 
     def stop(self):
