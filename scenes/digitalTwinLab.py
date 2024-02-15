@@ -319,8 +319,6 @@ class DigitalTwinLab(Scene):
     @timing
     def start(self):
         [model.start() for model in self.models if isinstance(model, PollController)]
-        for i in self.streamDict.keys():
-            i.start()
         return
 
     @timing
