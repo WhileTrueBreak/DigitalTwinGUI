@@ -3,6 +3,7 @@ import os, io, sys
 
 from stl import mesh as stlmesh
 import pywavefront
+from vedo import Mesh
 import numpy as np
 
 from utils.debug import *
@@ -45,6 +46,28 @@ class Model:
 
     @classmethod
     def fromOBJ(cls, file, transform=np.identity(4)):
+        # mesh = Mesh(file)
+        # # mesh = mesh.triangulate()
+        # mesh.compute_normals()
+
+        # vertices = mesh.vertices
+        # verticesT = np.ones((mesh.npoints, 4))
+        # verticesT[::,0:3] = vertices
+        # verticesT = transform.dot(verticesT.T)
+        # vertices = verticesT.T[::,0:3]
+        # normals = mesh.vertex_normals
+        # normalsT = np.zeros((mesh.npoints, 4))
+        # normalsT[::,0:3] = normals
+        # normalsT = transform.dot(normalsT.T)
+        # normals = normalsT.T[::,0:3]
+        # uvs = mesh.pointdata[mesh.pointdata.keys()[0]]
+        # if uvs.shape[1] != 2:
+        #     uvs = np.zeros((mesh.npoints, 2))
+        # vertices = np.hstack((vertices, normals, uvs))
+        # indices = np.array(mesh.cells).flatten()
+
+        # return [cls(vertices, indices)]
+
         scene = pywavefront.Wavefront(file, parse=True)
         models = []
         materials = list(scene.materials.items().mapping.values())
@@ -120,6 +143,7 @@ class Model:
     def __createVertexData(self, vertices):
         if len(vertices[0]) == 8: return
         has_uvs = False
+        if len(vertices[0]) == 6: return
         if len(vertices[0]) == 5:
             has_uvs = True
             uvs = np.array(vertices[::,3:5])

@@ -448,6 +448,7 @@ class Renderer:
         if isinstance(model, list):
             return self.addModels(model, matrix)
         for i in range(len(self.batches)):
+            if self.batches[i].isTransparent: continue
             id = self.batches[i].addModel(model, matrix)
             if id == -1: continue
             modelId = self.nextId
@@ -534,6 +535,7 @@ class Renderer:
 
     def setColor(self, id, color):
         if not self.supportTransparency: color = (*color[0:3], 1)
+        self.setViewFlag(id, color[3] != 0)
         for i,modelId in enumerate(self.idDict[id]):
             batch = self.batches[modelId[0]]
             objId = modelId[1]

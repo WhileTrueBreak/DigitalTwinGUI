@@ -7,7 +7,8 @@ from scenes.models.interfaces.model import SimpleModel, Updatable
 from scenes.models.interfaces.interactable import Interactable
 from scenes.models.moveableModel import MoveableModel
 from scenes.models.staticModel import StaticModel
-from scenes.models.kukaRobot import KukaRobotTwin
+from scenes.models.wrapper.kukaBase import KukaBase
+from scenes.models.wrapper.kukaRobot import KukaRobotTwin
 from scenes.utils.movingCamera import MovingCamera
 from scenes.utils.builder import Builder
 
@@ -142,9 +143,10 @@ class DigitalTwinLab(Scene):
 
     def __addRobots(self):
         self.bases = []
-
         # ROBOT 3 - KEENANS DEMO ROBOT
-        base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(2.3, 5, 0.89, 0, 0, 180))
+        # base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(2.3, 5, 0.89, 0, 0, 180))
+        base = KukaBase(self.modelRenderer, Assets.KUKA_FLEX, (23, 3))
+        base.setAttachTransform(createTransformationMatrix(0, 0, 0.89, 0, 0, 0))
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 23, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(1, 51/255, 51/255, 0.7)for i in range(9)])
         arm.setTwinColors([(1, 178/255, 102/255, 0.0)for i in range(9)])
@@ -153,8 +155,10 @@ class DigitalTwinLab(Scene):
         self.models.append(base)
         self.models.append(arm)
         
-        # ROBOT 4 - MSM Testing ROBOT
-        base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(14, 2.5, 0.89, 0, 0, 0))
+        # # ROBOT 4 - MSM Testing ROBOT
+        # base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(14, 2.5, 0.89, 0, 0, 0))
+        base = KukaBase(self.modelRenderer, Assets.KUKA_FLEX, (24, 4))
+        base.setAttachTransform(createTransformationMatrix(0, 0, 0.89, 0, 0, 0))
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=False)
         arm.setLiveColors([(1, 1, 0, 0.7)for i in range(9)])
         arm.setTwinColors([(1, 1, 153/255, 0.0)for i in range(9)])
@@ -163,8 +167,10 @@ class DigitalTwinLab(Scene):
         self.models.append(base)
         self.models.append(arm)
 
-        # ROBOT 1 - Moblie 1
-        base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(13, 1, 0.9, 0, 0, -90))
+        # # ROBOT 1 - Moblie 1
+        # base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(13, 1, 0.9, 0, 0, -90))
+        base = KukaBase(self.modelRenderer, Assets.OMNIMOVE, (21, 1))
+        base.setAttachTransform(createTransformationMatrix(0, 0, 0.7, 0, 0, 0))
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 21, 'R1', self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(0, 1, 0, 0.7)for i in range(9)])
         arm.setTwinColors([(102/255, 1, 178/255, 0.0)for i in range(9)])
@@ -173,8 +179,10 @@ class DigitalTwinLab(Scene):
         self.models.append(base)
         self.models.append(arm)
         
-        # ROBOT 2 - Moblie 2
-        base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(14.2, 1, 0.9, 0, 0, 0))
+        # # ROBOT 2 - Moblie 2
+        # base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(14.2, 1, 0.9, 0, 0, 0))
+        base = KukaBase(self.modelRenderer, Assets.OMNIMOVE, (22, 2))
+        base.setAttachTransform(createTransformationMatrix(0, 0, 0.7, 0, 0, 0))
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(0, 0.5, 1.0, 0.7)for i in range(9)])
         arm.setTwinColors([(153/255, 153/255, 1, 0.0)for i in range(9)])
@@ -200,16 +208,20 @@ class DigitalTwinLab(Scene):
         self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73+0.73,6.6,0.5,0,0,-90)))
         self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73+0.73,6.6,1.35,0,0,-90)))
         self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73+0.73+0.73,6.6,0.5,0,0,-90)))
+        self.modelRenderer.setColor(self.models[-1].modelId, (1,1,1,0.7))
         self.models.append(SimpleModel(self.modelRenderer, Assets.PRUSA_XL, createTransformationMatrix(5.8+0.73+0.73+0.73,6.6,1.35,0,0,-90)))
+        self.modelRenderer.setColor(self.models[-1].modelId, (1,1,1,0.7))
+
+        # tmp = SimpleModel(self.modelRenderer, Assets.TEAPOT0, np.matmul(createTransformationMatrix(6,3,1,0,0,0),createScaleMatrix(10,10,10)))
+        # self.models.append(tmp)
 
         self.models.append(SimpleModel(self.modelRenderer, Assets.THE_MATRIX, createTransformationMatrix(5.6,6,0,0,0,0)))
-        
         self.models.append(SimpleModel(self.modelRenderer, Assets.KUKA_EDU, createTransformationMatrix(4,1.2,0,0,0,-90)))
 
         self.leftBtn = SimpleModel(self.modelRenderer, Assets.ARROW_BTN, np.matmul(createTransformationMatrix(4.3,6.5,0.85,0,0,180),createScaleMatrix(8, 8, 8)))
         self.rightBtn = SimpleModel(self.modelRenderer, Assets.ARROW_BTN, np.matmul(createTransformationMatrix(4.7,6.5,0.85,0,0,0),createScaleMatrix(8, 8, 8)))
-        self.modelRenderer.setColor(self.leftBtn.modelId, (0.3,1,0.7,1))
-        self.modelRenderer.setColor(self.rightBtn.modelId, (0.3,1,0.7,1))
+        self.modelRenderer.setColor(self.leftBtn.modelId, (0.3,1,0.7,0.7))
+        self.modelRenderer.setColor(self.rightBtn.modelId, (0.3,1,0.7,0.7))
         self.models.append(self.leftBtn)
         self.models.append(self.rightBtn)
 
@@ -219,6 +231,7 @@ class DigitalTwinLab(Scene):
         streams.append(MJPEGStream('http://172.32.1.225:8080/?action=streams'))
         streams.append(MJPEGStream('http://172.32.1.226:8080/?action=streams'))
         streams.append(MJPEGStream('http://172.32.1.227:8080/?action=streams'))
+        streams.append(MJPEGStream('http://172.32.1.228:8080/?action=streams'))
         streams.append(MJPEGStream('http://172.32.1.90:8080/?action=streams'))
         streams.append(MJPEGStream('http://172.32.1.91:8080/?action=streams'))
         streams.append(MJPEGStream('http://172.32.1.92:8080/?action=streams'))
@@ -228,18 +241,8 @@ class DigitalTwinLab(Scene):
         streams.append(MJPEGStream('http://172.32.1.96:8080/?action=streams'))
         streams.append(MJPEGStream('http://172.32.1.97:8080/?action=streams'))
 
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3        ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3        ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73   ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73   ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*2 ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*2 ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*3 ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*3 ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*4 ,5.3,0.6 ,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        # screens.append(SimpleModel(self.modelRenderer, Assets.SCREEN, np.matmul(createTransformationMatrix(6.3+0.73*4 ,5.3,1.45,90,0,90),createScaleMatrix(0.25, 0.25, 0.25))))
-        
         for stream in streams: self.streamDict[stream] = []
+
         self.screen = SimpleModel(self.modelRenderer, Assets.SCREEN, createTransformationMatrix(5.5,6.99,1,90,0,90))
         self.streamDict[streams[1]].append(self.screen)
         self.screenIndex = 1
@@ -280,16 +283,21 @@ class DigitalTwinLab(Scene):
         self.streamDict[stream].append(self.screen)
         self.modelRenderer.setTexture(self.screen.modelId, stream.texture)
 
+    @timing
     def update(self, delta):
         self.__updateEnv(delta)
         self.__updateModelPos()
+        self.__updateView()
+        self.__updateStreamControl(delta)
 
         for model in self.models:
-            if not hasattr(model, 'inViewFrustrum'): continue
-            if not hasattr(model, 'setViewFlag'): continue
-            inView = model.inViewFrustrum(self.modelRenderer.projectionMatrix, self.modelRenderer.viewMatrix)
-            model.setViewFlag(inView)
+            if not isinstance(model, Updatable): continue
+            model.update(delta)
 
+        return
+    
+    @timing
+    def __updateStreamControl(self, delta):
         for stream in self.streamDict.keys():
             active = False
             for display in self.streamDict[stream]:
@@ -301,15 +309,19 @@ class DigitalTwinLab(Scene):
             else:
                 stream.stop()
 
+    @timing
+    def __updateView(self):
         for model in self.models:
-            if not isinstance(model, Updatable): continue
-            model.update(delta)
+            if not hasattr(model, 'inViewFrustrum'): continue
+            if not hasattr(model, 'setViewFlag'): continue
+            inView = model.inViewFrustrum(self.modelRenderer.projectionMatrix, self.modelRenderer.viewMatrix)
+            model.setViewFlag(inView)
 
-        return
-    
+    @timing
     def __updateModelPos(self):
         return
     
+    @timing
     def __updateEnv(self, delta):
         if self.window.selectedUi == self.renderWindow:
             self.camera.moveCamera(delta)

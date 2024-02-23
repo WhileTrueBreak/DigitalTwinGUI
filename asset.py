@@ -48,6 +48,10 @@ class Assets:
 
         Assets.GRIPPER = Assets.loadModelFile('res/models/gripper/2F140.stl', createTransformationMatrix(0, 0, 0, 0, 0, 90))
         Assets.KUKA_BASE = Assets.loadModelFile('res/models/Objects/FlexFellow.STL', createTransformationMatrix(0, 0, -0.926, 0, 0, 0))
+        Assets.KUKA_FLEX = Assets.loadModelFile('res/models/Expo/KukaFlex.stl', np.matmul(createTransformationMatrix(9, -8.4075, 0, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))
+        Assets.OMNIMOVE = Assets.loadModelFile('res/models/omnimove/KMP200.stl', np.matmul(createTransformationMatrix(0, 0, 0, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))
+        Assets.OMNIMOVE_CHARGER = Assets.loadModelFile('res/models/omnimove/KMP200_Charger.stl')
+        
         Assets.KUKA_EDU = Assets.loadModelFile('res/models/Ready2_educate.STL', createTransformationMatrix(0, 0, 0, 0, 0, 0))
         Assets.CNC_EX = Assets.loadModelFile('res/models/CNCex.STL', createTransformationMatrix(0, 0, 0, 0, 0, 0))
 
@@ -63,7 +67,6 @@ class Assets:
         Assets.COUNTER = Assets.loadModelFile('res/models/Expo/Counter.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
         Assets.TABLE = Assets.loadModelFile('res/models/Expo/RoundTable.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
         Assets.TVSCREEN = Assets.loadModelFile('res/models/Expo/TvScreen.stl', createTransformationMatrix(0, 0, 0, 0, 0, 0))
-        Assets.KUKA_FLEX = Assets.loadModelFile('res/models/Expo/KukaFlex.stl', np.matmul(createTransformationMatrix(9, -8.4075, -0.89, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))
         Assets.THE_MATRIX = Assets.loadModelFile('res/models/MatrixFrameV3.STL')
 
         Assets.AMW_LEFT_TEX = Assets.loadTexture('res/textures/AMW_LEFT.jpg', flipX=True, flipY=True)
@@ -71,6 +74,9 @@ class Assets:
         Assets.AMW_MID_TEX = Assets.loadTexture('res/textures/AMW_MID.jpg', flipX=True, flipY=True)
 
         Assets.DRAGON = Assets.loadModelFile('res/models/dragon.obj', createScaleMatrix(0.01, 0.01, 0.01).dot(createTransformationMatrix(0,0,0,90,0,0)))
+        Assets.TEAPOT0 = Assets.loadModelFile('res/models/teapot.obj')
+        # Assets.TEAPOT1 = Assets.loadModelFile('res/models/teapot1.obj')
+        # Assets.SWORD = Assets.loadModelFile('res/models/sword.obj')
         Assets.POLE = Assets.loadModelFile('res/models/pole.stl', createScaleMatrix(10, 10, 10))
 
         Assets.ENDER3_3D_PRINTER = Assets.loadModelFile('res/models/Objects/Ender3-V2.STL')
@@ -99,9 +105,6 @@ class Assets:
         Assets.MONACO_FONT = Assets.loadFont('res/fonts/MONACO.TTF')
         Assets.COMIC_SANS_FONT = Assets.loadFont('res/fonts/comic_sans.ttf')
         Assets.ARIAL_FONT = Assets.loadFont('res/fonts/ARIALNB.TTF',48*64)
-
-        Assets.OMNIMOVE = Assets.loadModelFile('res/models/omnimove/KMP200.stl', np.matmul(createTransformationMatrix(0, 0, -0.7, 0, 0, 0), createScaleMatrix(0.001, 0.001, 0.001)))
-        Assets.OMNIMOVE_CHARGER = Assets.loadModelFile('res/models/omnimove/KMP200_Charger.stl')
 
         Assets.ARROW_BTN = Assets.loadModelFile('res/models/arrowbtn.STL', np.matmul(createScaleMatrix(0.001, 0.001, 0.001), createTransformationMatrix(-15,15,0,90,0,0)))
 
