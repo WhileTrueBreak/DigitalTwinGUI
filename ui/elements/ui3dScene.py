@@ -16,7 +16,7 @@ class Ui3DScene(GlElement):
 
         self.NEAR_PLANE = 0.01
         self.FAR_PLANE = 1000
-        self.FOV = 69
+        self.FOV = 90
 
         self.backgroundColor = (0.15,0.15,0.15)
 

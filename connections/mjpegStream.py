@@ -23,7 +23,7 @@ class MJPEGStream(PollController):
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
 
-    @timing
+    # @timing
     def update(self, delta):
         stream = self.container.getStream()
         if stream == None: 

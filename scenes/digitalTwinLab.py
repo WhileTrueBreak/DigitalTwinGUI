@@ -145,7 +145,7 @@ class DigitalTwinLab(Scene):
         self.bases = []
         # ROBOT 3 - KEENANS DEMO ROBOT
         # base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(2.3, 5, 0.89, 0, 0, 180))
-        base = KukaBase(self.modelRenderer, Assets.KUKA_FLEX, (23, 3))
+        base = KukaBase(self.modelRenderer, Assets.KUKA_FLEX, (23, 3), posParams=(0,0,0,True))
         base.setAttachTransform(createTransformationMatrix(0, 0, 0.89, 0, 0, 0))
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 23, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(1, 51/255, 51/255, 0.7)for i in range(9)])
@@ -157,7 +157,7 @@ class DigitalTwinLab(Scene):
         
         # # ROBOT 4 - MSM Testing ROBOT
         # base = StaticModel(self.modelRenderer, Assets.KUKA_FLEX, createTransformationMatrix(14, 2.5, 0.89, 0, 0, 0))
-        base = KukaBase(self.modelRenderer, Assets.KUKA_FLEX, (24, 4))
+        base = KukaBase(self.modelRenderer, Assets.KUKA_FLEX, (24, 4), posParams=(0,0,0,True))
         base.setAttachTransform(createTransformationMatrix(0, 0, 0.89, 0, 0, 0))
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.315, 0, 0, 0, 0, 0), 24, 'R4', self.modelRenderer, hasForceVector=True, hasGripper=False)
         arm.setLiveColors([(1, 1, 0, 0.7)for i in range(9)])
@@ -169,7 +169,7 @@ class DigitalTwinLab(Scene):
 
         # # ROBOT 1 - Moblie 1
         # base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(13, 1, 0.9, 0, 0, -90))
-        base = KukaBase(self.modelRenderer, Assets.OMNIMOVE, (21, 1))
+        base = KukaBase(self.modelRenderer, Assets.OMNIMOVE, (21, 1), posParams=(0,0,0,False))
         base.setAttachTransform(createTransformationMatrix(0, 0, 0.7, 0, 0, 0))
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 21, 'R1', self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(0, 1, 0, 0.7)for i in range(9)])
@@ -181,7 +181,7 @@ class DigitalTwinLab(Scene):
         
         # # ROBOT 2 - Moblie 2
         # base = StaticModel(self.modelRenderer, Assets.OMNIMOVE, createTransformationMatrix(14.2, 1, 0.9, 0, 0, 0))
-        base = KukaBase(self.modelRenderer, Assets.OMNIMOVE, (22, 2))
+        base = KukaBase(self.modelRenderer, Assets.OMNIMOVE, (22, 2), posParams=(0,0,0,False))
         base.setAttachTransform(createTransformationMatrix(0, 0, 0.7, 0, 0, 0))
         arm = KukaRobotTwin(self.window, createTransformationMatrix(0.363, -0.184, 0, 0, 0, -90), 22, 'R2', self.modelRenderer, hasForceVector=True, hasGripper=True)
         arm.setLiveColors([(0, 0.5, 1.0, 0.7)for i in range(9)])
@@ -283,7 +283,7 @@ class DigitalTwinLab(Scene):
         self.streamDict[stream].append(self.screen)
         self.modelRenderer.setTexture(self.screen.modelId, stream.texture)
 
-    @timing
+    # @timing
     def update(self, delta):
         self.__updateEnv(delta)
         self.__updateModelPos()
@@ -296,7 +296,7 @@ class DigitalTwinLab(Scene):
 
         return
     
-    @timing
+    # @timing
     def __updateStreamControl(self, delta):
         for stream in self.streamDict.keys():
             active = False
@@ -309,7 +309,7 @@ class DigitalTwinLab(Scene):
             else:
                 stream.stop()
 
-    @timing
+    # @timing
     def __updateView(self):
         for model in self.models:
             if not hasattr(model, 'inViewFrustrum'): continue
@@ -317,11 +317,11 @@ class DigitalTwinLab(Scene):
             inView = model.inViewFrustrum(self.modelRenderer.projectionMatrix, self.modelRenderer.viewMatrix)
             model.setViewFlag(inView)
 
-    @timing
+    # @timing
     def __updateModelPos(self):
         return
     
-    @timing
+    # @timing
     def __updateEnv(self, delta):
         if self.window.selectedUi == self.renderWindow:
             self.camera.moveCamera(delta)

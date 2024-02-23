@@ -132,4 +132,7 @@ def getFrustum(matrix):
 def pointFrustumDist(point, frustum):
     return np.dot(point, frustum[0:3]) + frustum[3]
 
+def FleetToLocalTransform(x, y, a):
+    return (23.14-x, 12.23-y, (a-180)%360)
+
 

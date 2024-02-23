@@ -9,19 +9,19 @@ from scenes.models.interfaces.model import Updatable
 from scenes.models.interfaces.interactable import Interactable
 
 from utils.interfaces.pollController import PollController
-from utils.mathHelper import deg2Rad
+from utils.mathHelper import deg2Rad, FleetToLocalTransform
 from utils.debug import *
 
 from window import Window
 
 class KukaBase(Updatable, PollController):
 
-    def __init__(self, modelRenderer, model, opcuaName, posParams=(0,0,0)):
+    def __init__(self, modelRenderer, model, opcuaName, posParams=(0,0,0,True)):
         self.modelRenderer = modelRenderer
         self.model = model
         self.nodeId, self.robotId = opcuaName
 
-        self.liveBaseX, self.liveBaseY, self.liveBaseA = posParams
+        self.liveBaseX, self.liveBaseY, self.liveBaseA, self.inLocalFrame = posParams
         self.transform = createTransformationMatrix(self.liveBaseX, self.liveBaseY, 0, 0, 0, self.liveBaseA)
         self.attachRel = np.identity(4)
         self.attachT = np.identity(4)
@@ -61,6 +61,8 @@ class KukaBase(Updatable, PollController):
         self.liveBaseX = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_BaseX'), default=0)[0]
         self.liveBaseY = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_BaseY'), default=0)[0]
         self.liveBaseA = self.opcuaReceiverContainer.getValue(self.__getNodeName(f'd_BaseA'), default=0)[0]
+        if self.inLocalFrame: return
+        self.liveBaseX, self.liveBaseY, self.liveBaseA = FleetToLocalTransform(self.liveBaseX, self.liveBaseY, self.liveBaseA)
         
     def __updatePos(self):
         self.modelRenderer.setTransformMatrix(self.modelId, self.transform)
