@@ -95,6 +95,9 @@ class Assets:
         Assets.PRUSA_XL = LazyAsset(lambda:Assets.loadModelFile('res/models/Prusa XLm.STL'))
         Assets.SHELF = LazyAsset(lambda:Assets.loadModelFile('res/models/Objects/Shelving1.stl', createTransformationMatrix(0, 0, 0, 90, 0, 0)))
 
+        Assets.EXPO_TROLLEY = LazyAsset(lambda:Assets.loadModelFile('res/models/robot_trolley.stl', np.matmul(createTransformationMatrix(0,0,0,0,0,0), createScaleMatrix(0.001, 0.001, 0.001))))
+        Assets.ZED_CAMERA = LazyAsset(lambda:Assets.loadModelFile('res/models/ZED2i.stl', np.matmul(createScaleMatrix(0.001, 0.001, 0.001), createTransformationMatrix(0,30,0,0,0,0))))
+        Assets.SPHERE = LazyAsset(lambda:Assets.loadModelFile('res/models/sphere.stl', createScaleMatrix(0.001, 0.001, 0.001)))
         # Assets.BAD_APPLE_VID = Assets.loadVideo('res/videos/badapple.mp4')
         # Assets.HAMSTER = Assets.loadVideo('res/videos/hamster.gif')
 

@@ -10,8 +10,9 @@ from scenes.utils.wallBuilder import WallBuilder
 from models.interfaces.model import SimpleModel, Updatable, Serializable
 from models.interfaces.interactable import Interactable
 from models.staticModel import StaticModel
-from models.wrapper.kukaBase import KukaBase
-from models.wrapper.kukaRobot import KukaRobotTwin
+from models.wrapper.keyPoints.zedHeadKeypoints import ZedHeadKeypoints
+from models.wrapper.kuka.kukaBase import KukaBase
+from models.wrapper.kuka.kukaRobot import KukaRobotTwin
 
 from ui.elements.uiButton import UiButton
 from ui.elements.uiWrapper import UiWrapper
@@ -54,12 +55,18 @@ class DigitalTwinLab(Scene):
         self.modelRenderer = self.renderWindow.getRenderer()
         self.sceneWrapper.addChild(self.renderWindow)
         
-        self.panelWrapper = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.7,0,0.3,1, DigitalTwinLab.UI_PADDING))
+        self.panelWrapper = UiWrapper(self.window, Constraints.ALIGN_PERCENTAGE_PADDING(0.7, 0, 0.3, 1, DigitalTwinLab.UI_PADDING))
         self.renderWindow.addChild(self.panelWrapper)
 
+        self.streamDict = {}
         self.__createRoom()
         self.__addRobots()
-        self.__addFurniture()
+
+        ZED_Camera = SimpleModel(self.modelRenderer, Assets.ZED_CAMERA, createTransformationMatrix(8, 1.7,1.363,0,0,90))
+        ZED_Keypoints = ZedHeadKeypoints(self.modelRenderer)
+        ZED_Keypoints.setAttach(ZED_Camera)
+        self.models.append(ZED_Camera)
+        self.models.append(ZED_Keypoints)
         return
     
     @timing
@@ -221,14 +228,12 @@ class DigitalTwinLab(Scene):
         self.models.append(SimpleModel(self.modelRenderer, Assets.THE_MATRIX, createTransformationMatrix(5.6,6,0,0,0,0)))
         self.models.append(SimpleModel(self.modelRenderer, Assets.KUKA_EDU, createTransformationMatrix(4,1.2,0,0,0,-90)))
 
-        self.leftBtn = SimpleModel(self.modelRenderer, Assets.ARROW_BTN, np.matmul(createTransformationMatrix(4.3,6.5,0.85,0,0,180),createScaleMatrix(8, 8, 8)))
-        self.rightBtn = SimpleModel(self.modelRenderer, Assets.ARROW_BTN, np.matmul(createTransformationMatrix(4.7,6.5,0.85,0,0,0),createScaleMatrix(8, 8, 8)))
-        self.modelRenderer.setColor(self.leftBtn.modelId, (0.3,1,0.7,1))
-        self.modelRenderer.setColor(self.rightBtn.modelId, (0.3,1,0.7,1))
-        self.models.append(self.leftBtn)
-        self.models.append(self.rightBtn)
-
-        self.streamDict = {}
+        leftBtn = SimpleModel(self.modelRenderer, Assets.ARROW_BTN, np.matmul(createTransformationMatrix(4.3,6.5,0.85,0,0,180),createScaleMatrix(8, 8, 8)))
+        rightBtn = SimpleModel(self.modelRenderer, Assets.ARROW_BTN, np.matmul(createTransformationMatrix(4.7,6.5,0.85,0,0,0),createScaleMatrix(8, 8, 8)))
+        self.modelRenderer.setColor(leftBtn.modelId, (0.3,1,0.7,1))
+        self.modelRenderer.setColor(rightBtn.modelId, (0.3,1,0.7,1))
+        self.models.append(leftBtn)
+        self.models.append(rightBtn)
 
         streams = []
         streams.append(MJPEGStream('http://172.32.1.225:8080/?action=streams'))
@@ -268,10 +273,10 @@ class DigitalTwinLab(Scene):
         modelId = event['modelId']
         self.panelWrapper.removeAllChildren()
 
-        if self.rightBtn.isModel(modelId):
-            self.__changeScreenDisplay(self.screenIndex+1)
-        elif self.leftBtn.isModel(modelId):
-            self.__changeScreenDisplay(self.screenIndex-1)
+        # if self.rightBtn.isModel(modelId):
+        #     self.__changeScreenDisplay(self.screenIndex+1)
+        # elif self.leftBtn.isModel(modelId):
+        #     self.__changeScreenDisplay(self.screenIndex-1)
 
         for model in self.models:
             if model.isModel(modelId):

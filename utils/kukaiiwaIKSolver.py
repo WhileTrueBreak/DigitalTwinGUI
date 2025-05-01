@@ -1,3 +1,8 @@
+import os
+import sys
+sys.path.append(os.getcwd())
+
+
 import numpy as np
 from utils.debug import *
 from utils.mathHelper import deg2Rad, rad2Deg
@@ -70,7 +75,6 @@ def ForwardKinematics(joints):
     xe = tr[:3, 3, 3]  # elbow position from base
     xw = tr[:3, 3, 5]  # wrist position from base
     xsw = xw - xs  # wrist position from shoulder
-
     pose = tr[:, :, -1]  # end-effector transformation from base
 
     # Calculate the nsparam - Arm Angle
@@ -175,9 +179,6 @@ def InverseKinematics(pose, nsparam, rconf):
 
     psi = nsparam
     R03 = As * np.sin(psi) + Bs * np.cos(psi) + Cs
-
-    # print(R03_o)
-    # print(R03)
 
     # T03 transformation matrix (DH parameters)
     joints[0] = np.arctan2(arm * R03[1, 1], arm * R03[0, 1])
@@ -313,19 +314,22 @@ if __name__ == '__main__':
     [-1.54, -0.002, 0.59]
     """
 
-    joints = [0.4145, -16.2216, 0.9526, 48.1185, -0.6516, 30.3565, -80.1974]
+    # joints = [0.4145, -16.2216, 0.9526, 48.1185, -0.6516, 30.3565, -80.1974]
+    joints = [90, 30, 0, 90, 0, -90, 0]
     # joints = [45, 45, 45, 45, 45, 45, 45]
+    joints = list(map(deg2Rad, joints))
     print(joints)
     print('--------------'*10)
 
-    joints = list(map(deg2Rad, joints))
     pose, nsparam, rconf, jout = ForwardKinematics(joints)
-    print(list(map(rad2Deg, jout)))
-    print(nsparam)
+    print(pose)
+    # print(list(map(rad2Deg, jout)))
+    # print(nsparam)
     joints, s_mat, w_mat = InverseKinematics(pose, nsparam, rconf)
 
     print('--------------'*10)
-    print(list(map(rad2Deg, joints)))
+    print(joints)
+    # print(list(map(rad2Deg, joints)))
 
 
 

@@ -122,26 +122,27 @@ void main() {
 	ivec2 coords = ivec2(gl_FragCoord.xy);
 	vec2 res = gl_FragCoord.xy / texture_dim;
 	vec4 color = texture(screen, res);
-
-	// float d = get_normalised_depth(res);
-	// float nd = 1-d;
-
-	// float dist = dist_sq(res, vec2(0.5,0.5));
-	// vec2 distort_res = quad_distort(res, 0.15, 0.85);
-	// float xoff = pow(sin((distort_res.y*texture_dim.y+2)*PI/16), 4.)/1*dist;
-	// float brightness = sin(distort_res.y*texture_dim.y*PI/4)+1;
-	// if(brightness > 1) brightness = 1;
-	// if(brightness < 0.8) brightness = 0.9;
-
-	// xoff = xoff/texture_dim.x;
-	// float resoff = res.x+xoff;
-	// if(resoff <= 0) xoff = 0;
-	// if(resoff >= 1) xoff = 0;
-	// res = vec2(distort_res.x+xoff, distort_res.y);
-
-	float grey = clamp(srgb2grey(color.rgb),0,1);
-	int colorindex = quantizeindex(grey, 16);
-	vec3 palettecolor = palette(0.65, 0.01, 0.5, 0.6, 0.015, colorindex);
-	frag = vec4(palettecolor, 1);
 	frag = color;
+
+	// Gray dithering effect
+	// float grey = color.r*0.299+color.g*0.587+color.b*0.114;
+	// float spacing = 5;
+	// vec2 spacedCoord = vec2(float(coords.x)/spacing,float(coords.y)/spacing);
+	// ivec2 samplePos = ivec2(
+	// 	int(round(spacedCoord.x)*spacing),
+	// 	int(round(spacedCoord.y)*spacing)
+	// 	);
+	// vec2 circleCoord = vec2(
+	// 	abs(round(spacedCoord.x)-spacedCoord.x),
+	// 	abs(round(spacedCoord.y)-spacedCoord.y)
+	// 	);
+	// float circleSquaredDist = circleCoord.x*circleCoord.x+circleCoord.y*circleCoord.y;
+	// float brightness = clamp(srgb2grey(texture(screen, samplePos / texture_dim).rgb),0,1);
+	// float shadeSquaredDist = clamp((1-brightness)*0.25,0,0.25);
+
+	// if(circleSquaredDist<shadeSquaredDist){
+	// 	frag = vec4(grey*0.6,grey*0.6,grey*0.6,1);
+	// }else{
+	// 	frag = vec4(grey,grey,grey,1);
+	// }
 }

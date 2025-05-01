@@ -10,8 +10,8 @@ from scenes.utils.wallBuilder import WallBuilder
 from models.interfaces.model import SimpleModel, Updatable, Serializable
 from models.interfaces.interactable import Interactable
 from models.staticModel import StaticModel
-from models.wrapper.kukaBase import KukaBase
-from models.wrapper.kukaRobot import KukaRobotTwin
+from models.wrapper.kuka.kukaBase import KukaBase
+from models.wrapper.kuka.kukaRobot import KukaRobotTwin
 
 from ui.elements.uiButton import UiButton
 from ui.elements.uiWrapper import UiWrapper

@@ -4,6 +4,7 @@ import colorama
 
 from asset import *
 from scenes.digitalTwinLab import *
+from scenes.expoScene import *
 from scenes.loadedScene import *
 from utils.debug import *
 from window import *
@@ -14,12 +15,12 @@ nest_asyncio.apply()
 @funcProfiler(ftype='init')
 def run():
     window = Window((1200, 800), 'Digital Twin GUI', fullscreen=False, resizeable=True, vsync=True)
-
-    labScene = DigitalTwinLab(window, 'Digital Twin Lab')
-    labScene.createUi()
+    
+    expoScene = ExpoScene(window, 'Expo')
+    expoScene.createUi()
 
     windowSceneManager = window.getSceneManager()
-    windowSceneManager.addScene(labScene)   
+    windowSceneManager.addScene(expoScene)
     windowSceneManager.createUi()
 
     window.run()

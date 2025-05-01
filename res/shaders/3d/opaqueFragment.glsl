@@ -31,6 +31,7 @@ float distsq(vec3 v1, vec3 v2){
 }
 
 void main() {
+	ivec2 coords = ivec2(gl_FragCoord.xy);
 	picking = uvec3(objIndex, batchId, gl_PrimitiveID+1);
 
 	//ambient
@@ -56,12 +57,16 @@ void main() {
 	toLight.z = -toLight.z;
 	float lightDist = length(toLight); 
 	float sampleDist = texture(shadowMap, toLight).r;
+	float dimPercentage = 1;
 	if(sampleDist + 0.1 < lightDist){ // in shadow
 		diffuse = clamp(diffuse, -1, 0)/4;
 		opaque = vec4(objectColor.xyz*lightColor.xyz*(ambient+diffuse), 1);
+		dimPercentage = (ambient+diffuse);
 	}else{ // not in shadow
 		diffuse = clamp(diffuse, 0, 1);
 		specular = clamp(specular, 0, 1);
 		opaque = vec4(objectColor.xyz*lightColor.xyz*(ambient+clamp(diffuse+specular,0,1)), 1);
+		dimPercentage = (ambient+clamp(diffuse+specular,0,1));
 	}
+
 }

@@ -1,7 +1,7 @@
 from models.interfaces.model import SimpleModel
 from models.staticModel import StaticModel
-from models.wrapper.kukaBase import KukaBase
-from models.wrapper.kukaRobot import KukaRobotTwin
+from models.wrapper.kuka.kukaBase import KukaBase
+from models.wrapper.kuka.kukaRobot import KukaRobotTwin
 
 from utils.debug import *
 

@@ -4,7 +4,7 @@ import ctypes
 import time
 
 from asset import *
-from constants import GL_FLOAT_MAX
+from constants import Constants
 from ui.ui3d.batchRenderer import BatchRenderer
 from ui.ui3d.fbos.rendererFBO import RendererFBO
 from ui.ui3d.fbos.shadowCubeFBO import ShadowCubeFBO
@@ -201,7 +201,7 @@ class Renderer:
         GL.glDepthFunc(GL.GL_LESS)
         GL.glDepthMask(GL.GL_TRUE)
         GL.glDisable(GL.GL_BLEND)
-        GL.glClearColor(GL_FLOAT_MAX, GL_FLOAT_MAX, GL_FLOAT_MAX, GL_FLOAT_MAX)
+        GL.glClearColor(Constants.GL_FLOAT_MAX, Constants.GL_FLOAT_MAX, Constants.GL_FLOAT_MAX, Constants.GL_FLOAT_MAX)
 
         for i in range(6):
             # t1 = time.time_ns()

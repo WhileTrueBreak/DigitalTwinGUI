@@ -1,7 +1,6 @@
-import OpenGL.GL as GL
-
 class Constants:
-    MAX_TEXTURE_SLOTS = 8
-    OPCUA_LOCATION = 'oct.tpc://172.32.1.236:4840/server/'
+    OPCUA_LOCATION = 'oct.tpc://172.24.200.1:4840/'
 
-GL_FLOAT_MAX = 3.402823e+38
+    # DONT TOUCH
+    MAX_TEXTURE_SLOTS = 8
+    GL_FLOAT_MAX = 3.402823e+38

@@ -1,4 +1,6 @@
 from models.interfaces.model import SimpleModel, Updatable
+from models.interfaces.serializable import Serializable
+
 from utils.debug import *
 from utils.objMesh import ObjMesh
 
@@ -6,7 +8,7 @@ import numpy as np
 import pickle
 import os
 
-class StaticModel(SimpleModel, Updatable):
+class StaticModel(SimpleModel, Updatable, Serializable):
     
     @timing
     def __init__(self, renderer, model, transform):
@@ -17,6 +19,12 @@ class StaticModel(SimpleModel, Updatable):
         attachFrame = self.attach.getFrame() if self.attach else np.identity(4)
         self.renderer.setTransformMatrix(self.modelId, np.matmul(attachFrame, self.transform))
         return
+    
+    def getFrame(self):
+        return np.matmul(self.attach.getFrame() if self.attach else np.identity(4), self.transform)
+    
+    def update(self, delta):
+        self.__updateTranforms()
     
     def setAttach(self, iModel):
         self.attach = iModel

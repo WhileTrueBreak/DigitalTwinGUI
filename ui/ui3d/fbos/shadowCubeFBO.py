@@ -2,7 +2,7 @@ import OpenGL.GL as GL
 
 from utils.debug import *
 from utils.mathHelper import *
-from constants import GL_FLOAT_MAX
+from constants import Constants
 
 class ShadowCubeFBO:
 
@@ -21,7 +21,7 @@ class ShadowCubeFBO:
 
         self.shadowFBO = GL.glGenFramebuffers(1)
         
-        GL.glClearColor(GL_FLOAT_MAX, GL_FLOAT_MAX, GL_FLOAT_MAX, GL_FLOAT_MAX)
+        GL.glClearColor(Constants.GL_FLOAT_MAX, Constants.GL_FLOAT_MAX, Constants.GL_FLOAT_MAX, Constants.GL_FLOAT_MAX)
 
         self.shadowDepthTexture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.shadowDepthTexture)
