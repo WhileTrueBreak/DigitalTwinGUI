@@ -4,9 +4,12 @@
 layout (location = 0) out vec4 opaque;
 layout (location = 1) out uvec3 picking;
 
+// uniforms
 uniform sampler2D uTextures[%max_textures%];
 uniform uint batchId;
 uniform samplerCube shadowMap;
+
+// light uniforms
 uniform vec3 lightPos;
 
 flat in uint objIndex;
@@ -17,9 +20,6 @@ in vec4 worldNormal;
 flat in vec3 cameraPos;
 in vec4 objectColor;
 in vec4 lightColor;
-
-// in float shade;
-// in vec4 color;
 
 vec3 toV1(vec3 v1, vec3 v2){
   return normalize(v1-v2);
@@ -44,7 +44,12 @@ void main() {
 	
 	//specular
 	vec3 halfway = normalize((toLightVec+toCameraVec)/2);
-  	float specular = pow(max(dot(halfway, normalize(worldNormal.xyz)),0.0),8)*0.4;
+	vec3 normal = normalize(worldNormal.xyz);
+	float NdotL = dot(normal, toLightVec);
+	float specular = 0;
+	if (NdotL >= 0){
+		specular = pow(max(dot(halfway, normal),0.0),8)*0.4;
+	}
 
 	// vec3 ambientColor = vec3(objectColor.xyz*ambient);
 	// vec3 diffuseColor = vec3(objectColor.xyz*diffuse);

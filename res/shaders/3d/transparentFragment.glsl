@@ -40,8 +40,14 @@ void main(){
   	float diffuse = clamp(dot(toLightVec, normalize(worldNormal.xyz)), 0, 1)*0.8;
 	
 	//specular
-	vec3 halfway = normalize((toLightVec+toV1(cameraPos, worldPos.xyz))/2);
-  	float specular = clamp(pow(max(dot(halfway, normalize(worldNormal.xyz)),0.0),16), 0, 1);
+	vec3 halfway = normalize((toLightVec+toCameraVec)/2);
+	vec3 normal = normalize(worldNormal.xyz);
+	float NdotL = dot(normal, toLightVec);
+	float specular = 0;
+	if (NdotL >= 0){
+		specular = pow(max(dot(halfway, normal),0.0),8)*0.4;
+	}
+
 
 	vec4 objColor = vec4(0,0,0,1);
 

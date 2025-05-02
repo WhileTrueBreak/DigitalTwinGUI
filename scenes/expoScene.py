@@ -45,7 +45,7 @@ class ExpoScene(Scene):
         
         self.camera = MovingCamera(self.window, [3, -2, 2, -90, 0, 0], 2)
         
-        self.pointLight = (-1, 3, 1.5)
+        self.pointLight = (0,0,0)
         self.lapsed = 0
     
     @timing
@@ -68,20 +68,15 @@ class ExpoScene(Scene):
         d = 2.5
         h = 2.481
         banner_h = 0.5
-        bar_w = 0.01
+        bar_w = 0.05
 
         planes = []
         planes.append(WallBuilder.buildPlaneXY(0, 0, 0, 6, 2.5))
-        planes.append(WallBuilder.buildPlaneXY(w/2-bar_w/2,0,h-bar_w,bar_w,h))
-        planes.append(WallBuilder.buildPlaneXY(w/2-bar_w/2,0,h,bar_w,h))
-        planes.append(WallBuilder.buildPlaneYZ(w/2-bar_w/2,0,h-bar_w,h,bar_w))
-        planes.append(WallBuilder.buildPlaneYZ(w/2+bar_w/2,0,h-bar_w,h,bar_w))
-        planes.append(WallBuilder.buildPlaneXZ(w/2-bar_w/2,0,0,bar_w,h))
-        planes.append(WallBuilder.buildPlaneXZ(w/2+bar_w/2,0,0,bar_w,h))
-        planes.append(WallBuilder.buildPlaneYZ(w/2-bar_w/2,0,0,bar_w,h))
-        planes.append(WallBuilder.buildPlaneYZ(w/2+bar_w/2,0,0,bar_w,h))
+        planes.append(WallBuilder.buildPlaneXZ(w-bar_w/2,0,0,bar_w/2,h-banner_h))
+        planes.append(WallBuilder.buildPlaneXZ(w/2-bar_w/2,0,0,bar_w,h-banner_h))
+        planes.append(WallBuilder.buildPlaneXZ(0,0,0,bar_w/2,h-banner_h))
 
-         #New Lab
+        # New Lab
         wallplan = [
             # ((0,0),(0,d),(0,h)),#LEFT WALL
             ((0,d),(w,d),(0,h)),#BACK WALL     
@@ -89,7 +84,7 @@ class ExpoScene(Scene):
             ((0,-0.001),(w,-0.001),(h-banner_h,h)),#FRONT PANEL
         ]
 
-        roomColor = (0.9,0.9,0.9,1)
+        roomColor = (227/255,211/255,211/255,1)
 
         planes.extend(WallBuilder.buildWallPlan(wallplan))
         roomPlan = ObjMesh.fromSubModels(planes)[0]
@@ -101,16 +96,17 @@ class ExpoScene(Scene):
     @timing
     def __fillRoom(self):
         # trolley
-        trolleyModel = StaticModel(self.modelRenderer, Assets.EXPO_TROLLEY, createTransformationMatrix(2,0.6,0.124,0,0,-90))
+        trolleyModel = StaticModel(self.modelRenderer, Assets.EXPO_TROLLEY, createTransformationMatrix(2,0.8,0.124,0,0,0))
+        self.modelRenderer.setColor(trolleyModel.modelId, (211/255,221/255,227/255,1))
 
         # zed camera
-        ZED_Camera = StaticModel(self.modelRenderer, Assets.ZED_CAMERA, createTransformationMatrix(0.3201, 0, 0.643, 0, 0, 90))
+        ZED_Camera = StaticModel(self.modelRenderer, Assets.ZED_CAMERA, createTransformationMatrix(0, -0.3201, 0.643, 0, 0, 0))
         ZED_Keypoints = ZedHeadKeypoints(self.modelRenderer)
         ZED_Camera.setAttach(trolleyModel)
         ZED_Keypoints.setAttach(ZED_Camera)
 
         # kuka robot
-        kukaRobot = KukaRobotTwin(self.window, createTransformationMatrix(0, 0, 0.643, 0, 0, 0), 23, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
+        kukaRobot = KukaRobotTwin(self.window, createTransformationMatrix(0, 0, 0.643, 0, 0, -90), 23, 'R3', self.modelRenderer, hasForceVector=True, hasGripper=True)
         kukaRobot.setLiveColors([(1, 51/255, 51/255, 0.7)for i in range(9)])
         kukaRobot.setTwinColors([(1, 178/255, 102/255, 0.0)for i in range(9)])
         kukaRobot.setAttach(trolleyModel)
@@ -121,7 +117,7 @@ class ExpoScene(Scene):
         barstool2 = SimpleModel(self.modelRenderer, Assets.BAR_STOOL, createTransformationMatrix(2.5, 2, 0, 0, 0, 0))
         self.modelRenderer.setColor(barstool2.modelId, (121/255,85/255,73/255,1))
         counter = SimpleModel(self.modelRenderer, Assets.COUNTER, createTransformationMatrix(4, 0.5, 0, 0, 0, 0))
-        self.modelRenderer.setColor(counter.modelId, (0,109/255,174/255,1))
+        self.modelRenderer.setColor(counter.modelId, (81/255,148/255,138/255,1))
         self.models.append(barstool1)
         self.models.append(barstool2)
         self.models.append(counter)
@@ -162,7 +158,7 @@ class ExpoScene(Scene):
             model.update(delta)
     
     def __updateLight(self, delta):
-        self.pointLight = (-1 + 1.5*cos(self.lapsed/4), 3 + 1.5*sin(self.lapsed/4), 2)
+        self.pointLight = (3 + 2*cos(self.lapsed/64), 1.75, 2.25)
         self.lapsed += delta
         self.modelRenderer.setLight(self.pointLight)
 
