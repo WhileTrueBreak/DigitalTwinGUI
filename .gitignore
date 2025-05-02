@@ -9,3 +9,4 @@ lib/
 include/
 bin/
 __pycache__/
+venv/
